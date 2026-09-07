@@ -34,7 +34,18 @@ function sanitizeData(obj: any): any {
   return clean;
 }
 
-const DATA_DIR = path.resolve(process.cwd(), 'data');
+import os from 'os';
+
+const DATA_DIR = process.env.VERCEL
+  ? path.join(os.tmpdir(), 'saas-data')
+  : path.resolve(process.cwd(), 'data');
+
+const SEED_FALLBACK_PATHS = [
+  path.resolve(process.cwd(), 'data'),
+  path.resolve(process.cwd(), 'apps/api/data'),
+  path.resolve(__dirname, '../../data'),
+  path.resolve(__dirname, '../../../data'),
+];
 
 /**
  * High-Performance Persistent Collection
@@ -51,7 +62,7 @@ class PersistentCollection<T extends { id: string }> implements CollectionInterf
       try {
         fs.mkdirSync(DATA_DIR, { recursive: true });
       } catch (e) {
-        console.warn('Could not create data directory:', e);
+        // Safe in read-only / serverless environment
       }
     }
     this.filePath = path.join(DATA_DIR, `${collectionName}.json`);
@@ -61,8 +72,20 @@ class PersistentCollection<T extends { id: string }> implements CollectionInterf
 
   private loadFromDisk() {
     try {
-      if (fs.existsSync(this.filePath)) {
-        const raw = fs.readFileSync(this.filePath, 'utf8');
+      let targetPath = this.filePath;
+      if (!fs.existsSync(targetPath)) {
+        // Try fallback seed paths
+        for (const dir of SEED_FALLBACK_PATHS) {
+          const candidate = path.join(dir, `${this.collectionName}.json`);
+          if (fs.existsSync(candidate)) {
+            targetPath = candidate;
+            break;
+          }
+        }
+      }
+
+      if (fs.existsSync(targetPath)) {
+        const raw = fs.readFileSync(targetPath, 'utf8');
         if (raw.trim()) {
           const parsed = JSON.parse(raw);
           if (Array.isArray(parsed)) {
@@ -83,9 +106,12 @@ class PersistentCollection<T extends { id: string }> implements CollectionInterf
   private saveToDisk() {
     try {
       const data = Array.from(this.items.values());
+      if (!fs.existsSync(DATA_DIR)) {
+        fs.mkdirSync(DATA_DIR, { recursive: true });
+      }
       fs.writeFileSync(this.filePath, JSON.stringify(data, null, 2), 'utf8');
     } catch (err) {
-      console.warn(`[Store] Could not save disk store for ${this.collectionName}:`, err);
+      // Ignored for non-blocking serverless/memory operation
     }
   }
 

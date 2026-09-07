@@ -14,7 +14,9 @@ const localKeyPaths = [
 
 const foundKeyFile = localKeyPaths.find(p => fs.existsSync(p));
 
-if (foundKeyFile) {
+if (admin.apps.length > 0) {
+  isFirebaseInitialized = true;
+} else if (foundKeyFile) {
   try {
     const serviceAccount = JSON.parse(fs.readFileSync(foundKeyFile, 'utf8'));
     admin.initializeApp({
