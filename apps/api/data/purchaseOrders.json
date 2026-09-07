@@ -1,0 +1,28 @@
+[
+  {
+    "poNumber": "PO-822883",
+    "shopId": "shp_1787930675212",
+    "branchId": "br_1787930675212",
+    "supplierId": "0b72762d-829a-4766-a66a-d25c44cc4fcb",
+    "supplierName": "Atlas",
+    "items": [
+      {
+        "productId": "30dd3392-81ba-4e04-8596-a10a3d374101",
+        "productName": "A4 pack",
+        "sku": "PD-001",
+        "orderedQty": 25,
+        "receivedQty": 0,
+        "unitCost": 500,
+        "totalCost": 12500
+      }
+    ],
+    "totalAmount": 12500,
+    "expectedDate": "2026-09-11",
+    "notes": "Standard delivery via logistics partner",
+    "status": "fully_received",
+    "createdBy": "Dilshan ",
+    "createdAt": "2026-09-02T12:07:02.883Z",
+    "updatedAt": "2026-09-02T12:08:03.557Z",
+    "id": "357cb8ca-d2fa-43da-9432-f34940f73dff"
+  }
+]

@@ -1,0 +1,108 @@
+[
+  {
+    "id": "br_urban_downtown",
+    "shopId": "shp_urban_cafe",
+    "name": "Downtown Main Branch",
+    "code": "UCH-DT01",
+    "address": "104 Main Street, Downtown Financial District",
+    "phone": "+1 555 234 5678",
+    "isDefault": true,
+    "status": "active",
+    "createdAt": "2026-08-28T16:36:07.133Z",
+    "updatedAt": "2026-08-28T16:36:07.133Z"
+  },
+  {
+    "id": "br_urban_westside",
+    "shopId": "shp_urban_cafe",
+    "name": "Westside Mall Branch",
+    "code": "UCH-WS02",
+    "address": "420 West Boulevard, Bay Plaza",
+    "phone": "+1 555 987 6543",
+    "isDefault": false,
+    "status": "active",
+    "createdAt": "2026-08-28T16:36:07.134Z",
+    "updatedAt": "2026-08-28T16:36:07.134Z"
+  },
+  {
+    "id": "3236e87c-a946-4717-8201-8a560a244801",
+    "shopId": "shp_1787930675212",
+    "name": "Horana",
+    "address": "Horana rd",
+    "phone": "0788315434",
+    "code": "BR-5366",
+    "isDefault": false,
+    "status": "active",
+    "createdAt": "2026-08-28T16:17:45.366Z",
+    "updatedAt": "2026-08-28T16:17:45.366Z"
+  },
+  {
+    "id": "b1113abf-f312-4d06-a9d4-e990b88346c0",
+    "shopId": "shp_1787930675212",
+    "name": "Matugama",
+    "address": "Matugama rd",
+    "phone": "0788315434",
+    "code": "BR-4608",
+    "isDefault": false,
+    "status": "active",
+    "createdAt": "2026-08-28T16:17:44.608Z",
+    "updatedAt": "2026-08-28T16:42:29.190Z"
+  },
+  {
+    "id": "br_1787930675212",
+    "shopId": "shp_1787930675212",
+    "name": "Pothhala - Main Branch",
+    "code": "MAIN-01",
+    "address": "dil077shan@gmail.com",
+    "phone": "078888888",
+    "isDefault": true,
+    "status": "active",
+    "createdAt": "2026-08-28T15:24:35.212Z",
+    "updatedAt": "2026-08-28T15:24:35.212Z"
+  },
+  {
+    "id": "a930ef37-2d00-40b8-ade1-e21607b3e988",
+    "createdAt": "2026-08-28T16:39:02.701Z",
+    "isDefault": false,
+    "address": "456 Kandy Rd",
+    "phone": "0779876543",
+    "name": "Kandy Road Branch",
+    "shopId": "shp_1787930675212",
+    "status": "active",
+    "updatedAt": "2026-08-28T16:39:02.702Z"
+  },
+  {
+    "id": "e2f78253-e307-47bf-91f4-1d7342a58065",
+    "createdAt": "2026-08-28T16:39:02.448Z",
+    "isDefault": false,
+    "address": "123 Downtown St",
+    "phone": "0771234567",
+    "name": "Downtown Branch",
+    "shopId": "shp_1787930675212",
+    "status": "active",
+    "updatedAt": "2026-08-28T16:39:02.448Z"
+  },
+  {
+    "id": "br_1788434253146",
+    "shopId": "shp_1788434253146",
+    "name": "Artisan Bakery & Sweets - Main Branch",
+    "code": "MAIN-01",
+    "address": "88 Pastry Boulevard, Suite 10",
+    "phone": "+1 555 777 9999",
+    "isDefault": true,
+    "status": "active",
+    "createdAt": "2026-09-03T11:17:33.146Z",
+    "updatedAt": "2026-09-03T11:17:33.146Z"
+  },
+  {
+    "shopId": "shp_urban_cafe",
+    "name": "Airport Terminal 2 Kiosk",
+    "address": "Terminal 2 Departures Hall, Gate 14",
+    "phone": "+1 555 333 4455",
+    "code": "UCH-AP03",
+    "isDefault": false,
+    "status": "active",
+    "createdAt": "2026-09-04T06:18:30.529Z",
+    "updatedAt": "2026-09-04T06:18:30.529Z",
+    "id": "fabcdd53-c378-41a1-a965-6f089a7cd66c"
+  }
+]

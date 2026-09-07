@@ -1,0 +1,54 @@
+[
+  {
+    "id": "tkt_custom_domain",
+    "ticketNumber": "TKT-702914",
+    "shopId": "shp_urban_cafe",
+    "shopName": "Urban Cafe Hub",
+    "subject": "Request assistance with custom branch subdomains",
+    "category": "technical",
+    "priority": "medium",
+    "status": "open",
+    "messages": [
+      {
+        "id": "msg_1",
+        "senderId": "usr_shop_owner_1",
+        "senderName": "Marcus Vance",
+        "senderRole": "shop_owner",
+        "message": "Hello Admin team, we would like to configure westside.urbancafe.com for our second branch. Please advise on DNS CNAME records.",
+        "createdAt": "2026-08-28T11:36:07.302Z"
+      }
+    ],
+    "createdAt": "2026-08-28T11:36:07.302Z",
+    "updatedAt": "2026-08-28T16:36:07.302Z"
+  },
+  {
+    "ticketNumber": "TKT-597440",
+    "shopId": "shp_1787930675212",
+    "shopName": "Pothhala",
+    "subject": "Need to increase branches",
+    "category": "general",
+    "priority": "high",
+    "status": "waiting_for_user",
+    "messages": [
+      {
+        "id": "e906a52d-49ee-4158-a9e6-4db213dc9d41",
+        "senderId": "usr_1787930675212",
+        "senderName": "Dilshan ",
+        "senderRole": "shop_owner",
+        "message": "need to upgrade package",
+        "createdAt": "2026-08-31T07:33:17.440Z"
+      },
+      {
+        "id": "9ba2a7bd-cf4d-4db5-a41f-576883f8d91a",
+        "senderId": "usr_super_admin",
+        "senderName": "Super Admin",
+        "senderRole": "super_admin",
+        "message": "done",
+        "createdAt": "2026-09-01T04:10:16.497Z"
+      }
+    ],
+    "createdAt": "2026-08-31T07:33:17.440Z",
+    "updatedAt": "2026-09-01T04:10:16.497Z",
+    "id": "a32ccaca-654a-4ff0-b726-75eba3d3928d"
+  }
+]

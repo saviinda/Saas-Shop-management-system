@@ -1,0 +1,123 @@
+[
+  {
+    "id": "pkg_basic",
+    "name": "Basic Tier",
+    "description": "Essential toolkit for single shop and small boutique operations",
+    "price": 49,
+    "durationDays": 30,
+    "limits": {
+      "shops": 1,
+      "branches": 1,
+      "users": 5,
+      "products": 100,
+      "services": 20,
+      "storageMb": 500
+    },
+    "features": [
+      "basic_inventory",
+      "order_management",
+      "standard_support",
+      "single_branch"
+    ],
+    "status": "active",
+    "createdAt": "2026-08-28T16:36:06.720Z",
+    "updatedAt": "2026-08-28T16:36:06.721Z"
+  },
+  {
+    "id": "pkg_standard",
+    "name": "Standard Tier",
+    "description": "Updated Standard Tier limits with bonus product allocation",
+    "price": 139,
+    "durationDays": 30,
+    "limits": {
+      "shops": 1,
+      "branches": 3,
+      "users": 15,
+      "products": 500,
+      "services": 50,
+      "storageMb": 2000
+    },
+    "features": [
+      "multi_branch",
+      "advanced_inventory",
+      "procurement_po_grn",
+      "task_management",
+      "priority_support"
+    ],
+    "status": "active",
+    "createdAt": "2026-08-28T16:36:06.997Z",
+    "updatedAt": "2026-09-04T06:10:23.865Z"
+  },
+  {
+    "id": "pkg_premium",
+    "name": "Premium Tier",
+    "description": "Full enterprise SaaS capability with unlimited staff, branches and high throughput",
+    "price": 299,
+    "durationDays": 30,
+    "limits": {
+      "shops": 5,
+      "branches": 10,
+      "users": 50,
+      "products": 2500,
+      "services": 250,
+      "storageMb": 10000
+    },
+    "features": [
+      "multi_shop",
+      "multi_branch",
+      "full_reports",
+      "custom_roles",
+      "dedicated_support",
+      "audit_export"
+    ],
+    "status": "active",
+    "createdAt": "2026-08-28T16:36:06.999Z",
+    "updatedAt": "2026-08-28T16:36:06.999Z"
+  },
+  {
+    "name": "Enterprise Pro",
+    "description": "For large multi-chain operations with franchise management",
+    "price": 599,
+    "durationDays": 30,
+    "limits": {
+      "shops": 20,
+      "branches": 50,
+      "users": 200,
+      "products": 10000,
+      "services": 1000,
+      "storageMb": 50000
+    },
+    "features": [
+      "dedicated_account_manager",
+      "custom_reports",
+      "unlimited_branches"
+    ],
+    "status": "active",
+    "createdAt": "2026-09-04T06:07:13.173Z",
+    "updatedAt": "2026-09-04T06:07:13.173Z",
+    "id": "a505f3ca-c4ad-4d90-bc2d-d8af7afa911e"
+  },
+  {
+    "name": "Enterprise Pro",
+    "description": "For large multi-chain operations with franchise management",
+    "price": 599,
+    "durationDays": 30,
+    "limits": {
+      "shops": 20,
+      "branches": 50,
+      "users": 200,
+      "products": 10000,
+      "services": 1000,
+      "storageMb": 50000
+    },
+    "features": [
+      "dedicated_account_manager",
+      "custom_reports",
+      "unlimited_branches"
+    ],
+    "status": "active",
+    "createdAt": "2026-09-04T06:10:17.193Z",
+    "updatedAt": "2026-09-04T06:10:17.193Z",
+    "id": "2461f90d-215f-4f9e-8214-a05bc8c25bc8"
+  }
+]

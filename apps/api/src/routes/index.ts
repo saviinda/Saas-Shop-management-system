@@ -1,0 +1,48 @@
+import { Router } from 'express';
+import authRoutes from '../modules/auth/routes';
+import shopRoutes from '../modules/shops/routes';
+import branchRoutes from '../modules/branches/routes';
+import userRoutes from '../modules/users/routes';
+import packageRoutes from '../modules/packages/routes';
+import subscriptionRoutes from '../modules/subscriptions/routes';
+import paymentRoutes from '../modules/payments/routes';
+import changeRequestRoutes from '../modules/change-requests/routes';
+import productRoutes from '../modules/products/routes';
+import serviceRoutes from '../modules/services/routes';
+import customerRoutes from '../modules/customers/routes';
+import orderRoutes from '../modules/orders/routes';
+import inventoryRoutes from '../modules/inventory/routes';
+import supplierRoutes from '../modules/suppliers/routes';
+import poRoutes from '../modules/purchase-orders/routes';
+import grnRoutes from '../modules/grns/routes';
+import taskRoutes from '../modules/tasks/routes';
+import communicationRoutes from '../modules/communication/routes';
+import notificationRoutes from '../modules/notifications/routes';
+import reportRoutes from '../modules/reports/routes';
+import auditLogRoutes from '../modules/audit-logs/routes';
+
+const router = Router();
+
+router.use('/auth', authRoutes);
+router.use('/shops', shopRoutes);
+router.use('/branches', branchRoutes);
+router.use('/users', userRoutes);
+router.use('/packages', packageRoutes);
+router.use('/subscriptions', subscriptionRoutes);
+router.use('/payments', paymentRoutes);
+router.use('/change-requests', changeRequestRoutes);
+router.use('/products', productRoutes);
+router.use('/services', serviceRoutes);
+router.use('/customers', customerRoutes);
+router.use('/orders', orderRoutes);
+router.use('/inventory', inventoryRoutes);
+router.use('/suppliers', supplierRoutes);
+router.use('/purchase-orders', poRoutes);
+router.use('/grns', grnRoutes);
+router.use('/tasks', taskRoutes);
+router.use('/communication', communicationRoutes);
+router.use('/notifications', notificationRoutes);
+router.use('/reports', reportRoutes);
+router.use('/audit-logs', auditLogRoutes);
+
+export default router;

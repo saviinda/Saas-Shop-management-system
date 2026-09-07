@@ -1,0 +1,144 @@
+[
+  {
+    "recipientId": "usr_super_admin",
+    "title": "New Support Ticket",
+    "message": "Shop \"Pothhala\" submitted ticket #TKT-597440: \"Need to increase branches\"",
+    "type": "alert",
+    "link": "/communication",
+    "isRead": true,
+    "createdAt": "2026-08-31T07:33:17.443Z",
+    "id": "7f1a12d7-fce3-4bca-956a-75633ab43232",
+    "updatedAt": "2026-09-02T07:46:26.732Z"
+  },
+  {
+    "recipientId": "usr_1787930675212",
+    "shopId": "shp_1787930675212",
+    "title": "Super Admin Replied to Ticket",
+    "message": "New message on ticket #TKT-597440: \"Need to increase branches\"",
+    "type": "info",
+    "link": "/communication",
+    "isRead": true,
+    "createdAt": "2026-09-01T04:10:16.505Z",
+    "id": "1cc88792-510c-4319-a3e5-1d1b161126fa",
+    "updatedAt": "2026-09-02T07:49:48.569Z"
+  },
+  {
+    "recipientId": "893adc78-13ed-4f3f-aefd-db38e796173b",
+    "shopId": "shp_1787930675212",
+    "title": "New Task Assigned",
+    "message": "You have been assigned task: \"Count stock\". Due date: 2026-09-10",
+    "type": "info",
+    "link": "/shop-owner/tasks",
+    "isRead": true,
+    "createdAt": "2026-09-02T07:54:58.593Z",
+    "id": "eaebe388-24e7-41c0-aa8e-d522c4bf0034",
+    "updatedAt": "2026-09-03T04:22:14.560Z"
+  },
+  {
+    "recipientId": "usr_super_admin",
+    "title": "New Account Change Request",
+    "message": "Shop \"Pothhala\" submitted a request to change \"Business / Shop Name\".",
+    "type": "alert",
+    "link": "/super-admin/change-requests",
+    "isRead": false,
+    "createdAt": "2026-09-02T08:12:59.090Z",
+    "id": "c4695032-7970-4b16-85cd-c5e303daa51f"
+  },
+  {
+    "recipientId": "usr_1787930675212",
+    "shopId": "shp_1787930675212",
+    "title": "Low Stock Alert",
+    "message": "Product \"A4 pack\" is low on stock (0 units remaining in Kandy Road Branch).",
+    "type": "warning",
+    "link": "/shop-owner/inventory",
+    "isRead": false,
+    "createdAt": "2026-09-03T04:23:54.211Z",
+    "id": "5f287a4a-0d3c-4d5c-8c3e-cf920dc37d63"
+  },
+  {
+    "recipientId": "893adc78-13ed-4f3f-aefd-db38e796173b",
+    "shopId": "shp_1787930675212",
+    "title": "Low Stock Alert",
+    "message": "Product \"A4 pack\" is low on stock (0 units remaining in Kandy Road Branch).",
+    "type": "warning",
+    "link": "/shop-owner/inventory",
+    "isRead": true,
+    "createdAt": "2026-09-03T04:23:54.216Z",
+    "id": "3bc865be-08a8-4bfd-ba93-6a3b2da2acbf",
+    "updatedAt": "2026-09-03T04:24:15.518Z"
+  },
+  {
+    "recipientId": "usr_1787930675212",
+    "shopId": "shp_1787930675212",
+    "title": "New Order Received",
+    "message": "Order #ORD-434106 (650.00) placed for Walk-in Customer.",
+    "type": "success",
+    "link": "/shop-owner/orders",
+    "isRead": false,
+    "createdAt": "2026-09-03T04:23:54.228Z",
+    "id": "aeecb549-977a-4f10-96a9-bd8eea16d1cc"
+  },
+  {
+    "recipientId": "893adc78-13ed-4f3f-aefd-db38e796173b",
+    "shopId": "shp_1787930675212",
+    "title": "New Order Received",
+    "message": "Order #ORD-434106 (650.00) placed for Walk-in Customer.",
+    "type": "success",
+    "link": "/shop-owner/orders",
+    "isRead": true,
+    "createdAt": "2026-09-03T04:23:54.233Z",
+    "id": "1129baa5-bb06-45e3-b75c-c9310ebfd314",
+    "updatedAt": "2026-09-03T04:24:15.521Z"
+  },
+  {
+    "recipientId": "usr_super_admin",
+    "title": "New Shop Registered",
+    "message": "Shop \"Artisan Bakery & Sweets\" has registered with Standard Tier.",
+    "type": "alert",
+    "link": "/super-admin/shops",
+    "isRead": false,
+    "createdAt": "2026-09-03T11:17:33.165Z",
+    "id": "a6b0e227-ce78-4148-8ba5-da5ead8d6b5a"
+  },
+  {
+    "recipientId": "usr_shop_owner_1",
+    "title": "Shop Account Notice: Account has been Activated",
+    "message": "Your shop account \"Urban Cafe Hub\" status is now Activated.",
+    "type": "success",
+    "link": "/login",
+    "isRead": false,
+    "createdAt": "2026-09-04T06:03:12.247Z",
+    "id": "5be60c38-c4aa-46e7-8f32-c4e694af2d10"
+  },
+  {
+    "recipientId": "usr_super_admin",
+    "title": "New Bank Slip Payment Request",
+    "message": "Shop \"Urban Cafe Hub & Roastery\" submitted a bank transfer payment of $299 for review.",
+    "type": "alert",
+    "link": "/super-admin/payments",
+    "isRead": false,
+    "createdAt": "2026-09-04T06:13:29.795Z",
+    "id": "8c151ccb-f31f-4723-a5c7-e5f3596015c3"
+  },
+  {
+    "recipientId": "usr_shop_owner_1",
+    "shopId": "shp_urban_cafe",
+    "title": "Payment Approved - Subscription Activated for Urban Cafe Hub & Roastery",
+    "message": "Payment of USD 129 is now Approved & Verified.",
+    "type": "success",
+    "link": "/shop-owner/subscription",
+    "isRead": false,
+    "createdAt": "2026-09-04T06:14:07.259Z",
+    "id": "9b4a74f4-4aef-4882-8f58-38e9537ae73f"
+  },
+  {
+    "recipientId": "usr_super_admin",
+    "title": "New Account Change Request",
+    "message": "Shop \"Urban Cafe Hub & Roastery\" submitted a request to change \"email\".",
+    "type": "alert",
+    "link": "/super-admin/change-requests",
+    "isRead": false,
+    "createdAt": "2026-09-04T06:15:34.693Z",
+    "id": "807c6d8c-4bcf-4c8b-9b8e-46690b5e2b3a"
+  }
+]

@@ -1,0 +1,65 @@
+[
+  {
+    "shopId": "shp_1787930675212",
+    "branchId": "br_1787930675212",
+    "productId": "30dd3392-81ba-4e04-8596-a10a3d374101",
+    "type": "sale",
+    "quantityDelta": -1,
+    "newQuantity": 0,
+    "reason": "Order sale #ORD-512819",
+    "referenceId": "e98d71d5-d4e0-4d64-a224-b7f2f75e85de",
+    "performedBy": "Dilshan ",
+    "createdAt": "2026-08-31T07:31:52.841Z",
+    "id": "955857f9-134e-41b3-a027-792ee58631c1"
+  },
+  {
+    "shopId": "shp_1787930675212",
+    "branchId": "br_1787930675212",
+    "productId": "30dd3392-81ba-4e04-8596-a10a3d374101",
+    "type": "adjustment",
+    "quantityDelta": 21,
+    "newQuantity": 21,
+    "reason": "aaa",
+    "performedBy": "Dilshan ",
+    "createdAt": "2026-08-31T07:32:17.581Z",
+    "id": "ddf7b114-29cc-4654-adc4-9fd14d7d108c"
+  },
+  {
+    "shopId": "shp_1787930675212",
+    "branchId": "br_1787930675212",
+    "productId": "30dd3392-81ba-4e04-8596-a10a3d374101",
+    "type": "po_receive",
+    "quantityDelta": 20,
+    "newQuantity": 41,
+    "reason": "GRN from PO #PO-822883",
+    "referenceId": "357cb8ca-d2fa-43da-9432-f34940f73dff",
+    "performedBy": "Dilshan ",
+    "createdAt": "2026-09-02T12:08:03.554Z",
+    "id": "a1c8801a-13c6-462a-aa40-b86446f1c194"
+  },
+  {
+    "shopId": "shp_1787930675212",
+    "branchId": "a930ef37-2d00-40b8-ade1-e21607b3e988",
+    "productId": "30dd3392-81ba-4e04-8596-a10a3d374101",
+    "type": "sale",
+    "quantityDelta": -1,
+    "newQuantity": 0,
+    "reason": "Order sale #ORD-434106",
+    "referenceId": "35cc4341-5fb4-4bf6-8187-607a9a67d267",
+    "performedBy": "Alex",
+    "createdAt": "2026-09-03T04:23:54.207Z",
+    "id": "d2511eaa-e83b-4adf-be99-2bbba8827bc8"
+  },
+  {
+    "shopId": "shp_urban_cafe",
+    "branchId": "br_urban_downtown",
+    "productId": "fc6a9027-f43f-4ab1-8b9b-dc8902e1ff7b",
+    "type": "opening",
+    "quantityDelta": 25,
+    "newQuantity": 25,
+    "reason": "Initial stock on product creation",
+    "performedBy": "Marcus Vance",
+    "createdAt": "2026-09-05T08:00:33.326Z",
+    "id": "e0d10c12-b45c-4003-8894-8d907cfe4f46"
+  }
+]

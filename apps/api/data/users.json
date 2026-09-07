@@ -1,0 +1,105 @@
+[
+  {
+    "id": "usr_super_admin",
+    "name": "Super Admin",
+    "email": "admin@platform.com",
+    "role": "super_admin",
+    "status": "active",
+    "phone": "+1 800 555 0199",
+    "passwordHash": "$2a$10$utNYQ68xYCKY4hU/J/mwtuGDxwC0uDMBDv/9vCxidQIlxhr/r1XOO",
+    "createdAt": "2026-08-28T16:36:07.131Z",
+    "updatedAt": "2026-08-28T16:36:07.131Z"
+  },
+  {
+    "id": "usr_shop_owner_1",
+    "name": "Marcus Vance",
+    "email": "owner@urbancafe.com",
+    "role": "shop_owner",
+    "status": "active",
+    "shopId": "shp_urban_cafe",
+    "branchIds": [
+      "br_urban_downtown",
+      "br_urban_westside"
+    ],
+    "phone": "+1 555 456 7890",
+    "passwordHash": "$2a$10$uk4tcqK.tCh3VMHPMRK6l.ZKixmSwxI3KgmOtZlG4Sss5Qko0AX2C",
+    "createdAt": "2026-08-28T16:36:07.208Z",
+    "updatedAt": "2026-09-04T06:14:07.257Z"
+  },
+  {
+    "id": "usr_manager_1",
+    "name": "Sarah Jenkins",
+    "email": "sarah.manager@urbancafe.com",
+    "role": "manager",
+    "status": "active",
+    "shopId": "shp_urban_cafe",
+    "branchIds": [
+      "br_urban_downtown",
+      "br_urban_westside"
+    ],
+    "phone": "+1 555 111 2233",
+    "passwordHash": "$2a$10$KUA3VBeEZ7oAIVTSbQ0KFeNMDZyCvWov005jKye0f2SvehtjKWmYa",
+    "createdAt": "2026-08-28T16:36:07.284Z",
+    "updatedAt": "2026-08-28T16:36:07.284Z"
+  },
+  {
+    "id": "usr_worker_1",
+    "name": "Alex Rivera",
+    "email": "alex.barista@urbancafe.com",
+    "role": "worker",
+    "status": "active",
+    "shopId": "shp_urban_cafe",
+    "branchIds": [
+      "br_urban_downtown"
+    ],
+    "phone": "+1 555 444 7788",
+    "passwordHash": "$2a$10$KUA3VBeEZ7oAIVTSbQ0KFeNMDZyCvWov005jKye0f2SvehtjKWmYa",
+    "createdAt": "2026-08-28T16:36:07.285Z",
+    "updatedAt": "2026-08-28T16:36:07.285Z"
+  },
+  {
+    "id": "usr_1787930675212",
+    "email": "dil077shan@gmail.com",
+    "name": "Dilshan ",
+    "role": "shop_owner",
+    "status": "active",
+    "shopId": "shp_1787930675212",
+    "branchIds": [
+      "br_1787930675212"
+    ],
+    "phone": "078888888",
+    "createdAt": "2026-08-28T15:24:38.163Z",
+    "passwordHash": "$2a$10$7wvYCLYPnu2Vm1Gng.O2ae6CVutG7IZKqkTDG7GGP9/.FlSv4Az8O",
+    "updatedAt": "2026-08-28T15:41:08.261Z"
+  },
+  {
+    "email": "alex@gmail.com",
+    "name": "Alex",
+    "phone": "071111111",
+    "role": "sales_staff",
+    "status": "active",
+    "shopId": "shp_1787930675212",
+    "branchIds": [
+      "b1113abf-f312-4d06-a9d4-e990b88346c0"
+    ],
+    "passwordHash": "$2a$10$5v/uRPvdvYynHceoGJ28HO8QGFHKJHO5f5uEdiwKvbyD.VYZz25uS",
+    "createdAt": "2026-08-28T16:43:18.294Z",
+    "updatedAt": "2026-08-28T16:43:18.294Z",
+    "id": "893adc78-13ed-4f3f-aefd-db38e796173b"
+  },
+  {
+    "id": "usr_1788434253146",
+    "email": "jonathan.wright@gmail.com",
+    "name": "Jonathan Wright",
+    "role": "shop_owner",
+    "status": "active",
+    "shopId": "shp_1788434253146",
+    "branchIds": [
+      "br_1788434253146"
+    ],
+    "phone": "+1 555 777 9999",
+    "passwordHash": "$2a$10$QxFmExkdMoBHtx.aL2h6NO0qX/ehtKPIDg6.McZdPXGDQqb0/1ogG",
+    "createdAt": "2026-09-03T11:17:33.156Z",
+    "updatedAt": "2026-09-03T11:17:33.157Z"
+  }
+]

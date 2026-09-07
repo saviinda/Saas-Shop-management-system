@@ -1,0 +1,30 @@
+[
+  {
+    "shopId": "shp_1787930675212",
+    "shopName": "Pothhala",
+    "requesterId": "usr_1787930675212",
+    "requesterName": "Dilshan ",
+    "field": "Business / Shop Name",
+    "currentValue": "Pothhala",
+    "requestedValue": "Poth Hala",
+    "reason": "sddsf",
+    "status": "pending",
+    "createdAt": "2026-09-02T08:12:59.085Z",
+    "updatedAt": "2026-09-02T08:12:59.085Z",
+    "id": "50c40bc5-0289-4f65-bde8-f1be6b1cb7b3"
+  },
+  {
+    "shopId": "shp_urban_cafe",
+    "shopName": "Urban Cafe Hub & Roastery",
+    "requesterId": "usr_shop_owner_1",
+    "requesterName": "Marcus Vance",
+    "field": "email",
+    "currentValue": "contact@urbancafe.com",
+    "requestedValue": "hq.operations@urbancafe.com",
+    "reason": "Company domain migration to new corporate email structure.",
+    "status": "pending",
+    "createdAt": "2026-09-04T06:15:34.691Z",
+    "updatedAt": "2026-09-04T06:15:34.691Z",
+    "id": "45a142e9-1bc2-48f0-99e0-707f0d40ee9b"
+  }
+]

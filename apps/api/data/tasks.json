@@ -1,0 +1,52 @@
+[
+  {
+    "id": "tsk_grinder_calibration",
+    "shopId": "shp_urban_cafe",
+    "branchId": "br_urban_downtown",
+    "title": "Daily Espresso Grinder Micron Calibration",
+    "description": "Calibrate Mahlkonig EK43 burrs for morning rush profile and log extraction yield TDS.",
+    "assigneeId": "usr_worker_1",
+    "assigneeName": "Alex Rivera",
+    "createdById": "usr_manager_1",
+    "createdByName": "Sarah Jenkins",
+    "priority": "high",
+    "status": "in_progress",
+    "dueDate": "2026-08-28T20:36:07.301Z",
+    "comments": [
+      {
+        "id": "comm_1",
+        "userId": "usr_worker_1",
+        "userName": "Alex Rivera",
+        "comment": "Burrs inspected, running test shots at 18g in / 36g out.",
+        "createdAt": "2026-08-28T16:36:07.301Z"
+      }
+    ],
+    "createdAt": "2026-08-28T16:36:07.301Z",
+    "updatedAt": "2026-08-28T16:36:07.301Z"
+  },
+  {
+    "shopId": "shp_1787930675212",
+    "branchId": "br_1787930675212",
+    "title": "Count stock",
+    "description": "take a count of available a4 packs",
+    "assigneeId": "893adc78-13ed-4f3f-aefd-db38e796173b",
+    "assigneeName": "Alex",
+    "createdById": "usr_1787930675212",
+    "createdByName": "Dilshan ",
+    "priority": "high",
+    "status": "pending_review",
+    "dueDate": "2026-09-10",
+    "comments": [
+      {
+        "id": "21112390-bfbc-4ad2-864f-b40864196912",
+        "userId": "893adc78-13ed-4f3f-aefd-db38e796173b",
+        "userName": "Alex",
+        "comment": "I am reviewing",
+        "createdAt": "2026-09-03T04:21:53.680Z"
+      }
+    ],
+    "createdAt": "2026-09-02T07:54:58.592Z",
+    "updatedAt": "2026-09-03T04:21:53.680Z",
+    "id": "8182ebe7-81e2-4e81-9f0d-0d5a06777d0f"
+  }
+]

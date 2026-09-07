@@ -1,0 +1,595 @@
+{
+  "info": {
+    "_postman_id": "saas-comm-shop-mgmt-v1",
+    "name": "SaaS Communication & Shop Management API v1.0",
+    "description": "Comprehensive folder-wise Postman collection covering Super Admin and Shop Owner endpoints for the Multi-Tenant SaaS platform.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5000/api/v1" },
+    { "key": "adminToken", "value": "" },
+    { "key": "ownerToken", "value": "" },
+    { "key": "staffToken", "value": "" },
+    { "key": "shopId", "value": "shp_urban_cafe" },
+    { "key": "branchId", "value": "br_urban_downtown" }
+  ],
+  "item": [
+    {
+      "name": "01. Authentication & Session",
+      "item": [
+        {
+          "name": "Super Admin Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.data && jsonData.data.token) {",
+                  "    pm.collectionVariables.set('adminToken', jsonData.data.token);",
+                  "    console.log('Saved adminToken');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@platform.com\",\n  \"password\": \"Admin@123456\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+          }
+        },
+        {
+          "name": "Shop Owner Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.data && jsonData.data.token) {",
+                  "    pm.collectionVariables.set('ownerToken', jsonData.data.token);",
+                  "    if (jsonData.data.shop) pm.collectionVariables.set('shopId', jsonData.data.shop.id);",
+                  "    if (jsonData.data.defaultBranch) pm.collectionVariables.set('branchId', jsonData.data.defaultBranch.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"owner@urbancafe.com\",\n  \"password\": \"Shop@123456\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+          }
+        },
+        {
+          "name": "Register New Shop Owner (BR-13 Auto-Branch Provisioning)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Jonathan Wright\",\n  \"email\": \"jonathan.wright@gmail.com\",\n  \"password\": \"Secret@123456\",\n  \"phone\": \"+1 555 777 9999\",\n  \"businessName\": \"Artisan Bakery & Sweets\",\n  \"businessAddress\": \"88 Pastry Boulevard, Suite 10\",\n  \"businessCategory\": \"Bakery & Confectionery\",\n  \"packageId\": \"pkg_standard\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth", "register"] }
+          }
+        },
+        {
+          "name": "Get Authenticated User Profile (Me)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{ownerToken}}" }],
+            "url": { "raw": "{{baseUrl}}/auth/me", "host": ["{{baseUrl}}"], "path": ["auth", "me"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "02. Super Admin - Shop Management",
+      "item": [
+        {
+          "name": "List All Shops (Super Admin)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/shops?status=all", "host": ["{{baseUrl}}"], "path": ["shops"], "query": [{ "key": "status", "value": "all" }] }
+          }
+        },
+        {
+          "name": "Get Single Shop Details & Package Usage",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/shops/{{shopId}}", "host": ["{{baseUrl}}"], "path": ["shops", "{{shopId}}"] }
+          }
+        },
+        {
+          "name": "Update Shop Status (Activate/Suspend/Restrict)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"active\",\n  \"restrictionNotes\": \"Account verified and approved by compliance team.\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/shops/{{shopId}}/status", "host": ["{{baseUrl}}"], "path": ["shops", "{{shopId}}", "status"] }
+          }
+        },
+        {
+          "name": "Update Shop Profile (Owner permitted fields)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{ownerToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Urban Cafe Hub & Roastery\",\n  \"description\": \"Specialty roaster and artisan pastry kitchen.\",\n  \"openingHours\": \"Mon-Sun: 06:30 AM - 11:00 PM\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/shops/{{shopId}}/profile", "host": ["{{baseUrl}}"], "path": ["shops", "{{shopId}}", "profile"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "03. Super Admin - Packages & Plans",
+      "item": [
+        {
+          "name": "List All Subscription Packages",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/packages", "host": ["{{baseUrl}}"], "path": ["packages"] }
+          }
+        },
+        {
+          "name": "Create New Package (Super Admin BR-02)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Enterprise Pro\",\n  \"description\": \"For large multi-chain operations with franchise management\",\n  \"price\": 599,\n  \"durationDays\": 30,\n  \"limits\": {\n    \"shops\": 20,\n    \"branches\": 50,\n    \"users\": 200,\n    \"products\": 10000,\n    \"services\": 1000,\n    \"storageMb\": 50000\n  },\n  \"features\": [\"dedicated_account_manager\", \"custom_reports\", \"unlimited_branches\"],\n  \"status\": \"active\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/packages", "host": ["{{baseUrl}}"], "path": ["packages"] }
+          }
+        },
+        {
+          "name": "Update Package Limitations",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"price\": 139,\n  \"description\": \"Updated Standard Tier limits with bonus product allocation\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/packages/pkg_standard", "host": ["{{baseUrl}}"], "path": ["packages", "pkg_standard"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "04. Subscriptions & Package Limits",
+      "item": [
+        {
+          "name": "Get Shop Active Subscription & Realtime Usage (BR-03)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{ownerToken}}" }],
+            "url": { "raw": "{{baseUrl}}/subscriptions/my", "host": ["{{baseUrl}}"], "path": ["subscriptions", "my"] }
+          }
+        },
+        {
+          "name": "List All SaaS Subscriptions (Super Admin)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/subscriptions", "host": ["{{baseUrl}}"], "path": ["subscriptions"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "05. Payments & Bank Slip Requests",
+      "item": [
+        {
+          "name": "Submit Bank Slip Payment Request (Shop Owner)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{ownerToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"packageId\": \"pkg_premium\",\n  \"amount\": 299,\n  \"method\": \"bank_transfer\",\n  \"bankSlipUrl\": \"https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=400\",\n  \"notes\": \"Payment transfer reference #TXN-902148\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/payments/request", "host": ["{{baseUrl}}"], "path": ["payments", "request"] }
+          }
+        },
+        {
+          "name": "List Payments / Transactions",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/payments", "host": ["{{baseUrl}}"], "path": ["payments"] }
+          }
+        },
+        {
+          "name": "Approve / Reject Bank Slip Payment (Super Admin BR-08)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"successful\",\n  \"notes\": \"Bank statement confirmed, package limits automatically elevated.\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/payments/pay_init_sub/review", "host": ["{{baseUrl}}"], "path": ["payments", "pay_init_sub", "review"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "06. Account Change Requests",
+      "item": [
+        {
+          "name": "Submit Change Request for Protected Field (BR-05)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{ownerToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"field\": \"email\",\n  \"currentValue\": \"contact@urbancafe.com\",\n  \"requestedValue\": \"hq.operations@urbancafe.com\",\n  \"reason\": \"Company domain migration to new corporate email structure.\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/change-requests", "host": ["{{baseUrl}}"], "path": ["change-requests"] }
+          }
+        },
+        {
+          "name": "List Change Requests (Super Admin & Shop Owner)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/change-requests", "host": ["{{baseUrl}}"], "path": ["change-requests"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "07. Shop Owner - Branch Management",
+      "item": [
+        {
+          "name": "List Branches for Active Shop",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{ownerToken}}" }],
+            "url": { "raw": "{{baseUrl}}/branches", "host": ["{{baseUrl}}"], "path": ["branches"] }
+          }
+        },
+        {
+          "name": "Create New Branch (Package Limit Check BR-14)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{ownerToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Airport Terminal 2 Kiosk\",\n  \"address\": \"Terminal 2 Departures Hall, Gate 14\",\n  \"phone\": \"+1 555 333 4455\",\n  \"code\": \"UCH-AP03\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/branches", "host": ["{{baseUrl}}"], "path": ["branches"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "08. Shop Owner - Staff & Users",
+      "item": [
+        {
+          "name": "List Staff Users",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{ownerToken}}" }],
+            "url": { "raw": "{{baseUrl}}/users", "host": ["{{baseUrl}}"], "path": ["users"] }
+          }
+        },
+        {
+          "name": "Add Staff User (Package Limit Check BR-09)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{ownerToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Jordan Reed\",\n  \"email\": \"jordan.inventory@urbancafe.com\",\n  \"password\": \"Staff@123456\",\n  \"phone\": \"+1 555 909 8877\",\n  \"role\": \"inventory_staff\",\n  \"branchIds\": [\"{{branchId}}\"]\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/users", "host": ["{{baseUrl}}"], "path": ["users"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "09. Products & Services",
+      "item": [
+        {
+          "name": "List Products",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{ownerToken}}" }],
+            "url": { "raw": "{{baseUrl}}/products", "host": ["{{baseUrl}}"], "path": ["products"] }
+          }
+        },
+        {
+          "name": "Create Product (Package Limit Check BR-10)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{ownerToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sku\": \"UCH-TEA-004\",\n  \"name\": \"Organic Japanese Ceremonial Matcha (100g)\",\n  \"description\": \"Stone-ground ceremonial grade green tea powder from Uji, Kyoto.\",\n  \"category\": \"Specialty Teas\",\n  \"costPrice\": 14.50,\n  \"sellingPrice\": 28.00,\n  \"minimumStockLevel\": 8,\n  \"initialStock\": 25\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/products", "host": ["{{baseUrl}}"], "path": ["products"] }
+          }
+        },
+        {
+          "name": "List Services",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{ownerToken}}" }],
+            "url": { "raw": "{{baseUrl}}/services", "host": ["{{baseUrl}}"], "path": ["services"] }
+          }
+        },
+        {
+          "name": "Create Service",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{ownerToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Coffee Catering for Corporate Events\",\n  \"description\": \"Mobile espresso bar with professional barista serving up to 50 guests.\",\n  \"category\": \"Event Catering\",\n  \"price\": 350.00,\n  \"durationMinutes\": 180,\n  \"status\": \"active\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/services", "host": ["{{baseUrl}}"], "path": ["services"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "10. Inventory & Stock Adjustments",
+      "item": [
+        {
+          "name": "List Branch Inventory (Low Stock Alert filter)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{ownerToken}}" }],
+            "url": { "raw": "{{baseUrl}}/inventory?branchId={{branchId}}", "host": ["{{baseUrl}}"], "path": ["inventory"], "query": [{ "key": "branchId", "value": "{{branchId}}" }] }
+          }
+        },
+        {
+          "name": "Record Stock Adjustment",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{ownerToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"branchId\": \"{{branchId}}\",\n  \"productId\": \"prod_almond_croissant\",\n  \"quantityDelta\": 20,\n  \"type\": \"adjustment\",\n  \"reason\": \"Fresh morning batch delivery from central bakery kitchen\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/inventory/adjust", "host": ["{{baseUrl}}"], "path": ["inventory", "adjust"] }
+          }
+        },
+        {
+          "name": "List Stock Movements Audit History",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{ownerToken}}" }],
+            "url": { "raw": "{{baseUrl}}/inventory/movements?branchId={{branchId}}", "host": ["{{baseUrl}}"], "path": ["inventory", "movements"], "query": [{ "key": "branchId", "value": "{{branchId}}" }] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "11. Procurement (Suppliers, PO & GRN)",
+      "item": [
+        {
+          "name": "List Suppliers",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{ownerToken}}" }],
+            "url": { "raw": "{{baseUrl}}/suppliers", "host": ["{{baseUrl}}"], "path": ["suppliers"] }
+          }
+        },
+        {
+          "name": "Create Purchase Order (PO)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{ownerToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"branchId\": \"{{branchId}}\",\n  \"supplierId\": \"sup_colombia_beans\",\n  \"items\": [\n    {\n      \"productId\": \"prod_ethiopian_roast\",\n      \"orderedQty\": 30,\n      \"unitCost\": 17.50\n    }\n  ],\n  \"expectedDate\": \"2026-09-05\",\n  \"notes\": \"Urgent restock for upcoming coffee expo week.\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/purchase-orders", "host": ["{{baseUrl}}"], "path": ["purchase-orders"] }
+          }
+        },
+        {
+          "name": "Create GRN (Auto-Updates Branch Inventory & Stock Movements)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{ownerToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"purchaseOrderId\": \"PO-982104\",\n  \"receivedItems\": [\n    {\n      \"productId\": \"prod_ethiopian_roast\",\n      \"receivedQty\": 30,\n      \"damagedQty\": 0,\n      \"unitCost\": 17.50\n    }\n  ],\n  \"notes\": \"All bags received sealed and intact with certificate of origin.\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/grns", "host": ["{{baseUrl}}"], "path": ["grns"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "12. Orders & Customers",
+      "item": [
+        {
+          "name": "List Customers",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{ownerToken}}" }],
+            "url": { "raw": "{{baseUrl}}/customers", "host": ["{{baseUrl}}"], "path": ["customers"] }
+          }
+        },
+        {
+          "name": "Create Order (Auto-Deducts Inventory & Records Sale Movement)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{ownerToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"branchId\": \"{{branchId}}\",\n  \"customerId\": \"cust_david_miller\",\n  \"items\": [\n    {\n      \"type\": \"product\",\n      \"itemId\": \"prod_ethiopian_roast\",\n      \"quantity\": 1\n    }\n  ],\n  \"paymentStatus\": \"paid\",\n  \"paymentMethod\": \"card\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/orders", "host": ["{{baseUrl}}"], "path": ["orders"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "13. Tasks & Employee Assignment",
+      "item": [
+        {
+          "name": "List Tasks",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{ownerToken}}" }],
+            "url": { "raw": "{{baseUrl}}/tasks?branchId={{branchId}}", "host": ["{{baseUrl}}"], "path": ["tasks"], "query": [{ "key": "branchId", "value": "{{branchId}}" }] }
+          }
+        },
+        {
+          "name": "Create Task for Worker",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{ownerToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"branchId\": \"{{branchId}}\",\n  \"title\": \"Weekly Deep Clean of Steam Wands & Group Heads\",\n  \"description\": \"Soak portafilters in Cafiza detergent solution and replace silicon group gaskets.\",\n  \"assigneeId\": \"usr_worker_1\",\n  \"priority\": \"medium\",\n  \"dueDate\": \"2026-08-30\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/tasks", "host": ["{{baseUrl}}"], "path": ["tasks"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "14. Communication & Support Tickets",
+      "item": [
+        {
+          "name": "List Support Tickets",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{ownerToken}}" }],
+            "url": { "raw": "{{baseUrl}}/communication", "host": ["{{baseUrl}}"], "path": ["communication"] }
+          }
+        },
+        {
+          "name": "Create Ticket (Shop Owner -> Super Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{ownerToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"subject\": \"Inquiry on adding third branch to plan\",\n  \"category\": \"billing\",\n  \"priority\": \"medium\",\n  \"message\": \"Hello, our downtown kiosk expansion requires an extra branch allocation. Can we pro-rate this on our active subscription?\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/communication", "host": ["{{baseUrl}}"], "path": ["communication"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "15. Reports & Analytics",
+      "item": [
+        {
+          "name": "Super Admin Global Metrics (Overview Dashboard)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/reports/super-admin", "host": ["{{baseUrl}}"], "path": ["reports", "super-admin"] }
+          }
+        },
+        {
+          "name": "Shop Owner Operational Analytics",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{ownerToken}}" }],
+            "url": { "raw": "{{baseUrl}}/reports/shop-owner?branchId={{branchId}}", "host": ["{{baseUrl}}"], "path": ["reports", "shop-owner"], "query": [{ "key": "branchId", "value": "{{branchId}}" }] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "16. System Notifications & Audit Logs",
+      "item": [
+        {
+          "name": "Get User Notifications",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{ownerToken}}" }],
+            "url": { "raw": "{{baseUrl}}/notifications", "host": ["{{baseUrl}}"], "path": ["notifications"] }
+          }
+        },
+        {
+          "name": "List Audit Logs",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/audit-logs", "host": ["{{baseUrl}}"], "path": ["audit-logs"] }
+          }
+        }
+      ]
+    }
+  ]
+}

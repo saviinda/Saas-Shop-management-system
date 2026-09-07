@@ -1,0 +1,112 @@
+[
+  {
+    "id": "ord_1001",
+    "orderNumber": "ORD-982104",
+    "shopId": "shp_urban_cafe",
+    "branchId": "br_urban_downtown",
+    "branchName": "Downtown Main Branch",
+    "customerId": "cust_david_miller",
+    "customerName": "David Miller",
+    "customerPhone": "+1 555 776 2211",
+    "items": [
+      {
+        "type": "product",
+        "itemId": "prod_ethiopian_roast",
+        "name": "Single-Origin Ethiopian Yirgacheffe (1kg)",
+        "sku": "UCH-COF-001",
+        "quantity": 2,
+        "unitPrice": 34,
+        "totalPrice": 68
+      },
+      {
+        "type": "product",
+        "itemId": "prod_almond_croissant",
+        "name": "Fresh Baked Almond Croissant",
+        "sku": "UCH-BAK-003",
+        "quantity": 3,
+        "unitPrice": 4.95,
+        "totalPrice": 14.85
+      }
+    ],
+    "subtotal": 82.85,
+    "tax": 6.63,
+    "discount": 0,
+    "totalAmount": 89.48,
+    "status": "completed",
+    "paymentStatus": "paid",
+    "paymentMethod": "credit_card",
+    "createdBy": "Sarah Jenkins",
+    "createdAt": "2026-08-28T14:36:07.299Z",
+    "updatedAt": "2026-08-28T16:36:07.299Z"
+  },
+  {
+    "orderNumber": "ORD-512819",
+    "shopId": "shp_1787930675212",
+    "branchId": "br_1787930675212",
+    "branchName": "Pothhala - Main Branch",
+    "customerId": "729d2032-7449-4ff3-968f-1b87119d284d",
+    "customerName": "Shelton ",
+    "customerPhone": "0789456666",
+    "items": [
+      {
+        "type": "product",
+        "itemId": "30dd3392-81ba-4e04-8596-a10a3d374101",
+        "name": "A4 pack",
+        "sku": "PD-001",
+        "quantity": 1,
+        "unitPrice": 650,
+        "totalPrice": 650
+      },
+      {
+        "type": "service",
+        "itemId": "271e2998-a199-453b-ba9d-4f61b127edf2",
+        "name": "Business card printing",
+        "quantity": 1,
+        "unitPrice": 20,
+        "totalPrice": 20
+      }
+    ],
+    "subtotal": 670,
+    "tax": 0,
+    "discount": 0,
+    "totalAmount": 670,
+    "status": "confirmed",
+    "paymentStatus": "paid",
+    "paymentMethod": "cash",
+    "createdBy": "Dilshan ",
+    "createdAt": "2026-08-31T07:31:52.819Z",
+    "updatedAt": "2026-08-31T07:31:52.819Z",
+    "id": "e98d71d5-d4e0-4d64-a224-b7f2f75e85de"
+  },
+  {
+    "orderNumber": "ORD-434106",
+    "shopId": "shp_1787930675212",
+    "branchId": "a930ef37-2d00-40b8-ade1-e21607b3e988",
+    "branchName": "Kandy Road Branch",
+    "customerId": "051c8f0b-6705-4605-a0dc-9760b0371414",
+    "customerName": "Walk-in Customer",
+    "customerPhone": "+1 555 000 0000",
+    "items": [
+      {
+        "type": "product",
+        "itemId": "30dd3392-81ba-4e04-8596-a10a3d374101",
+        "name": "A4 pack",
+        "sku": "PD-001",
+        "quantity": 1,
+        "unitPrice": 650,
+        "totalPrice": 650
+      }
+    ],
+    "subtotal": 650,
+    "tax": 0,
+    "discount": 0,
+    "totalAmount": 650,
+    "status": "confirmed",
+    "paymentStatus": "paid",
+    "paymentMethod": "cash",
+    "createdBy": "Alex",
+    "createdAt": "2026-09-03T04:23:54.106Z",
+    "updatedAt": "2026-09-03T04:23:54.106Z",
+    "id": "35cc4341-5fb4-4bf6-8187-607a9a67d267"
+  }
+]

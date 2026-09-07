@@ -1,0 +1,43 @@
+[
+  {
+    "id": "srv_barista_class",
+    "shopId": "shp_urban_cafe",
+    "name": "Masterclass Latte Art & Espresso Crafting",
+    "description": "2-hour hands-on barista calibration with sensory tasting.",
+    "category": "Workshops & Training",
+    "price": 85,
+    "durationMinutes": 120,
+    "assignedStaffIds": [
+      "usr_worker_1"
+    ],
+    "status": "active",
+    "createdAt": "2026-08-28T16:36:07.297Z",
+    "updatedAt": "2026-08-28T16:36:07.297Z"
+  },
+  {
+    "shopId": "shp_1787930675212",
+    "name": "Business card printing",
+    "description": "Print Business card with their own design",
+    "category": "Printing",
+    "price": 20,
+    "durationMinutes": 30,
+    "assignedStaffIds": [],
+    "status": "active",
+    "createdAt": "2026-08-31T06:18:27.815Z",
+    "updatedAt": "2026-08-31T06:18:27.815Z",
+    "id": "271e2998-a199-453b-ba9d-4f61b127edf2"
+  },
+  {
+    "shopId": "shp_urban_cafe",
+    "name": "Coffee Catering for Corporate Events",
+    "description": "Mobile espresso bar with professional barista serving up to 50 guests.",
+    "category": "Event Catering",
+    "price": 350,
+    "durationMinutes": 180,
+    "assignedStaffIds": [],
+    "status": "active",
+    "createdAt": "2026-09-05T08:09:36.934Z",
+    "updatedAt": "2026-09-05T08:09:36.934Z",
+    "id": "1e3c2356-a5aa-46f8-b67d-a7c718f781e7"
+  }
+]

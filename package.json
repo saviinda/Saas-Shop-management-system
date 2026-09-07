@@ -1,0 +1,33 @@
+{
+  "name": "saas-communication-shop-management",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently -n \"API,WEB\" -c \"blue,green\" \"npm run dev:api\" \"npm run dev:web\"",
+    "dev:api": "npm run dev --workspace=@saas/api",
+    "dev:web": "npm run dev --workspace=@saas/admin-web",
+    "build:types": "npm run build --workspace=@saas/types",
+    "build:validation": "npm run build --workspace=@saas/validation",
+    "build:api": "npm run build --workspace=@saas/api",
+    "build:web": "npm run build --workspace=@saas/admin-web",
+    "build": "npm run build:types && npm run build:validation && npm run build:api && npm run build:web",
+    "seed": "npm run seed --workspace=@saas/api",
+    "firebase:login": "npx firebase login",
+    "firebase:use": "npx firebase use",
+    "deploy": "npm run build:web && npx firebase deploy",
+    "deploy:hosting": "npm run build:web && npx firebase deploy --only hosting",
+    "deploy:firestore": "npx firebase deploy --only firestore",
+    "deploy:storage": "npx firebase deploy --only storage",
+    "vercel:login": "npx vercel login",
+    "vercel:deploy": "npx vercel",
+    "vercel:deploy:prod": "npx vercel --prod"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "typescript": "^5.4.5"
+  }
+}

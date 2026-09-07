@@ -1,0 +1,25 @@
+[
+  {
+    "grnNumber": "GRN-883555",
+    "shopId": "shp_1787930675212",
+    "branchId": "br_1787930675212",
+    "purchaseOrderId": "357cb8ca-d2fa-43da-9432-f34940f73dff",
+    "supplierId": "0b72762d-829a-4766-a66a-d25c44cc4fcb",
+    "supplierName": "Atlas",
+    "receivedItems": [
+      {
+        "productId": "30dd3392-81ba-4e04-8596-a10a3d374101",
+        "productName": "A4 pack",
+        "receivedQty": 20,
+        "damagedQty": 2,
+        "unitCost": 500
+      }
+    ],
+    "totalValue": 10000,
+    "notes": "Goods received against PO #PO-822883",
+    "receivedBy": "Dilshan ",
+    "status": "completed",
+    "createdAt": "2026-09-02T12:08:03.555Z",
+    "id": "92457aa3-6bbb-4545-867c-e3e6896356b7"
+  }
+]

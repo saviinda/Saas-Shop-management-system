@@ -1,0 +1,36 @@
+[
+  {
+    "id": "cust_david_miller",
+    "shopId": "shp_urban_cafe",
+    "name": "David Miller",
+    "email": "david.miller@gmail.com",
+    "phone": "+1 555 776 2211",
+    "address": "18 Hudson Square, Apt 4B",
+    "totalOrdersCount": 3,
+    "totalSpent": 122.95,
+    "createdAt": "2026-08-28T16:36:07.298Z",
+    "updatedAt": "2026-08-28T16:36:07.298Z"
+  },
+  {
+    "shopId": "shp_1787930675212",
+    "name": "Shelton ",
+    "email": "sheltonn@gmail.com",
+    "phone": "0789456666",
+    "address": "",
+    "totalOrdersCount": 1,
+    "totalSpent": 670,
+    "createdAt": "2026-08-31T06:25:30.858Z",
+    "updatedAt": "2026-08-31T07:31:52.842Z",
+    "id": "729d2032-7449-4ff3-968f-1b87119d284d"
+  },
+  {
+    "shopId": "shp_1787930675212",
+    "name": "Walk-in Customer",
+    "phone": "+1 555 000 0000",
+    "totalOrdersCount": 1,
+    "totalSpent": 650,
+    "createdAt": "2026-09-03T04:23:54.103Z",
+    "updatedAt": "2026-09-03T04:23:54.221Z",
+    "id": "051c8f0b-6705-4605-a0dc-9760b0371414"
+  }
+]
