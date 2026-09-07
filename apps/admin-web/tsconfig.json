@@ -19,7 +19,11 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@saas/types": ["../../packages/types/src/index.ts"],
+      "@saas/types/*": ["../../packages/types/src/*"],
+      "@saas/validation": ["../../packages/validation/src/index.ts"],
+      "@saas/validation/*": ["../../packages/validation/src/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
