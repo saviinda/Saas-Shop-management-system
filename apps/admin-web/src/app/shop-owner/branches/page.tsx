@@ -77,11 +77,12 @@ export default function BranchesPage() {
       await refreshBranches();
       showSuccess('Branch Created', `Branch "${formData.name}" has been created successfully.`);
     } catch (err: any) {
-      if (err instanceof ApiError) {
-        setModalError(err.message);
-      } else {
-        setModalError('Failed to create branch');
-      }
+      const errorMessage = err?.message || 'Branch limit reached. You cannot create a new branch under your current plan.';
+      setModalError(errorMessage);
+      showError(
+        err?.code === 'PACKAGE_LIMIT_EXCEEDED' ? 'Branch Limit Reached' : 'Unable to Create Branch',
+        errorMessage
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -104,11 +105,9 @@ export default function BranchesPage() {
       await refreshBranches();
       showSuccess('Branch Updated', `Branch "${formData.name}" details have been saved.`);
     } catch (err: any) {
-      if (err instanceof ApiError) {
-        setModalError(err.message);
-      } else {
-        setModalError('Failed to update branch');
-      }
+      const errorMessage = err?.message || 'Failed to update branch details.';
+      setModalError(errorMessage);
+      showError('Unable to Update Branch', errorMessage);
     } finally {
       setIsSubmitting(false);
     }

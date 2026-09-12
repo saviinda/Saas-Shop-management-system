@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.replyTicketSchema = exports.createTicketSchema = exports.addTaskCommentSchema = exports.updateTaskStatusSchema = exports.createTaskSchema = exports.createGRNSchema = exports.updatePOSchema = exports.createPOSchema = exports.updateSupplierSchema = exports.createSupplierSchema = exports.stockTransferSchema = exports.stockAdjustmentSchema = exports.updateOrderStatusSchema = exports.createOrderSchema = exports.updateCustomerSchema = exports.createCustomerSchema = exports.updateServiceSchema = exports.createServiceSchema = exports.updateProductSchema = exports.createProductSchema = exports.reviewChangeRequestSchema = exports.createChangeRequestSchema = exports.createPaymentRequestSchema = exports.createPackageSchema = exports.createStaffUserSchema = exports.updateBranchSchema = exports.createBranchSchema = exports.updateShopSchema = exports.createShopSchema = exports.registerShopOwnerSchema = exports.restrictShopPaymentSchema = exports.reviewPaymentSchema = exports.resetPasswordSchema = exports.forgotPasswordSchema = exports.changePasswordSchema = exports.loginSchema = void 0;
+exports.replyTicketSchema = exports.createTicketSchema = exports.addTaskCommentSchema = exports.updateTaskStatusSchema = exports.createTaskSchema = exports.createGRNSchema = exports.updatePOSchema = exports.createPOSchema = exports.updateSupplierSchema = exports.createSupplierSchema = exports.stockTransferSchema = exports.stockAdjustmentSchema = exports.updateOrderStatusSchema = exports.updateOrderSchema = exports.createOrderSchema = exports.updateCustomerSchema = exports.createCustomerSchema = exports.updateServiceSchema = exports.createServiceSchema = exports.updateProductBatchSchema = exports.createProductBatchSchema = exports.updateProductSchema = exports.createProductSchema = exports.reviewChangeRequestSchema = exports.createChangeRequestSchema = exports.createPaymentRequestSchema = exports.createPackageSchema = exports.createStaffUserSchema = exports.updateBranchSchema = exports.createBranchSchema = exports.updateShopSchema = exports.createShopSchema = exports.registerShopOwnerSchema = exports.restrictShopPaymentSchema = exports.reviewPaymentSchema = exports.resetPasswordSchema = exports.forgotPasswordSchema = exports.changePasswordSchema = exports.loginSchema = void 0;
 const zod_1 = require("zod");
 exports.loginSchema = zod_1.z.object({
     email: zod_1.z.string().email(),
@@ -113,8 +113,8 @@ exports.createProductSchema = zod_1.z.object({
     description: zod_1.z.string().optional(),
     category: zod_1.z.string().min(2),
     imageUrl: zod_1.z.string().optional(),
-    costPrice: zod_1.z.number().min(0),
-    sellingPrice: zod_1.z.number().min(0),
+    costPrice: zod_1.z.number().min(0).default(0),
+    sellingPrice: zod_1.z.number().min(0).default(0),
     minimumStockLevel: zod_1.z.number().int().min(0).default(5),
     supplierId: zod_1.z.string().optional(),
     supplierName: zod_1.z.string().optional(),
@@ -133,6 +133,21 @@ exports.createProductSchema = zod_1.z.object({
 exports.updateProductSchema = exports.createProductSchema.partial().extend({
     status: zod_1.z.enum(['active', 'inactive']).optional(),
 });
+exports.createProductBatchSchema = zod_1.z.object({
+    batchNumber: zod_1.z.string().min(1),
+    branchId: zod_1.z.string().optional(),
+    branchName: zod_1.z.string().optional(),
+    costPrice: zod_1.z.number().min(0),
+    sellingPrice: zod_1.z.number().min(0),
+    quantity: zod_1.z.number().int().min(0),
+    manufacturingDate: zod_1.z.string().optional(),
+    expiryDate: zod_1.z.string().optional(),
+    supplierId: zod_1.z.string().optional(),
+    supplierName: zod_1.z.string().optional(),
+    status: zod_1.z.enum(['active', 'depleted', 'expired', 'quarantine']).default('active'),
+    notes: zod_1.z.string().optional(),
+});
+exports.updateProductBatchSchema = exports.createProductBatchSchema.partial();
 exports.createServiceSchema = zod_1.z.object({
     name: zod_1.z.string().min(2),
     description: zod_1.z.string().optional(),
@@ -171,18 +186,24 @@ exports.createOrderSchema = zod_1.z.object({
         sku: zod_1.z.string().optional(),
         quantity: zod_1.z.number().int().min(1),
         unitPrice: zod_1.z.number().min(0).optional(),
+        batchId: zod_1.z.string().optional(),
+        batchNumber: zod_1.z.string().optional(),
         variant: zod_1.z.string().optional(),
         assignedStaffId: zod_1.z.string().optional(),
         assignedStaffName: zod_1.z.string().optional(),
     })).min(1),
     tax: zod_1.z.number().min(0).default(0),
     discount: zod_1.z.number().min(0).default(0),
+    status: zod_1.z.enum(['draft', 'pending', 'confirmed', 'processing', 'ready', 'completed', 'cancelled']).optional(),
     paymentStatus: zod_1.z.enum(['unpaid', 'partial', 'paid', 'refunded']).default('paid'),
     paymentMethod: zod_1.z.string().default('cash'),
     notes: zod_1.z.string().optional(),
+    isJob: zod_1.z.boolean().optional(),
+    jobTitle: zod_1.z.string().optional(),
 });
+exports.updateOrderSchema = exports.createOrderSchema.partial();
 exports.updateOrderStatusSchema = zod_1.z.object({
-    status: zod_1.z.enum(['pending', 'confirmed', 'processing', 'ready', 'completed', 'cancelled']),
+    status: zod_1.z.enum(['draft', 'pending', 'confirmed', 'processing', 'ready', 'completed', 'cancelled']).optional(),
     paymentStatus: zod_1.z.enum(['unpaid', 'partial', 'paid', 'refunded']).optional(),
     notes: zod_1.z.string().optional(),
 });

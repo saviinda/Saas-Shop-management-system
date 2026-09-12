@@ -15,11 +15,11 @@
         "senderName": "Marcus Vance",
         "senderRole": "shop_owner",
         "message": "Hello Admin team, we would like to configure westside.urbancafe.com for our second branch. Please advise on DNS CNAME records.",
-        "createdAt": "2026-08-28T11:36:07.302Z"
+        "createdAt": "2026-09-11T05:16:53.380Z"
       }
     ],
-    "createdAt": "2026-08-28T11:36:07.302Z",
-    "updatedAt": "2026-08-28T16:36:07.302Z"
+    "createdAt": "2026-09-11T05:16:53.380Z",
+    "updatedAt": "2026-09-11T10:16:53.380Z"
   },
   {
     "ticketNumber": "TKT-597440",
@@ -45,10 +45,18 @@
         "senderRole": "super_admin",
         "message": "done",
         "createdAt": "2026-09-01T04:10:16.497Z"
+      },
+      {
+        "id": "48ffc91f-bc75-4bbc-a243-1a5a33dd860e",
+        "senderId": "usr_super_admin",
+        "senderName": "Super Admin",
+        "senderRole": "super_admin",
+        "message": "Your request has been processed. Thank you!",
+        "createdAt": "2026-09-11T08:19:57.290Z"
       }
     ],
     "createdAt": "2026-08-31T07:33:17.440Z",
-    "updatedAt": "2026-09-01T04:10:16.497Z",
+    "updatedAt": "2026-09-11T08:19:57.291Z",
     "id": "a32ccaca-654a-4ff0-b726-75eba3d3928d"
   }
 ]

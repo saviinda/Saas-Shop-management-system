@@ -23,32 +23,44 @@ export class BranchController {
     const shopId = req.shopId;
     if (!shopId) return sendError(res, 'BAD_REQUEST', 'shopId is required', 400);
 
-    // Package limit check (BR-03, BR-14)
-    await PackageLimitService.checkBranchLimit(shopId);
+    try {
+      // Package limit check (BR-03, BR-14)
+      await PackageLimitService.checkBranchLimit(shopId);
 
-    const { name, address, phone, code } = req.body;
-    const branch = await dbStore.collection<Branch>('branches').create({
-      shopId,
-      name: name.trim(),
-      address: address.trim(),
-      phone: phone.trim(),
-      code: code ? code.trim() : `BR-${Date.now().toString().slice(-4)}`,
-      isDefault: false,
-      status: 'active',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    });
+      const { name, address, phone, code } = req.body;
+      const branch = await dbStore.collection<Branch>('branches').create({
+        shopId,
+        name: name.trim(),
+        address: address.trim(),
+        phone: phone.trim(),
+        code: code ? code.trim() : `BR-${Date.now().toString().slice(-4)}`,
+        isDefault: false,
+        status: 'active',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      });
 
-    await AuditLogService.log({
-      actor: req.user!,
-      action: 'CREATE_BRANCH',
-      entity: 'branches',
-      entityId: branch.id,
-      shopId,
-      after: branch,
-    });
+      await AuditLogService.log({
+        actor: req.user!,
+        action: 'CREATE_BRANCH',
+        entity: 'branches',
+        entityId: branch.id,
+        shopId,
+        after: branch,
+      });
 
-    return sendSuccess(res, branch, undefined, 201);
+      return sendSuccess(res, branch, undefined, 201);
+    } catch (err: any) {
+      if (err.code === 'PACKAGE_LIMIT_EXCEEDED' || err.statusCode === 403) {
+        return sendError(
+          res,
+          'PACKAGE_LIMIT_EXCEEDED',
+          err.message || 'Branch limit reached. You cannot create a new branch under your current plan.',
+          403
+        );
+      }
+      return sendError(res, err.code || 'BAD_REQUEST', err.message || 'Failed to create branch', err.statusCode || 400);
+    }
   }
 
   static async updateBranch(req: AuthenticatedRequest, res: Response) {

@@ -8,8 +8,8 @@
     "phone": "+1 555 234 5678",
     "isDefault": true,
     "status": "active",
-    "createdAt": "2026-08-28T16:36:07.133Z",
-    "updatedAt": "2026-08-28T16:36:07.133Z"
+    "createdAt": "2026-09-11T10:16:53.087Z",
+    "updatedAt": "2026-09-11T10:16:53.087Z"
   },
   {
     "id": "br_urban_westside",
@@ -20,8 +20,8 @@
     "phone": "+1 555 987 6543",
     "isDefault": false,
     "status": "active",
-    "createdAt": "2026-08-28T16:36:07.134Z",
-    "updatedAt": "2026-08-28T16:36:07.134Z"
+    "createdAt": "2026-09-11T10:16:53.088Z",
+    "updatedAt": "2026-09-11T10:16:53.088Z"
   },
   {
     "id": "3236e87c-a946-4717-8201-8a560a244801",
@@ -80,18 +80,6 @@
     "shopId": "shp_1787930675212",
     "status": "active",
     "updatedAt": "2026-08-28T16:39:02.448Z"
-  },
-  {
-    "id": "br_1788434253146",
-    "shopId": "shp_1788434253146",
-    "name": "Artisan Bakery & Sweets - Main Branch",
-    "code": "MAIN-01",
-    "address": "88 Pastry Boulevard, Suite 10",
-    "phone": "+1 555 777 9999",
-    "isDefault": true,
-    "status": "active",
-    "createdAt": "2026-09-03T11:17:33.146Z",
-    "updatedAt": "2026-09-03T11:17:33.146Z"
   },
   {
     "shopId": "shp_urban_cafe",

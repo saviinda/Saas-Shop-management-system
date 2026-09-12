@@ -9,11 +9,11 @@
     "method": "bank_transfer",
     "status": "successful",
     "bankSlipUrl": "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=400",
-    "notes": "Bank statement confirmed, package limits automatically elevated.",
+    "notes": "Approved standard subscription invoice #INV-8831",
     "reviewedBy": "Super Admin",
-    "reviewedAt": "2026-09-04T06:14:07.251Z",
-    "createdAt": "2026-08-08T16:36:07.303Z",
-    "updatedAt": "2026-09-04T06:14:07.251Z"
+    "reviewedAt": "2026-09-11T10:16:53.384Z",
+    "createdAt": "2026-08-22T10:16:53.384Z",
+    "updatedAt": "2026-09-11T10:16:53.384Z"
   },
   {
     "shopId": "shp_urban_cafe",

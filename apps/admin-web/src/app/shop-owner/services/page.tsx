@@ -26,6 +26,12 @@ import {
   AlertTriangle,
   FolderPlus,
   Sliders,
+  Eye,
+  DollarSign,
+  UserCheck,
+  Mail,
+  Phone,
+  CalendarCheck,
 } from 'lucide-react';
 
 const DEFAULT_SERVICE_CATEGORIES = [
@@ -69,6 +75,9 @@ export default function ServicesPage() {
   const [editingService, setEditingService] = useState<ServiceItem | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [modalError, setModalError] = useState<string | null>(null);
+
+  // Dedicated Service View Modal State
+  const [viewingService, setViewingService] = useState<ServiceItem | null>(null);
 
   // Manage Categories Modal State
   const [showCategoryManagerModal, setShowCategoryManagerModal] = useState(false);
@@ -381,7 +390,7 @@ export default function ServicesPage() {
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Services Catalog & Booking Offerings</h1>
           <p className="text-xs text-slate-500 mt-1">
-            Configure customizable service categories, custom appointment durations, specialist staff, and booking schedules (BR-11)
+            Configure customizable service categories, inspect complete service specifications, and assign specialists (BR-11)
           </p>
         </div>
 
@@ -389,7 +398,7 @@ export default function ServicesPage() {
           {/* Manage Categories Button */}
           <button
             onClick={() => setShowCategoryManagerModal(true)}
-            className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-200/90 rounded-xl hover:bg-slate-50 shadow-2xs transition-colors"
+            className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-200/90 rounded-xl hover:bg-slate-50 shadow-2xs transition-colors cursor-pointer"
           >
             <FolderPlus className="h-4 w-4 text-indigo-600" /> Manage Categories ({allCategories.length})
           </button>
@@ -397,7 +406,7 @@ export default function ServicesPage() {
           {/* Create Service Button */}
           <button
             onClick={openAddModal}
-            className="flex items-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-sm shadow-indigo-200 active:scale-[0.98] transition-all"
+            className="flex items-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-sm shadow-indigo-200 active:scale-[0.98] transition-all cursor-pointer"
           >
             <Plus className="h-4 w-4" /> Create New Service
           </button>
@@ -422,7 +431,7 @@ export default function ServicesPage() {
           <select
             value={categoryFilter}
             onChange={e => setCategoryFilter(e.target.value)}
-            className="px-3 py-2 rounded-xl text-xs font-semibold bg-slate-50 text-slate-700 border border-slate-200 focus:bg-white focus:outline-none focus:border-indigo-500"
+            className="px-3 py-2 rounded-xl text-xs font-semibold bg-slate-50 text-slate-700 border border-slate-200 focus:bg-white focus:outline-none focus:border-indigo-500 cursor-pointer"
           >
             <option value="all">All Service Categories ({allCategories.length})</option>
             {allCategories.map(c => (
@@ -436,7 +445,7 @@ export default function ServicesPage() {
           <select
             value={statusFilter}
             onChange={e => setStatusFilter(e.target.value)}
-            className="px-3 py-2 rounded-xl text-xs font-semibold bg-slate-50 text-slate-700 border border-slate-200 focus:bg-white focus:outline-none focus:border-indigo-500"
+            className="px-3 py-2 rounded-xl text-xs font-semibold bg-slate-50 text-slate-700 border border-slate-200 focus:bg-white focus:outline-none focus:border-indigo-500 cursor-pointer"
           >
             <option value="all">All Statuses</option>
             <option value="active">Active</option>
@@ -534,17 +543,29 @@ export default function ServicesPage() {
                     </td>
                     <td className="py-4 px-6 text-right">
                       <div className="flex items-center justify-end gap-1.5">
+                        {/* Dedicated Service Details View Button (Eye) */}
+                        <button
+                          onClick={() => setViewingService(s)}
+                          title="View Full Service Details"
+                          className="p-1.5 text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg border border-slate-200 transition-colors cursor-pointer"
+                        >
+                          <Eye className="h-3.5 w-3.5" />
+                        </button>
+
+                        {/* Edit Service */}
                         <button
                           onClick={() => openEditModal(s)}
-                          title="Edit Service"
-                          className="p-1.5 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg border border-slate-200 transition-colors"
+                          title="Edit Service Details"
+                          className="p-1.5 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg border border-slate-200 transition-colors cursor-pointer"
                         >
                           <Edit2 className="h-3.5 w-3.5" />
                         </button>
+
+                        {/* Toggle Status */}
                         <button
                           onClick={() => handleToggleStatus(s)}
                           title={s.status === 'active' ? 'Deactivate' : 'Activate'}
-                          className={`p-1.5 rounded-lg border transition-colors ${
+                          className={`p-1.5 rounded-lg border transition-colors cursor-pointer ${
                             s.status === 'active'
                               ? 'text-amber-600 hover:bg-amber-50 border-amber-200'
                               : 'text-emerald-600 hover:bg-emerald-50 border-emerald-200'
@@ -552,10 +573,12 @@ export default function ServicesPage() {
                         >
                           <Power className="h-3.5 w-3.5" />
                         </button>
+
+                        {/* Delete Service */}
                         <button
                           onClick={() => handleDeleteService(s)}
                           title="Delete Service"
-                          className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg border border-slate-200 transition-colors"
+                          className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg border border-slate-200 transition-colors cursor-pointer"
                         >
                           <Trash2 className="h-3.5 w-3.5" />
                         </button>
@@ -569,7 +592,176 @@ export default function ServicesPage() {
         </div>
       </div>
 
-      {/* MANAGE CUSTOM SERVICE CATEGORIES MODAL */}
+      {/* ==================== DEDICATED SERVICE DETAILS VIEW MODAL ==================== */}
+      {viewingService && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-3xl max-w-2xl w-full p-6 space-y-6 border border-slate-200 shadow-2xl animate-in fade-in zoom-in-95 duration-200 max-h-[92vh] overflow-y-auto">
+            {/* Modal Header */}
+            <div className="flex items-start justify-between border-b border-slate-100 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="h-14 w-14 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center shrink-0 overflow-hidden text-indigo-600 font-bold">
+                  {viewingService.imageUrl ? (
+                    <img src={viewingService.imageUrl} alt={viewingService.name} className="h-full w-full object-cover" />
+                  ) : (
+                    <Wrench className="h-7 w-7" />
+                  )}
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-xl font-bold text-slate-900">{viewingService.name}</h2>
+                    {viewingService.isFeatured && (
+                      <span className="px-2 py-0.5 text-[10px] font-bold bg-amber-100 text-amber-800 rounded">
+                        FEATURED
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="px-2.5 py-0.5 bg-indigo-50 text-indigo-700 font-semibold rounded-md text-xs border border-indigo-100">
+                      {viewingService.category}
+                    </span>
+                    <span className="text-xs text-slate-400">•</span>
+                    <span className={`text-xs font-semibold ${viewingService.status === 'active' ? 'text-emerald-600' : 'text-slate-400'}`}>
+                      {viewingService.status === 'active' ? 'Active for Bookings' : 'Inactive / Hidden'}
+                    </span>
+                    {viewingService.isPublic && (
+                      <>
+                        <span className="text-xs text-slate-400">•</span>
+                        <span className="text-xs text-blue-600 font-medium flex items-center gap-1">
+                          <Globe className="h-3 w-3" /> Online Booking Enabled
+                        </span>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+              <button
+                onClick={() => setViewingService(null)}
+                className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 cursor-pointer"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {/* Key Metrics Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200">
+                <span className="text-[11px] font-semibold text-slate-500 block mb-1">Standard Service Fee</span>
+                <span className="text-2xl font-extrabold text-slate-900 block">
+                  {formatCurrency(viewingService.price)}
+                </span>
+                <span className="text-[10px] text-indigo-600 font-medium mt-0.5 block">
+                  ~{formatCurrency((viewingService.price / (viewingService.durationMinutes || 60)) * 60)}/hr rate
+                </span>
+              </div>
+
+              <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200">
+                <span className="text-[11px] font-semibold text-slate-500 block mb-1">Estimated Duration</span>
+                <span className="text-2xl font-extrabold text-slate-900 block flex items-center gap-1.5">
+                  <Clock className="h-5 w-5 text-indigo-600" />
+                  {formatDurationDisplay(viewingService.durationMinutes)}
+                </span>
+                <span className="text-[10px] text-slate-400 mt-0.5 block">
+                  {viewingService.durationMinutes} minutes slot
+                </span>
+              </div>
+
+              <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200">
+                <span className="text-[11px] font-semibold text-slate-500 block mb-1">Assigned Specialists</span>
+                <span className="text-2xl font-extrabold text-slate-900 block flex items-center gap-1.5">
+                  <Users className="h-5 w-5 text-indigo-600" />
+                  {(viewingService.assignedStaffIds || []).length || 'All'}
+                </span>
+                <span className="text-[10px] text-slate-400 mt-0.5 block">
+                  Qualified staff members
+                </span>
+              </div>
+            </div>
+
+            {/* Availability Box */}
+            <div className="p-4 bg-slate-50/70 rounded-2xl border border-slate-200 space-y-1">
+              <span className="font-bold text-slate-800 text-xs flex items-center gap-1.5">
+                <CalendarCheck className="h-4 w-4 text-indigo-600" /> Availability & Booking Schedule
+              </span>
+              <p className="text-slate-700 text-xs font-medium pl-5.5">
+                {viewingService.availability || 'Regular Store Hours (Monday - Saturday: 9:00 AM - 7:00 PM)'}
+              </p>
+            </div>
+
+            {/* Description Box */}
+            {viewingService.description && (
+              <div className="space-y-1.5">
+                <span className="font-bold text-slate-800 text-xs uppercase tracking-wider block">
+                  Service Inclusions & Description
+                </span>
+                <p className="text-slate-700 text-xs whitespace-pre-line leading-relaxed bg-slate-50/50 p-4 rounded-2xl border border-slate-200">
+                  {viewingService.description}
+                </p>
+              </div>
+            )}
+
+            {/* Assigned Specialists Details */}
+            <div className="space-y-2.5">
+              <span className="font-bold text-slate-900 text-xs uppercase tracking-wider block">
+                Assigned Staff Specialists ({(viewingService.assignedStaffIds || []).length})
+              </span>
+              {(!viewingService.assignedStaffIds || viewingService.assignedStaffIds.length === 0) ? (
+                <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-slate-500 text-xs">
+                  This service is available to be performed by any active branch staff member.
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {viewingService.assignedStaffIds.map(sid => {
+                    const u = staffUsers.find(user => user.id === sid);
+                    return (
+                      <div key={sid} className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-center gap-3">
+                        <div className="h-9 w-9 rounded-full bg-indigo-100 text-indigo-700 font-bold flex items-center justify-center shrink-0 text-xs">
+                          {u ? u.name.charAt(0).toUpperCase() : 'S'}
+                        </div>
+                        <div>
+                          <p className="font-bold text-slate-900 text-xs">{u ? u.name : 'Staff Member'}</p>
+                          <p className="text-[10px] text-slate-500 capitalize">{u ? u.role.replace('_', ' ') : 'Specialist'}</p>
+                          {u?.phone && <p className="text-[10px] text-slate-400">{u.phone}</p>}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Metadata Footer */}
+            <div className="flex items-center justify-between text-[11px] text-slate-400 pt-2">
+              <span>Catalog Created: {formatDate(viewingService.createdAt)}</span>
+              <span>Last Updated: {formatDate(viewingService.updatedAt)}</span>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex items-center justify-between pt-3 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={() => {
+                  const s = viewingService;
+                  setViewingService(null);
+                  openEditModal(s);
+                }}
+                className="flex items-center gap-1.5 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-xs transition-colors cursor-pointer"
+              >
+                <Edit2 className="h-3.5 w-3.5" /> Edit Service Details
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setViewingService(null)}
+                className="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-xl text-xs transition-colors cursor-pointer"
+              >
+                Close View
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MANAGE SERVICE CATEGORIES MODAL */}
       {showCategoryManagerModal && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl max-w-lg w-full p-6 space-y-4 border border-slate-200 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
@@ -585,7 +777,7 @@ export default function ServicesPage() {
               </div>
               <button
                 onClick={() => setShowCategoryManagerModal(false)}
-                className="p-1 text-slate-400 hover:text-slate-600"
+                className="p-1 text-slate-400 hover:text-slate-600 cursor-pointer"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -593,11 +785,11 @@ export default function ServicesPage() {
 
             {/* Add New Custom Category Box */}
             <div className="space-y-2">
-              <label className="block font-bold text-slate-800 text-xs">Create New Service Category</label>
+              <label className="block font-bold text-slate-800 text-xs">Create New Category</label>
               <div className="flex gap-2">
                 <input
                   type="text"
-                  placeholder="e.g. Hair Styling & Spa, Phone Screen Repair..."
+                  placeholder="e.g. VIP Concierge, Premium Tailoring..."
                   value={newCategoryNameInput}
                   onChange={e => setNewCategoryNameInput(e.target.value)}
                   onKeyDown={e => {
@@ -611,7 +803,7 @@ export default function ServicesPage() {
                 <button
                   type="button"
                   onClick={() => handleCreateCustomCategory(newCategoryNameInput)}
-                  className="px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold text-xs shrink-0 shadow-2xs transition-colors"
+                  className="px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold text-xs shrink-0 shadow-2xs transition-colors cursor-pointer"
                 >
                   Add Category
                 </button>
@@ -620,7 +812,7 @@ export default function ServicesPage() {
 
             {/* List of Categories */}
             <div className="space-y-2 pt-2">
-              <span className="text-xs font-bold text-slate-800 block">Existing Service Categories ({allCategories.length})</span>
+              <span className="text-xs font-bold text-slate-800 block">Existing Categories ({allCategories.length})</span>
               <div className="max-h-60 overflow-y-auto space-y-1.5 pr-1 text-xs">
                 {allCategories.map(cat => {
                   const isCustom = customCategories.includes(cat);
@@ -646,7 +838,7 @@ export default function ServicesPage() {
                           type="button"
                           onClick={() => handleDeleteCustomCategory(cat)}
                           title="Delete Custom Category"
-                          className="p-1 text-slate-400 hover:text-rose-600 transition-colors"
+                          className="p-1 text-slate-400 hover:text-rose-600 transition-colors cursor-pointer"
                         >
                           <Trash2 className="h-3.5 w-3.5" />
                         </button>
@@ -661,7 +853,7 @@ export default function ServicesPage() {
               <button
                 type="button"
                 onClick={() => setShowCategoryManagerModal(false)}
-                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-xs"
+                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-xs cursor-pointer"
               >
                 Done
               </button>
@@ -670,7 +862,7 @@ export default function ServicesPage() {
         </div>
       )}
 
-      {/* CREATE / EDIT SERVICE MODAL WITH CUSTOM CATEGORY & CUSTOM DURATION */}
+      {/* CREATE / EDIT SERVICE MODAL */}
       {showModal && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
           <div className="bg-white rounded-2xl max-w-2xl w-full p-6 space-y-5 border border-slate-200 shadow-2xl animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
@@ -683,12 +875,12 @@ export default function ServicesPage() {
                   <h3 className="font-bold text-slate-900 text-base">
                     {editingService ? `Edit Service: ${editingService.name}` : 'Create New Service Offering'}
                   </h3>
-                  <p className="text-xs text-slate-500">Configure customizable duration, service category, pricing, and assigned staff</p>
+                  <p className="text-xs text-slate-500">Define booking fees, durations, specialist staff, and public availability</p>
                 </div>
               </div>
               <button
                 onClick={() => setShowModal(false)}
-                className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100"
+                className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 cursor-pointer"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -702,151 +894,172 @@ export default function ServicesPage() {
             )}
 
             <form onSubmit={handleSubmit} className="space-y-4 text-xs">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {/* Service Title */}
-                <div>
-                  <label className="block font-bold text-slate-800 mb-1">Service Title *</label>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {/* Image Upload Box */}
+                <div className="space-y-2">
+                  <label className="block font-bold text-slate-800">Cover Photo</label>
+                  <div
+                    onClick={() => fileInputRef.current?.click()}
+                    className="h-32 rounded-xl border-2 border-dashed border-slate-300 hover:border-indigo-400 bg-slate-50 hover:bg-slate-100 flex flex-col items-center justify-center cursor-pointer overflow-hidden group transition-all"
+                  >
+                    {formData.imageUrl ? (
+                      <img src={formData.imageUrl} alt="Service" className="h-full w-full object-cover" />
+                    ) : (
+                      <div className="text-center p-2 text-slate-400">
+                        <UploadCloud className="h-6 w-6 mx-auto mb-1 text-slate-400 group-hover:text-indigo-600" />
+                        <span className="text-[10px] font-semibold block">Click to upload</span>
+                      </div>
+                    )}
+                  </div>
                   <input
-                    type="text"
-                    required
-                    placeholder="e.g. Master Tailoring & Hemming"
-                    value={formData.name}
-                    onChange={e => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-indigo-500 shadow-2xs font-semibold"
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={e => e.target.files?.[0] && handleImageUpload(e.target.files[0])}
+                    className="hidden"
                   />
-                </div>
-
-                {/* Customizable Category Selector */}
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="block font-bold text-slate-800">Service Category</label>
+                  {formData.imageUrl && (
                     <button
                       type="button"
-                      onClick={() => setIsAddingInlineCategory(!isAddingInlineCategory)}
-                      className="text-[10px] font-bold text-indigo-600 hover:underline flex items-center gap-0.5"
+                      onClick={() => setFormData(prev => ({ ...prev, imageUrl: '' }))}
+                      className="text-[10px] text-rose-600 font-semibold hover:underline block text-center w-full cursor-pointer"
                     >
-                      {isAddingInlineCategory ? 'Select Existing' : '+ Custom Category'}
+                      Remove Photo
                     </button>
+                  )}
+                </div>
+
+                {/* Primary Info */}
+                <div className="sm:col-span-2 space-y-3">
+                  <div>
+                    <label className="block font-bold text-slate-800 mb-1">Service Title *</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Espresso Machine Calibration & Deep Clean"
+                      value={formData.name}
+                      onChange={e => setFormData({ ...formData, name: e.target.value })}
+                      className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-indigo-500 shadow-2xs"
+                    />
                   </div>
 
-                  {isAddingInlineCategory ? (
-                    <div className="flex gap-1.5">
-                      <input
-                        type="text"
-                        placeholder="Type custom service category..."
-                        value={inlineCategoryInput}
-                        onChange={e => setInlineCategoryInput(e.target.value)}
-                        onKeyDown={e => {
-                          if (e.key === 'Enter') {
-                            e.preventDefault();
-                            handleApplyInlineCategory();
-                          }
-                        }}
-                        className="w-full p-2 bg-slate-50 border border-indigo-300 rounded-xl text-xs font-semibold focus:bg-white focus:outline-none"
-                        autoFocus
-                      />
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="block font-bold text-slate-800">Service Category</label>
                       <button
                         type="button"
-                        onClick={handleApplyInlineCategory}
-                        className="px-2.5 bg-indigo-600 text-white rounded-xl font-semibold text-xs shrink-0"
+                        onClick={() => setIsAddingInlineCategory(!isAddingInlineCategory)}
+                        className="text-[10px] font-bold text-indigo-600 hover:underline flex items-center gap-0.5 cursor-pointer"
                       >
-                        Set
+                        {isAddingInlineCategory ? 'Select Existing' : '+ Custom Category'}
                       </button>
                     </div>
-                  ) : (
-                    <select
-                      value={formData.category}
-                      onChange={e => {
-                        if (e.target.value === '__add_custom__') {
-                          setIsAddingInlineCategory(true);
-                        } else {
-                          setFormData({ ...formData, category: e.target.value });
-                        }
-                      }}
-                      className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800 focus:bg-white focus:outline-none focus:border-indigo-500"
-                    >
-                      {allCategories.map(c => (
-                        <option key={c} value={c}>
-                          {c} {customCategories.includes(c) ? '(Custom)' : ''}
-                        </option>
-                      ))}
-                      <option value="__add_custom__">+ Create New Custom Category...</option>
-                    </select>
-                  )}
-                </div>
 
-                {/* Service Fee */}
-                <div>
-                  <label className="block font-bold text-slate-800 mb-1">Service Fee ($) *</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    required
-                    value={formData.price}
-                    onChange={e => setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })}
-                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-extrabold text-indigo-700 focus:bg-white focus:outline-none focus:border-indigo-500 shadow-2xs"
-                  />
+                    {isAddingInlineCategory ? (
+                      <div className="flex gap-1.5">
+                        <input
+                          type="text"
+                          placeholder="Type custom service category..."
+                          value={inlineCategoryInput}
+                          onChange={e => setInlineCategoryInput(e.target.value)}
+                          onKeyDown={e => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              handleApplyInlineCategory();
+                            }
+                          }}
+                          className="w-full p-2 bg-slate-50 border border-indigo-300 rounded-xl text-xs font-semibold focus:bg-white focus:outline-none"
+                          autoFocus
+                        />
+                        <button
+                          type="button"
+                          onClick={handleApplyInlineCategory}
+                          className="px-2.5 bg-indigo-600 text-white rounded-xl font-semibold text-xs shrink-0 cursor-pointer"
+                        >
+                          Set
+                        </button>
+                      </div>
+                    ) : (
+                      <select
+                        value={formData.category}
+                        onChange={e => {
+                          if (e.target.value === '__add_custom__') {
+                            setIsAddingInlineCategory(true);
+                          } else {
+                            setFormData({ ...formData, category: e.target.value });
+                          }
+                        }}
+                        className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800 focus:bg-white focus:outline-none focus:border-indigo-500 cursor-pointer"
+                      >
+                        {allCategories.map(c => (
+                          <option key={c} value={c}>
+                            {c} {customCategories.includes(c) ? '(Custom)' : ''}
+                          </option>
+                        ))}
+                        <option value="__add_custom__">+ Create New Custom Category...</option>
+                      </select>
+                    )}
+                  </div>
                 </div>
+              </div>
 
-                {/* Customizable Duration (Presets + Custom Input Mode) */}
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="block font-bold text-slate-800 flex items-center gap-1">
-                      <Clock className="h-3.5 w-3.5 text-indigo-600" /> Duration (Minutes) *
-                    </label>
-                    <button
-                      type="button"
-                      onClick={() => setIsCustomDuration(!isCustomDuration)}
-                      className="text-[10px] font-bold text-indigo-600 hover:underline"
-                    >
-                      {isCustomDuration ? 'Choose from Presets' : 'Custom Duration'}
-                    </button>
+              {/* Fee & Duration Matrix */}
+              <div className="p-3.5 bg-slate-50/80 rounded-xl border border-slate-200 space-y-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block font-bold text-slate-800 mb-1">Standard Service Fee ($) *</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      required
+                      value={formData.price}
+                      onChange={e => setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })}
+                      className="w-full p-2.5 bg-white border border-slate-200 rounded-xl font-bold text-slate-900 focus:outline-none focus:border-indigo-500 shadow-2xs"
+                    />
                   </div>
 
-                  {isCustomDuration ? (
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="number"
-                          min="1"
-                          max="1440"
-                          required
-                          placeholder="e.g. 25, 75, 105"
-                          value={formData.durationMinutes}
-                          onChange={e => setFormData({ ...formData, durationMinutes: parseInt(e.target.value) || 0 })}
-                          className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-indigo-700 focus:bg-white focus:outline-none focus:border-indigo-500 shadow-2xs"
-                        />
-                        <span className="text-xs font-semibold text-slate-600 shrink-0">Minutes</span>
-                      </div>
-                      <p className="text-[10px] text-slate-500">
-                        Preview: <b>{formatDurationDisplay(formData.durationMinutes)}</b>
-                      </p>
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="block font-bold text-slate-800">Duration (Minutes) *</label>
+                      <button
+                        type="button"
+                        onClick={() => setIsCustomDuration(!isCustomDuration)}
+                        className="text-[10px] font-bold text-indigo-600 hover:underline cursor-pointer"
+                      >
+                        {isCustomDuration ? 'Choose Preset' : 'Custom Duration'}
+                      </button>
                     </div>
-                  ) : (
-                    <select
-                      value={formData.durationMinutes}
-                      onChange={e => {
-                        if (e.target.value === '__custom__') {
-                          setIsCustomDuration(true);
-                        } else {
-                          setFormData({ ...formData, durationMinutes: parseInt(e.target.value) || 60 });
-                        }
-                      }}
-                      className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800 focus:bg-white focus:outline-none focus:border-indigo-500"
-                    >
-                      {DURATION_PRESETS.map(p => (
-                        <option key={p.value} value={p.value}>{p.label}</option>
-                      ))}
-                      <option value="__custom__">⚙️ Enter Custom Duration...</option>
-                    </select>
-                  )}
+
+                    {isCustomDuration ? (
+                      <input
+                        type="number"
+                        min="5"
+                        step="5"
+                        required
+                        value={formData.durationMinutes}
+                        onChange={e => setFormData({ ...formData, durationMinutes: parseInt(e.target.value) || 0 })}
+                        className="w-full p-2.5 bg-white border border-slate-200 rounded-xl font-bold text-indigo-700 focus:outline-none focus:border-indigo-500 shadow-2xs"
+                        placeholder="e.g. 75"
+                      />
+                    ) : (
+                      <select
+                        value={formData.durationMinutes}
+                        onChange={e => setFormData({ ...formData, durationMinutes: parseInt(e.target.value) })}
+                        className="w-full p-2.5 bg-white border border-slate-200 rounded-xl font-bold text-indigo-700 focus:outline-none focus:border-indigo-500 shadow-2xs cursor-pointer"
+                      >
+                        {DURATION_PRESETS.map(p => (
+                          <option key={p.value} value={p.value}>{p.label}</option>
+                        ))}
+                      </select>
+                    )}
+                  </div>
                 </div>
               </div>
 
               {/* Service Description */}
               <div>
-                <label className="block font-bold text-slate-800 mb-1">Service Description</label>
+                <label className="block font-bold text-slate-800 mb-1">Description & Inclusions</label>
                 <textarea
                   rows={2}
                   placeholder="Detailed breakdown of work performed, inclusions, prerequisites..."
@@ -881,7 +1094,7 @@ export default function ServicesPage() {
                         key={u.id}
                         type="button"
                         onClick={() => toggleStaffAssignment(u.id)}
-                        className={`px-3 py-1.5 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition-all ${
+                        className={`px-3 py-1.5 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
                           isChecked
                             ? 'bg-indigo-600 text-white border-indigo-600 shadow-2xs'
                             : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'
@@ -924,7 +1137,7 @@ export default function ServicesPage() {
                   <select
                     value={formData.status}
                     onChange={e => setFormData({ ...formData, status: e.target.value as any })}
-                    className="p-1.5 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-800"
+                    className="p-1.5 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-800 cursor-pointer"
                   >
                     <option value="active">Active</option>
                     <option value="inactive">Inactive</option>
@@ -937,14 +1150,14 @@ export default function ServicesPage() {
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl"
+                  className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-6 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-sm shadow-indigo-200 active:scale-[0.98] transition-all disabled:opacity-50"
+                  className="px-6 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-sm shadow-indigo-200 active:scale-[0.98] transition-all disabled:opacity-50 cursor-pointer"
                 >
                   {isSubmitting ? 'Saving...' : editingService ? 'Save Changes' : 'Create Service'}
                 </button>

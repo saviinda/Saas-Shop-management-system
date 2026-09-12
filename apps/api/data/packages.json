@@ -20,14 +20,14 @@
       "single_branch"
     ],
     "status": "active",
-    "createdAt": "2026-08-28T16:36:06.720Z",
-    "updatedAt": "2026-08-28T16:36:06.721Z"
+    "createdAt": "2026-09-11T10:16:52.960Z",
+    "updatedAt": "2026-09-11T10:16:52.960Z"
   },
   {
     "id": "pkg_standard",
     "name": "Standard Tier",
-    "description": "Updated Standard Tier limits with bonus product allocation",
-    "price": 139,
+    "description": "Scaling multi-branch business with advanced inventory and purchasing",
+    "price": 129,
     "durationDays": 30,
     "limits": {
       "shops": 1,
@@ -45,8 +45,8 @@
       "priority_support"
     ],
     "status": "active",
-    "createdAt": "2026-08-28T16:36:06.997Z",
-    "updatedAt": "2026-09-04T06:10:23.865Z"
+    "createdAt": "2026-09-11T10:16:52.968Z",
+    "updatedAt": "2026-09-11T10:16:52.968Z"
   },
   {
     "id": "pkg_premium",
@@ -71,8 +71,8 @@
       "audit_export"
     ],
     "status": "active",
-    "createdAt": "2026-08-28T16:36:06.999Z",
-    "updatedAt": "2026-08-28T16:36:06.999Z"
+    "createdAt": "2026-09-11T10:16:52.972Z",
+    "updatedAt": "2026-09-11T10:16:52.972Z"
   },
   {
     "name": "Enterprise Pro",

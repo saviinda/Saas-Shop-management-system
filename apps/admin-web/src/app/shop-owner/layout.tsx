@@ -96,11 +96,11 @@ export default function ShopOwnerLayout({ children }: { children: React.ReactNod
   });
 
   return (
-    <div className="flex min-h-screen bg-slate-100/70">
+    <div className="flex h-screen overflow-hidden bg-slate-100/70">
       {/* Sidebar */}
-      <aside className="w-64 bg-slate-200/80 border-r border-slate-300/80 flex flex-col shrink-0">
+      <aside className="w-64 bg-slate-200/80 border-r border-slate-300/80 flex flex-col shrink-0 h-screen sticky top-0">
         {/* Shop Brand Header with Category */}
-        <div className="p-5 border-b border-slate-300/80">
+        <div className="p-5 border-b border-slate-300/80 shrink-0">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-indigo-500 flex items-center justify-center text-white font-bold shadow-sm shadow-indigo-300/50 shrink-0 overflow-hidden border border-indigo-200/60 bg-white">
               {shop?.logoUrl ? (
@@ -146,7 +146,7 @@ export default function ShopOwnerLayout({ children }: { children: React.ReactNod
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+        <nav className="flex-1 min-h-0 px-3 py-4 space-y-1 overflow-y-auto">
           {visibleNavItems.map(item => {
             const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
             const Icon = item.icon;
@@ -168,7 +168,7 @@ export default function ShopOwnerLayout({ children }: { children: React.ReactNod
         </nav>
 
         {/* Footer */}
-        <div className="p-4 border-t border-slate-300/80 space-y-1">
+        <div className="p-4 border-t border-slate-300/80 space-y-1 shrink-0 mt-auto">
           <button
             onClick={() => setShowChangePassModal(true)}
             className="w-full flex items-center gap-3 px-3.5 py-2 text-xs font-medium text-slate-700 hover:bg-slate-300/50 rounded-xl transition-all duration-200"
@@ -187,8 +187,8 @@ export default function ShopOwnerLayout({ children }: { children: React.ReactNod
       </aside>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0">
-        <header className="h-16 bg-white/90 backdrop-blur border-b border-slate-200/80 px-8 flex items-center justify-between sticky top-0 z-10">
+      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
+        <header className="h-16 shrink-0 bg-white/90 backdrop-blur border-b border-slate-200/80 px-8 flex items-center justify-between sticky top-0 z-10">
           <div className="flex items-center gap-3">
             <h2 className="text-lg font-bold text-slate-900 tracking-tight">
               {activeBranch ? activeBranch.name : shop?.name}

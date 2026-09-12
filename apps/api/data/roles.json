@@ -1,0 +1,573 @@
+[
+  {
+    "id": "role_super_admin",
+    "name": "Super Administrator",
+    "slug": "super_admin",
+    "description": "Full platform control with unrestricted access to all system entities, settings, and governance tools.",
+    "isSystem": true,
+    "permissions": [
+      {
+        "module": "dashboard",
+        "actions": [
+          "view",
+          "create",
+          "edit",
+          "delete"
+        ]
+      },
+      {
+        "module": "shops",
+        "actions": [
+          "view",
+          "create",
+          "edit",
+          "delete"
+        ]
+      },
+      {
+        "module": "users",
+        "actions": [
+          "view",
+          "create",
+          "edit",
+          "delete"
+        ]
+      },
+      {
+        "module": "roles",
+        "actions": [
+          "view",
+          "create",
+          "edit",
+          "delete"
+        ]
+      },
+      {
+        "module": "packages",
+        "actions": [
+          "view",
+          "create",
+          "edit",
+          "delete"
+        ]
+      },
+      {
+        "module": "subscriptions",
+        "actions": [
+          "view",
+          "create",
+          "edit",
+          "delete"
+        ]
+      },
+      {
+        "module": "payments",
+        "actions": [
+          "view",
+          "create",
+          "edit",
+          "delete"
+        ]
+      },
+      {
+        "module": "change_requests",
+        "actions": [
+          "view",
+          "create",
+          "edit",
+          "delete"
+        ]
+      },
+      {
+        "module": "communication",
+        "actions": [
+          "view",
+          "create",
+          "edit",
+          "delete"
+        ]
+      },
+      {
+        "module": "reports",
+        "actions": [
+          "view",
+          "create",
+          "edit",
+          "delete"
+        ]
+      },
+      {
+        "module": "audit_logs",
+        "actions": [
+          "view",
+          "create",
+          "edit",
+          "delete"
+        ]
+      },
+      {
+        "module": "branches",
+        "actions": [
+          "view",
+          "create",
+          "edit",
+          "delete"
+        ]
+      },
+      {
+        "module": "products",
+        "actions": [
+          "view",
+          "create",
+          "edit",
+          "delete"
+        ]
+      },
+      {
+        "module": "services",
+        "actions": [
+          "view",
+          "create",
+          "edit",
+          "delete"
+        ]
+      },
+      {
+        "module": "customers",
+        "actions": [
+          "view",
+          "create",
+          "edit",
+          "delete"
+        ]
+      },
+      {
+        "module": "orders",
+        "actions": [
+          "view",
+          "create",
+          "edit",
+          "delete"
+        ]
+      },
+      {
+        "module": "inventory",
+        "actions": [
+          "view",
+          "create",
+          "edit",
+          "delete"
+        ]
+      },
+      {
+        "module": "procurement",
+        "actions": [
+          "view",
+          "create",
+          "edit",
+          "delete"
+        ]
+      },
+      {
+        "module": "tasks",
+        "actions": [
+          "view",
+          "create",
+          "edit",
+          "delete"
+        ]
+      }
+    ],
+    "createdAt": "2026-08-01T00:00:00.000Z",
+    "updatedAt": "2026-08-01T00:00:00.000Z"
+  },
+  {
+    "id": "role_shop_owner",
+    "name": "Shop Owner / Franchisee",
+    "slug": "shop_owner",
+    "description": "Tenant organization owner with comprehensive management over branches, staff, inventory, and subscription.",
+    "isSystem": true,
+    "permissions": [
+      {
+        "module": "dashboard",
+        "actions": [
+          "view"
+        ]
+      },
+      {
+        "module": "branches",
+        "actions": [
+          "view",
+          "create",
+          "edit",
+          "delete"
+        ]
+      },
+      {
+        "module": "users",
+        "actions": [
+          "view",
+          "create",
+          "edit",
+          "delete"
+        ]
+      },
+      {
+        "module": "roles",
+        "actions": [
+          "view",
+          "create",
+          "edit"
+        ]
+      },
+      {
+        "module": "products",
+        "actions": [
+          "view",
+          "create",
+          "edit",
+          "delete"
+        ]
+      },
+      {
+        "module": "services",
+        "actions": [
+          "view",
+          "create",
+          "edit",
+          "delete"
+        ]
+      },
+      {
+        "module": "customers",
+        "actions": [
+          "view",
+          "create",
+          "edit",
+          "delete"
+        ]
+      },
+      {
+        "module": "orders",
+        "actions": [
+          "view",
+          "create",
+          "edit",
+          "delete"
+        ]
+      },
+      {
+        "module": "inventory",
+        "actions": [
+          "view",
+          "create",
+          "edit",
+          "delete"
+        ]
+      },
+      {
+        "module": "procurement",
+        "actions": [
+          "view",
+          "create",
+          "edit",
+          "delete"
+        ]
+      },
+      {
+        "module": "tasks",
+        "actions": [
+          "view",
+          "create",
+          "edit",
+          "delete"
+        ]
+      },
+      {
+        "module": "reports",
+        "actions": [
+          "view",
+          "create"
+        ]
+      },
+      {
+        "module": "communication",
+        "actions": [
+          "view",
+          "create"
+        ]
+      },
+      {
+        "module": "subscriptions",
+        "actions": [
+          "view",
+          "create"
+        ]
+      },
+      {
+        "module": "change_requests",
+        "actions": [
+          "view",
+          "create"
+        ]
+      }
+    ],
+    "createdAt": "2026-08-01T00:00:00.000Z",
+    "updatedAt": "2026-08-01T00:00:00.000Z"
+  },
+  {
+    "id": "role_manager",
+    "name": "Branch Store Manager",
+    "slug": "manager",
+    "description": "Branch supervisor overseeing daily store operations, employee assignments, and stock replenishment.",
+    "isSystem": true,
+    "permissions": [
+      {
+        "module": "dashboard",
+        "actions": [
+          "view"
+        ]
+      },
+      {
+        "module": "branches",
+        "actions": [
+          "view",
+          "edit"
+        ]
+      },
+      {
+        "module": "users",
+        "actions": [
+          "view",
+          "create",
+          "edit"
+        ]
+      },
+      {
+        "module": "products",
+        "actions": [
+          "view",
+          "create",
+          "edit"
+        ]
+      },
+      {
+        "module": "services",
+        "actions": [
+          "view",
+          "create",
+          "edit"
+        ]
+      },
+      {
+        "module": "customers",
+        "actions": [
+          "view",
+          "create",
+          "edit"
+        ]
+      },
+      {
+        "module": "orders",
+        "actions": [
+          "view",
+          "create",
+          "edit",
+          "delete"
+        ]
+      },
+      {
+        "module": "inventory",
+        "actions": [
+          "view",
+          "create",
+          "edit"
+        ]
+      },
+      {
+        "module": "procurement",
+        "actions": [
+          "view",
+          "create",
+          "edit"
+        ]
+      },
+      {
+        "module": "tasks",
+        "actions": [
+          "view",
+          "create",
+          "edit",
+          "delete"
+        ]
+      },
+      {
+        "module": "reports",
+        "actions": [
+          "view"
+        ]
+      },
+      {
+        "module": "communication",
+        "actions": [
+          "view",
+          "create"
+        ]
+      }
+    ],
+    "createdAt": "2026-08-01T00:00:00.000Z",
+    "updatedAt": "2026-08-01T00:00:00.000Z"
+  },
+  {
+    "id": "role_sales_staff",
+    "name": "Sales Associate & Cashier",
+    "slug": "sales_staff",
+    "description": "Front-desk clerk processing POS customer checkouts, returns, and standard client lookups.",
+    "isSystem": true,
+    "permissions": [
+      {
+        "module": "dashboard",
+        "actions": [
+          "view"
+        ]
+      },
+      {
+        "module": "products",
+        "actions": [
+          "view"
+        ]
+      },
+      {
+        "module": "services",
+        "actions": [
+          "view"
+        ]
+      },
+      {
+        "module": "customers",
+        "actions": [
+          "view",
+          "create",
+          "edit"
+        ]
+      },
+      {
+        "module": "orders",
+        "actions": [
+          "view",
+          "create",
+          "edit"
+        ]
+      },
+      {
+        "module": "tasks",
+        "actions": [
+          "view",
+          "edit"
+        ]
+      }
+    ],
+    "createdAt": "2026-08-01T00:00:00.000Z",
+    "updatedAt": "2026-08-01T00:00:00.000Z"
+  },
+  {
+    "id": "role_inventory_staff",
+    "name": "Inventory & Stock Specialist",
+    "slug": "inventory_staff",
+    "description": "Warehouse controller handling stock reconciliations, damage logs, and receipt confirmations.",
+    "isSystem": true,
+    "permissions": [
+      {
+        "module": "dashboard",
+        "actions": [
+          "view"
+        ]
+      },
+      {
+        "module": "products",
+        "actions": [
+          "view",
+          "edit"
+        ]
+      },
+      {
+        "module": "inventory",
+        "actions": [
+          "view",
+          "create",
+          "edit"
+        ]
+      },
+      {
+        "module": "procurement",
+        "actions": [
+          "view",
+          "create",
+          "edit"
+        ]
+      },
+      {
+        "module": "tasks",
+        "actions": [
+          "view",
+          "edit"
+        ]
+      }
+    ],
+    "createdAt": "2026-08-01T00:00:00.000Z",
+    "updatedAt": "2026-08-01T00:00:00.000Z"
+  },
+  {
+    "id": "role_finance_auditor",
+    "name": "Finance & Compliance Auditor",
+    "slug": "finance_auditor",
+    "description": "Read-only auditor examining billing statements, invoices, subscriptions, and security audit trail logs.",
+    "isSystem": false,
+    "permissions": [
+      {
+        "module": "dashboard",
+        "actions": [
+          "view"
+        ]
+      },
+      {
+        "module": "payments",
+        "actions": [
+          "view"
+        ]
+      },
+      {
+        "module": "subscriptions",
+        "actions": [
+          "view"
+        ]
+      },
+      {
+        "module": "reports",
+        "actions": [
+          "view"
+        ]
+      },
+      {
+        "module": "audit_logs",
+        "actions": [
+          "view"
+        ]
+      },
+      {
+        "module": "shops",
+        "actions": [
+          "view"
+        ]
+      },
+      {
+        "module": "users",
+        "actions": [
+          "view"
+        ]
+      }
+    ],
+    "createdAt": "2026-08-15T00:00:00.000Z",
+    "updatedAt": "2026-08-15T00:00:00.000Z"
+  }
+]

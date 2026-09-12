@@ -8,10 +8,12 @@
     "currentValue": "Pothhala",
     "requestedValue": "Poth Hala",
     "reason": "sddsf",
-    "status": "pending",
+    "status": "approved",
     "createdAt": "2026-09-02T08:12:59.085Z",
-    "updatedAt": "2026-09-02T08:12:59.085Z",
-    "id": "50c40bc5-0289-4f65-bde8-f1be6b1cb7b3"
+    "updatedAt": "2026-09-11T08:34:09.479Z",
+    "id": "50c40bc5-0289-4f65-bde8-f1be6b1cb7b3",
+    "reviewedBy": "Super Admin",
+    "reviewedAt": "2026-09-11T08:34:09.479Z"
   },
   {
     "shopId": "shp_urban_cafe",
@@ -22,9 +24,11 @@
     "currentValue": "contact@urbancafe.com",
     "requestedValue": "hq.operations@urbancafe.com",
     "reason": "Company domain migration to new corporate email structure.",
-    "status": "pending",
+    "status": "approved",
     "createdAt": "2026-09-04T06:15:34.691Z",
-    "updatedAt": "2026-09-04T06:15:34.691Z",
-    "id": "45a142e9-1bc2-48f0-99e0-707f0d40ee9b"
+    "updatedAt": "2026-09-11T08:19:22.217Z",
+    "id": "45a142e9-1bc2-48f0-99e0-707f0d40ee9b",
+    "reviewedBy": "Super Admin",
+    "reviewedAt": "2026-09-11T08:19:22.217Z"
   }
 ]

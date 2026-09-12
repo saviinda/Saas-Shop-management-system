@@ -12,13 +12,13 @@
       "services": 50,
       "storageMb": 2000
     },
-    "price": 139,
-    "startAt": "2026-09-04T06:14:07.253Z",
-    "expiryAt": "2026-10-04T06:14:07.253Z",
+    "price": 129,
+    "startAt": "2026-09-11T10:16:53.090Z",
+    "expiryAt": "2026-10-11T10:16:53.090Z",
     "status": "active",
     "autoRenew": true,
-    "createdAt": "2026-08-28T16:36:07.135Z",
-    "updatedAt": "2026-09-04T06:14:07.253Z"
+    "createdAt": "2026-09-11T10:16:53.090Z",
+    "updatedAt": "2026-09-11T10:16:53.090Z"
   },
   {
     "id": "sub_1787930675212",
@@ -40,26 +40,5 @@
       "storageMb": 10000
     },
     "updatedAt": "2026-08-28T15:24:58.054Z"
-  },
-  {
-    "id": "sub_1788434253146",
-    "shopId": "shp_1788434253146",
-    "packageId": "pkg_standard",
-    "packageName": "Standard Tier",
-    "limits": {
-      "shops": 1,
-      "branches": 3,
-      "users": 15,
-      "products": 500,
-      "services": 50,
-      "storageMb": 2000
-    },
-    "price": 129,
-    "startAt": "2026-09-03T11:17:33.148Z",
-    "expiryAt": "2026-10-03T11:17:33.148Z",
-    "status": "active",
-    "autoRenew": true,
-    "createdAt": "2026-09-03T11:17:33.148Z",
-    "updatedAt": "2026-09-03T11:17:33.148Z"
   }
 ]

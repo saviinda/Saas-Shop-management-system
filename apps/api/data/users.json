@@ -6,9 +6,9 @@
     "role": "super_admin",
     "status": "active",
     "phone": "+1 800 555 0199",
-    "passwordHash": "$2a$10$utNYQ68xYCKY4hU/J/mwtuGDxwC0uDMBDv/9vCxidQIlxhr/r1XOO",
-    "createdAt": "2026-08-28T16:36:07.131Z",
-    "updatedAt": "2026-08-28T16:36:07.131Z"
+    "passwordHash": "$2a$10$/Kf1EFCUGw.Ru3A10dOljOW3idE2mBnW0Qfq2m9aWrS4nNjc3DOou",
+    "createdAt": "2026-09-11T10:16:53.086Z",
+    "updatedAt": "2026-09-11T10:16:53.086Z"
   },
   {
     "id": "usr_shop_owner_1",
@@ -22,9 +22,9 @@
       "br_urban_westside"
     ],
     "phone": "+1 555 456 7890",
-    "passwordHash": "$2a$10$uk4tcqK.tCh3VMHPMRK6l.ZKixmSwxI3KgmOtZlG4Sss5Qko0AX2C",
-    "createdAt": "2026-08-28T16:36:07.208Z",
-    "updatedAt": "2026-09-04T06:14:07.257Z"
+    "passwordHash": "$2a$10$8RmBFlsUR89Rr5jFquyagOrrXL0dLTntZ6TkSyH1KOqmVSeVkm/yG",
+    "createdAt": "2026-09-11T10:16:53.176Z",
+    "updatedAt": "2026-09-11T10:16:53.176Z"
   },
   {
     "id": "usr_manager_1",
@@ -38,9 +38,9 @@
       "br_urban_westside"
     ],
     "phone": "+1 555 111 2233",
-    "passwordHash": "$2a$10$KUA3VBeEZ7oAIVTSbQ0KFeNMDZyCvWov005jKye0f2SvehtjKWmYa",
-    "createdAt": "2026-08-28T16:36:07.284Z",
-    "updatedAt": "2026-08-28T16:36:07.284Z"
+    "passwordHash": "$2a$10$mogD6RlTSggsEl29ROpzxeFr6hh48pM1/t596QFluD3uhO/dXvaV6",
+    "createdAt": "2026-09-11T10:16:53.331Z",
+    "updatedAt": "2026-09-11T10:16:53.331Z"
   },
   {
     "id": "usr_worker_1",
@@ -53,9 +53,9 @@
       "br_urban_downtown"
     ],
     "phone": "+1 555 444 7788",
-    "passwordHash": "$2a$10$KUA3VBeEZ7oAIVTSbQ0KFeNMDZyCvWov005jKye0f2SvehtjKWmYa",
-    "createdAt": "2026-08-28T16:36:07.285Z",
-    "updatedAt": "2026-08-28T16:36:07.285Z"
+    "passwordHash": "$2a$10$mogD6RlTSggsEl29ROpzxeFr6hh48pM1/t596QFluD3uhO/dXvaV6",
+    "createdAt": "2026-09-11T10:16:53.332Z",
+    "updatedAt": "2026-09-11T10:16:53.332Z"
   },
   {
     "id": "usr_1787930675212",
@@ -88,18 +88,111 @@
     "id": "893adc78-13ed-4f3f-aefd-db38e796173b"
   },
   {
-    "id": "usr_1788434253146",
-    "email": "jonathan.wright@gmail.com",
-    "name": "Jonathan Wright",
-    "role": "shop_owner",
-    "status": "active",
-    "shopId": "shp_1788434253146",
-    "branchIds": [
-      "br_1788434253146"
+    "id": "011ad62f-79f3-4d2a-bc92-9c4adfc65e39",
+    "createdAt": "2026-09-11T07:45:36.804Z",
+    "role": "manager",
+    "phone": "+94 77 999 8888",
+    "permissions": [
+      "dashboard",
+      "branches",
+      "staff",
+      "products",
+      "services",
+      "customers",
+      "orders",
+      "inventory",
+      "procurement",
+      "tasks",
+      "communication"
     ],
-    "phone": "+1 555 777 9999",
-    "passwordHash": "$2a$10$QxFmExkdMoBHtx.aL2h6NO0qX/ehtKPIDg6.McZdPXGDQqb0/1ogG",
-    "createdAt": "2026-09-03T11:17:33.156Z",
-    "updatedAt": "2026-09-03T11:17:33.157Z"
+    "roles": [
+      "manager",
+      "finance_auditor"
+    ],
+    "name": "RBAC Test User",
+    "branchIds": [],
+    "email": "rbac_test_1789112736728@example.com",
+    "passwordHash": "$2a$10$U/sCD1vJc8VMHiUoYIIukuOzQasbno7BqYJmgkfxXQNhzSXLafBBG",
+    "status": "active",
+    "updatedAt": "2026-09-11T07:45:36.804Z"
+  },
+  {
+    "email": "marcus.vance@apexstore.com",
+    "name": "Marcus Vance",
+    "phone": "+1 (555) 987-6543",
+    "role": "sales_staff",
+    "roles": [
+      "sales_staff",
+      "role_manager"
+    ],
+    "permissions": [
+      "dashboard",
+      "products",
+      "services",
+      "customers",
+      "orders",
+      "tasks"
+    ],
+    "status": "active",
+    "shopId": "shp_urban_cafe",
+    "branchIds": [],
+    "passwordHash": "$2a$10$Lt5sydXx7nHDqBU6wCrVAOa3bc6yyDvktyu1.EKA7xq3XjH2io.Nm",
+    "createdAt": "2026-09-11T08:07:16.818Z",
+    "updatedAt": "2026-09-11T08:07:16.818Z",
+    "id": "c810d135-4b2d-4dcd-a363-55950330e3a0"
+  },
+  {
+    "id": "7897153e-f5da-49a6-ad8b-4f496a509831",
+    "createdAt": "2026-09-11T07:49:17.668Z",
+    "role": "manager",
+    "phone": "+94 77 999 8888",
+    "permissions": [
+      "dashboard",
+      "branches",
+      "staff",
+      "products",
+      "services",
+      "customers",
+      "orders",
+      "inventory",
+      "procurement",
+      "tasks",
+      "communication"
+    ],
+    "roles": [
+      "manager",
+      "finance_auditor"
+    ],
+    "name": "RBAC Test User",
+    "branchIds": [],
+    "email": "rbac_test_1789112957591@example.com",
+    "passwordHash": "$2a$10$mrKrd71dvWizLkE1IF5fue23bkFKnX5kOXE3r3AaHS.wEWkewRLfK",
+    "status": "active",
+    "updatedAt": "2026-09-11T07:49:17.668Z"
+  },
+  {
+    "email": "nimal.j@testshop.com",
+    "name": "Nimal JayasuriyaniNimal Jayasuriyamal.j@testshop.com",
+    "phone": "+94 71 234 5678+94 71 234 5678",
+    "role": "sales_staff",
+    "roles": [
+      "sales_staff",
+      "role_shop_owner"
+    ],
+    "permissions": [
+      "dashboard",
+      "products",
+      "services",
+      "customers",
+      "orders",
+      "tasks"
+    ],
+    "status": "active",
+    "shopId": "shp_1787930675212",
+    "branchIds": [],
+    "passwordHash": "$2a$10$Ftmo7xWmRZeOmsbUwTogU.ufAjrS0hBo7Bbysq4ig5Z.a50omp7uy",
+    "createdAt": "2026-09-11T09:14:57.333Z",
+    "updatedAt": "2026-09-11T09:14:57.333Z",
+    "id": "eaf765ef-c2f9-412f-943b-65f5bb714198"
   }
 ]

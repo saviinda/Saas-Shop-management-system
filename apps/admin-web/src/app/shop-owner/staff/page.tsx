@@ -25,6 +25,11 @@ import {
   Search,
   Check,
   AlertTriangle,
+  RotateCcw,
+  CheckSquare,
+  Square,
+  Eye,
+  Edit3,
 } from 'lucide-react';
 
 const MODULE_PERMISSIONS = [
@@ -41,14 +46,67 @@ const MODULE_PERMISSIONS = [
   { id: 'communication', label: 'Admin Support Tickets', category: 'General' },
 ];
 
+const CRUD_ACTIONS = [
+  { key: 'view', label: 'View', short: 'V', color: 'emerald', bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200' },
+  { key: 'create', label: 'Create', short: 'C', color: 'blue', bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200' },
+  { key: 'edit', label: 'Edit', short: 'E', color: 'amber', bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200' },
+  { key: 'delete', label: 'Delete', short: 'D', color: 'rose', bg: 'bg-rose-50', text: 'text-rose-700', border: 'border-rose-200' },
+] as const;
+
+const ALL_ACTIONS = ['view', 'create', 'edit', 'delete'];
+
 const DEFAULT_ROLE_PERMISSIONS: Record<string, string[]> = {
-  shop_owner: ['dashboard', 'branches', 'staff', 'products', 'services', 'customers', 'orders', 'inventory', 'procurement', 'tasks', 'communication'],
-  manager: ['dashboard', 'branches', 'staff', 'products', 'services', 'customers', 'orders', 'inventory', 'procurement', 'tasks', 'communication'],
-  sales_staff: ['dashboard', 'products', 'services', 'customers', 'orders', 'tasks'],
-  inventory_staff: ['dashboard', 'products', 'inventory', 'procurement', 'tasks'],
-  purchasing_staff: ['dashboard', 'inventory', 'procurement', 'tasks'],
-  worker: ['dashboard', 'orders', 'tasks'],
+  shop_owner: MODULE_PERMISSIONS.flatMap(m => ALL_ACTIONS.map(a => `${m.id}:${a}`)),
+  manager: MODULE_PERMISSIONS.flatMap(m => ALL_ACTIONS.map(a => `${m.id}:${a}`)),
+  sales_staff: [
+    'dashboard:view',
+    'orders:view', 'orders:create', 'orders:edit',
+    'products:view',
+    'services:view',
+    'customers:view', 'customers:create', 'customers:edit',
+    'tasks:view', 'tasks:create', 'tasks:edit',
+    'communication:view', 'communication:create',
+  ],
+  inventory_staff: [
+    'dashboard:view',
+    'products:view', 'products:create', 'products:edit', 'products:delete',
+    'inventory:view', 'inventory:create', 'inventory:edit',
+    'procurement:view', 'procurement:create', 'procurement:edit',
+    'tasks:view', 'tasks:create', 'tasks:edit',
+  ],
+  purchasing_staff: [
+    'dashboard:view',
+    'procurement:view', 'procurement:create', 'procurement:edit', 'procurement:delete',
+    'inventory:view',
+    'products:view',
+    'tasks:view', 'tasks:create',
+    'communication:view', 'communication:create',
+  ],
+  worker: [
+    'dashboard:view',
+    'orders:view', 'orders:create',
+    'tasks:view', 'tasks:create', 'tasks:edit',
+  ],
 };
+
+// Normalize permissions (expand legacy strings e.g. 'products' to all 4 CRUD actions)
+function normalizePermissions(perms?: string[]): string[] {
+  if (!perms || !Array.isArray(perms)) return [];
+  const normalized = new Set<string>();
+  for (const p of perms) {
+    if (p.includes(':')) {
+      normalized.add(p);
+    } else {
+      // Legacy module ID without action -> expand to all 4
+      ALL_ACTIONS.forEach(a => normalized.add(`${p}:${a}`));
+    }
+  }
+  return Array.from(normalized);
+}
+
+function hasPermission(perms: string[], moduleId: string, action: string): boolean {
+  return perms.includes(`${moduleId}:${action}`) || perms.includes(moduleId);
+}
 
 export default function StaffManagementPage() {
   const { activeBranch } = useBranch();
@@ -132,6 +190,7 @@ export default function StaffManagementPage() {
   const openEditModal = (user: User) => {
     setModalMode('edit');
     setSelectedUser(user);
+    const initialPerms = normalizePermissions(user.permissions || DEFAULT_ROLE_PERMISSIONS[user.role] || []);
     setFormData({
       name: user.name,
       email: user.email,
@@ -139,7 +198,7 @@ export default function StaffManagementPage() {
       role: user.role,
       phone: user.phone || '',
       branchIds: user.branchIds || [],
-      permissions: user.permissions || DEFAULT_ROLE_PERMISSIONS[user.role] || [],
+      permissions: initialPerms,
     });
     setModalError(null);
     setShowModal(true);
@@ -153,16 +212,53 @@ export default function StaffManagementPage() {
     }));
   };
 
-  const togglePermission = (permId: string) => {
+  // Granular Sub-Permission Toggles
+  const toggleSubPermission = (moduleId: string, action: string) => {
+    const key = `${moduleId}:${action}`;
     setFormData(prev => {
-      const exists = prev.permissions.includes(permId);
-      return {
-        ...prev,
-        permissions: exists
-          ? prev.permissions.filter(p => p !== permId)
-          : [...prev.permissions, permId],
-      };
+      const normalized = normalizePermissions(prev.permissions);
+      const exists = normalized.includes(key);
+      const next = exists ? normalized.filter(p => p !== key) : [...normalized, key];
+      return { ...prev, permissions: next };
     });
+  };
+
+  const toggleModuleAll = (moduleId: string) => {
+    setFormData(prev => {
+      const normalized = normalizePermissions(prev.permissions);
+      const moduleKeys = ALL_ACTIONS.map(a => `${moduleId}:${a}`);
+      const allActive = moduleKeys.every(k => normalized.includes(k));
+
+      let next: string[];
+      if (allActive) {
+        // Remove all for this module
+        next = normalized.filter(p => !p.startsWith(`${moduleId}:`) && p !== moduleId);
+      } else {
+        // Add all 4 for this module
+        const filtered = normalized.filter(p => !p.startsWith(`${moduleId}:`) && p !== moduleId);
+        next = [...filtered, ...moduleKeys];
+      }
+      return { ...prev, permissions: next };
+    });
+  };
+
+  const selectAllPermissions = () => {
+    const all = MODULE_PERMISSIONS.flatMap(m => ALL_ACTIONS.map(a => `${m.id}:${a}`));
+    setFormData(prev => ({ ...prev, permissions: all }));
+  };
+
+  const selectViewOnlyPermissions = () => {
+    const viewOnly = MODULE_PERMISSIONS.map(m => `${m.id}:view`);
+    setFormData(prev => ({ ...prev, permissions: viewOnly }));
+  };
+
+  const resetToRolePreset = () => {
+    const preset = DEFAULT_ROLE_PERMISSIONS[formData.role] || [];
+    setFormData(prev => ({ ...prev, permissions: preset }));
+  };
+
+  const clearAllPermissions = () => {
+    setFormData(prev => ({ ...prev, permissions: [] }));
   };
 
   const toggleBranch = (branchId: string) => {
@@ -224,11 +320,12 @@ export default function StaffManagementPage() {
       setShowModal(false);
       await fetchStaff();
     } catch (err: any) {
-      if (err instanceof ApiError) {
-        setModalError(err.message);
-      } else {
-        setModalError('Failed to save staff member.');
-      }
+      const errMsg = err?.message || 'Failed to save staff member.';
+      setModalError(errMsg);
+      showError(
+        err?.code === 'PACKAGE_LIMIT_EXCEEDED' || err?.code === 'LIMIT_EXCEEDED' ? 'Staff Limit Reached' : 'Action Failed',
+        errMsg
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -326,6 +423,21 @@ export default function StaffManagementPage() {
     );
   });
 
+  // Helper to format permissions for table display
+  const getPermissionSummary = (userPerms?: string[]) => {
+    const normalized = normalizePermissions(userPerms);
+    const groups: Array<{ module: typeof MODULE_PERMISSIONS[0]; actions: string[] }> = [];
+
+    MODULE_PERMISSIONS.forEach(mod => {
+      const activeActions = ALL_ACTIONS.filter(a => hasPermission(normalized, mod.id, a));
+      if (activeActions.length > 0) {
+        groups.push({ module: mod, actions: activeActions });
+      }
+    });
+
+    return groups;
+  };
+
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       {/* Top Header */}
@@ -333,7 +445,7 @@ export default function StaffManagementPage() {
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Employees & Staff Management</h1>
           <p className="text-xs text-slate-500 mt-1">
-            Provision staff, assign roles, configure module permissions, and view employee activity (BR-03, BR-09)
+            Provision staff, assign roles, configure granular CRUD module permissions, and inspect employee activity (BR-03, BR-09)
           </p>
         </div>
 
@@ -348,7 +460,7 @@ export default function StaffManagementPage() {
 
           <button
             onClick={openAddModal}
-            className="flex items-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-sm shadow-indigo-200 active:scale-[0.98] transition-all"
+            className="flex items-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-sm shadow-indigo-200 active:scale-[0.98] transition-all cursor-pointer"
           >
             <UserPlus className="h-4 w-4" /> Add Staff Member
           </button>
@@ -373,7 +485,7 @@ export default function StaffManagementPage() {
             <button
               key={r}
               onClick={() => setRoleFilter(r)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all capitalize ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all capitalize cursor-pointer ${
                 roleFilter === r
                   ? 'bg-indigo-600 text-white shadow-xs'
                   : 'bg-slate-50 text-slate-600 border border-slate-200/80 hover:bg-slate-100'
@@ -394,7 +506,7 @@ export default function StaffManagementPage() {
                 <th className="py-3.5 px-6">Employee</th>
                 <th className="py-3.5 px-6">Assigned Role</th>
                 <th className="py-3.5 px-6">Assigned Branches</th>
-                <th className="py-3.5 px-6">Module Permissions</th>
+                <th className="py-3.5 px-6">Configured CRUD Permissions</th>
                 <th className="py-3.5 px-6">Status</th>
                 <th className="py-3.5 px-6">Joined Date</th>
                 <th className="py-3.5 px-6 text-right">Actions</th>
@@ -406,148 +518,174 @@ export default function StaffManagementPage() {
               ) : filteredUsers.length === 0 ? (
                 <tr><td colSpan={7} className="py-12 text-center text-slate-400">No employees found matching the filters.</td></tr>
               ) : (
-                filteredUsers.map(u => (
-                  <tr key={u.id} className="hover:bg-indigo-50/30 transition-colors">
-                    <td className="py-4 px-6">
-                      <div className="flex items-center gap-3">
-                        <div className="h-9 w-9 rounded-full bg-indigo-50 text-indigo-600 font-bold flex items-center justify-center shrink-0 border border-indigo-100">
-                          {u.name.charAt(0)}
+                filteredUsers.map(u => {
+                  const permSummary = getPermissionSummary(u.permissions);
+                  const isOwner = u.role === 'shop_owner';
+                  return (
+                    <tr key={u.id} className="hover:bg-indigo-50/30 transition-colors">
+                      <td className="py-4 px-6">
+                        <div className="flex items-center gap-3">
+                          <div className="h-9 w-9 rounded-full bg-indigo-50 text-indigo-600 font-bold flex items-center justify-center shrink-0 border border-indigo-100">
+                            {u.name.charAt(0).toUpperCase()}
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-1.5">
+                              <p className="font-bold text-slate-900 text-sm">{u.name}</p>
+                              {isOwner && (
+                                <span className="px-1.5 py-0.5 text-[9px] font-bold bg-indigo-100 text-indigo-800 rounded">
+                                  OWNER
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-[11px] text-slate-500 flex items-center gap-1">
+                              <Mail className="h-3 w-3 text-slate-400" /> {u.email}
+                            </p>
+                            {u.phone && (
+                              <p className="text-[10px] text-slate-400 flex items-center gap-1 mt-0.5">
+                                <Phone className="h-2.5 w-2.5 text-slate-400" /> {u.phone}
+                              </p>
+                            )}
+                          </div>
                         </div>
-                        <div>
-                          <div className="flex items-center gap-1.5">
-                            <p className="font-bold text-slate-900 text-sm">{u.name}</p>
-                            {u.role === 'shop_owner' && (
-                              <span className="px-1.5 py-0.5 text-[9px] font-bold bg-indigo-100 text-indigo-800 rounded">
-                                OWNER
+                      </td>
+                      <td className="py-4 px-6">
+                        <span className="px-2.5 py-1 bg-slate-100 text-slate-700 font-semibold rounded-lg capitalize border border-slate-200/80 text-[11px]">
+                          {u.role.replace('_', ' ')}
+                        </span>
+                      </td>
+                      <td className="py-4 px-6">
+                        <div className="flex flex-wrap gap-1 max-w-[160px]">
+                          {(!u.branchIds || u.branchIds.length === 0) ? (
+                            <span className="text-slate-400 text-[11px]">All Branches</span>
+                          ) : (
+                            u.branchIds.map(bid => {
+                              const b = branches.find(br => br.id === bid);
+                              return (
+                                <span key={bid} className="px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded text-[10px] font-semibold border border-indigo-100">
+                                  {b ? b.name : 'Branch'}
+                                </span>
+                              );
+                            })
+                          )}
+                        </div>
+                      </td>
+                      <td className="py-4 px-6">
+                        {isOwner ? (
+                          <span className="px-2 py-1 bg-indigo-50 text-indigo-700 rounded-lg text-[10px] font-bold border border-indigo-200">
+                            Full Unrestricted Access
+                          </span>
+                        ) : permSummary.length === 0 ? (
+                          <span className="text-slate-400 text-[11px]">No module access</span>
+                        ) : (
+                          <div className="flex flex-col gap-1 max-w-[280px]">
+                            <div className="flex flex-wrap gap-1">
+                              {permSummary.slice(0, 3).map(({ module, actions }) => (
+                                <div
+                                  key={module.id}
+                                  className="inline-flex items-center gap-1 px-2 py-0.5 bg-slate-100 rounded-md border border-slate-200 text-[10px]"
+                                  title={`${module.label}: ${actions.join(', ')}`}
+                                >
+                                  <span className="font-semibold text-slate-700">
+                                    {module.label.split(' ')[0]}
+                                  </span>
+                                  <div className="flex items-center gap-0.5 font-mono text-[9px] font-bold">
+                                    <span className={actions.includes('create') ? 'text-blue-600' : 'text-slate-300'}>C</span>
+                                    <span className={actions.includes('view') ? 'text-emerald-600' : 'text-slate-300'}>V</span>
+                                    <span className={actions.includes('edit') ? 'text-amber-600' : 'text-slate-300'}>E</span>
+                                    <span className={actions.includes('delete') ? 'text-rose-600' : 'text-slate-300'}>D</span>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                            {permSummary.length > 3 && (
+                              <span className="text-[10px] text-indigo-600 font-semibold">
+                                +{permSummary.length - 3} more modules configured
                               </span>
                             )}
                           </div>
-                          <p className="text-[11px] text-slate-500 flex items-center gap-1">
-                            <Mail className="h-3 w-3 text-slate-400" /> {u.email}
-                          </p>
-                          {u.phone && (
-                            <p className="text-[10px] text-slate-400 flex items-center gap-1 mt-0.5">
-                              <Phone className="h-2.5 w-2.5 text-slate-400" /> {u.phone}
-                            </p>
+                        )}
+                      </td>
+                      <td className="py-4 px-6">
+                        <span
+                          className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${
+                            u.status === 'active'
+                              ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                              : 'bg-rose-50 text-rose-700 border-rose-200'
+                          }`}
+                        >
+                          {u.status === 'active' ? <CheckCircle2 className="h-3 w-3" /> : <XCircle className="h-3 w-3" />}
+                          <span className="capitalize">{u.status}</span>
+                        </span>
+                      </td>
+                      <td className="py-4 px-6 text-slate-500">{formatDate(u.createdAt)}</td>
+                      <td className="py-4 px-6 text-right">
+                        <div className="flex items-center justify-end gap-1.5">
+                          {/* Edit Button */}
+                          <button
+                            onClick={() => openEditModal(u)}
+                            className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
+                          >
+                            Edit & Permissions
+                          </button>
+
+                          {/* Reset Password / Access Button */}
+                          <button
+                            onClick={() => setResetModalUser(u)}
+                            title="Reset Login Password"
+                            className="p-1.5 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg border border-slate-200 transition-colors cursor-pointer"
+                          >
+                            <KeyRound className="h-3.5 w-3.5" />
+                          </button>
+
+                          {/* View Activity Logs */}
+                          <button
+                            onClick={() => handleViewActivity(u)}
+                            title="View Employee Activity Logs"
+                            className="p-1.5 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg border border-slate-200 transition-colors cursor-pointer"
+                          >
+                            <History className="h-3.5 w-3.5" />
+                          </button>
+
+                          {/* Activate / Deactivate Toggle (Only for staff, not owner) */}
+                          {u.role !== 'shop_owner' && (
+                            <button
+                              onClick={() => handleToggleStatus(u)}
+                              title={u.status === 'active' ? 'Deactivate Staff' : 'Activate Staff'}
+                              className={`p-1.5 rounded-lg border transition-colors cursor-pointer ${
+                                u.status === 'active'
+                                  ? 'text-amber-600 hover:bg-amber-50 border-amber-200'
+                                  : 'text-emerald-600 hover:bg-emerald-50 border-emerald-200'
+                              }`}
+                            >
+                              <Power className="h-3.5 w-3.5" />
+                            </button>
+                          )}
+
+                          {/* Delete Staff Member */}
+                          {u.role !== 'shop_owner' && (
+                            <button
+                              onClick={() => handleDeleteStaff(u)}
+                              title="Delete Staff Member"
+                              className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg border border-slate-200 transition-colors cursor-pointer"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
                           )}
                         </div>
-                      </div>
-                    </td>
-                    <td className="py-4 px-6">
-                      <span className="px-2.5 py-1 bg-slate-100 text-slate-700 font-semibold rounded-lg capitalize border border-slate-200/80 text-[11px]">
-                        {u.role.replace('_', ' ')}
-                      </span>
-                    </td>
-                    <td className="py-4 px-6">
-                      <div className="flex flex-wrap gap-1 max-w-[160px]">
-                        {(!u.branchIds || u.branchIds.length === 0) ? (
-                          <span className="text-slate-400 text-[11px]">All Branches</span>
-                        ) : (
-                          u.branchIds.map(bid => {
-                            const b = branches.find(br => br.id === bid);
-                            return (
-                              <span key={bid} className="px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded text-[10px] font-semibold border border-indigo-100">
-                                {b ? b.name : 'Main Branch'}
-                              </span>
-                            );
-                          })
-                        )}
-                      </div>
-                    </td>
-                    <td className="py-4 px-6">
-                      <div className="flex flex-wrap gap-1 max-w-[200px]">
-                        {(u.permissions || []).slice(0, 3).map(p => (
-                          <span key={p} className="px-1.5 py-0.5 bg-slate-100 text-slate-600 rounded text-[9px] font-mono capitalize">
-                            {p}
-                          </span>
-                        ))}
-                        {(u.permissions || []).length > 3 && (
-                          <span className="px-1.5 py-0.5 bg-indigo-50 text-indigo-700 rounded text-[9px] font-bold">
-                            +{(u.permissions || []).length - 3} more
-                          </span>
-                        )}
-                      </div>
-                    </td>
-                    <td className="py-4 px-6">
-                      <span
-                        className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${
-                          u.status === 'active'
-                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                            : 'bg-rose-50 text-rose-700 border-rose-200'
-                        }`}
-                      >
-                        {u.status === 'active' ? <CheckCircle2 className="h-3 w-3" /> : <XCircle className="h-3 w-3" />}
-                        <span className="capitalize">{u.status}</span>
-                      </span>
-                    </td>
-                    <td className="py-4 px-6 text-slate-500">{formatDate(u.createdAt)}</td>
-                    <td className="py-4 px-6 text-right">
-                      <div className="flex items-center justify-end gap-1.5">
-                        {/* Edit Button */}
-                        <button
-                          onClick={() => openEditModal(u)}
-                          className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition-colors"
-                        >
-                          Edit & Roles
-                        </button>
-
-                        {/* Reset Password / Access Button */}
-                        <button
-                          onClick={() => setResetModalUser(u)}
-                          title="Reset Login Password"
-                          className="p-1.5 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg border border-slate-200 transition-colors"
-                        >
-                          <KeyRound className="h-3.5 w-3.5" />
-                        </button>
-
-                        {/* View Activity Logs */}
-                        <button
-                          onClick={() => handleViewActivity(u)}
-                          title="View Employee Activity Logs"
-                          className="p-1.5 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg border border-slate-200 transition-colors"
-                        >
-                          <History className="h-3.5 w-3.5" />
-                        </button>
-
-                        {/* Activate / Deactivate Toggle (Only for staff, not owner) */}
-                        {u.role !== 'shop_owner' && (
-                          <button
-                            onClick={() => handleToggleStatus(u)}
-                            title={u.status === 'active' ? 'Deactivate Staff' : 'Activate Staff'}
-                            className={`p-1.5 rounded-lg border transition-colors ${
-                              u.status === 'active'
-                                ? 'text-amber-600 hover:bg-amber-50 border-amber-200'
-                                : 'text-emerald-600 hover:bg-emerald-50 border-emerald-200'
-                            }`}
-                          >
-                            <Power className="h-3.5 w-3.5" />
-                          </button>
-                        )}
-
-                        {/* Delete Staff Member */}
-                        {u.role !== 'shop_owner' && (
-                          <button
-                            onClick={() => handleDeleteStaff(u)}
-                            title="Delete Staff Member"
-                            className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg border border-slate-200 transition-colors"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
         </div>
       </div>
 
-      {/* ADD / EDIT STAFF MODAL WITH CONFIGURABLE PERMISSIONS */}
+      {/* ADD / EDIT STAFF MODAL WITH GRANULAR CRUD PERMISSIONS MATRIX */}
       {showModal && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white rounded-2xl max-w-2xl w-full p-6 space-y-5 border border-slate-200 shadow-2xl animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-2xl max-w-4xl w-full p-6 space-y-5 border border-slate-200 shadow-2xl animate-in fade-in zoom-in-95 duration-200 max-h-[92vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div className="flex items-center gap-2.5">
                 <div className="h-10 w-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">
@@ -557,12 +695,12 @@ export default function StaffManagementPage() {
                   <h3 className="font-bold text-slate-900 text-base">
                     {modalMode === 'create' ? 'Add New Employee / Staff Member' : `Edit Staff: ${selectedUser?.name}`}
                   </h3>
-                  <p className="text-xs text-slate-500">Configure operational role, assigned branches, and granular module permissions</p>
+                  <p className="text-xs text-slate-500">Configure operational role, assigned branches, and granular CRUD sub-permissions</p>
                 </div>
               </div>
               <button
                 onClick={() => setShowModal(false)}
-                className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100"
+                className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 cursor-pointer"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -575,7 +713,8 @@ export default function StaffManagementPage() {
               </div>
             )}
 
-            <form onSubmit={handleSaveStaff} className="space-y-4 text-xs">
+            <form onSubmit={handleSaveStaff} className="space-y-5 text-xs">
+              {/* Basic Details */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block font-bold text-slate-800 mb-1">Full Name *</label>
@@ -634,7 +773,7 @@ export default function StaffManagementPage() {
                   <select
                     value={formData.role}
                     onChange={e => handleRoleChange(e.target.value)}
-                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800 focus:bg-white focus:outline-none focus:border-indigo-500 shadow-2xs capitalize"
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800 focus:bg-white focus:outline-none focus:border-indigo-500 shadow-2xs capitalize cursor-pointer"
                   >
                     <option value="manager">Manager (Full Branch Authority)</option>
                     <option value="sales_staff">Sales Staff (POS, Orders, Customers)</option>
@@ -654,7 +793,7 @@ export default function StaffManagementPage() {
                           key={b.id}
                           type="button"
                           onClick={() => toggleBranch(b.id)}
-                          className={`px-3 py-1.5 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition-all ${
+                          className={`px-3 py-1.5 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
                             isChecked
                               ? 'bg-indigo-600 text-white border-indigo-600 shadow-2xs'
                               : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
@@ -669,38 +808,169 @@ export default function StaffManagementPage() {
                 </div>
               </div>
 
-              {/* Granular Configurable Permissions Grid */}
-              <div className="p-4 bg-slate-50/80 rounded-xl border border-slate-200 space-y-2.5">
-                <div className="flex items-center justify-between">
-                  <span className="font-bold text-slate-900 text-xs flex items-center gap-1.5">
-                    <Shield className="h-4 w-4 text-indigo-600" /> Configurable Module Permissions
-                  </span>
-                  <span className="text-[10px] text-slate-500">Customize access beyond default role presets</span>
+              {/* GRANULAR CRUD SUB-PERMISSIONS MATRIX */}
+              <div className="p-4 bg-slate-50/80 rounded-2xl border border-slate-200 space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200/80 pb-3">
+                  <div>
+                    <span className="font-bold text-slate-900 text-sm flex items-center gap-1.5">
+                      <Shield className="h-4 w-4 text-indigo-600" /> Configurable Module Permissions
+                    </span>
+                    <p className="text-[11px] text-slate-500">
+                      Configure granular CRUD access (Create, View, Edit, Delete) for each system module
+                    </p>
+                  </div>
+
+                  {/* Preset Buttons Toolbar */}
+                  <div className="flex items-center flex-wrap gap-1.5">
+                    <button
+                      type="button"
+                      onClick={selectAllPermissions}
+                      className="px-2.5 py-1 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-lg text-[11px] font-semibold transition-colors flex items-center gap-1 cursor-pointer"
+                    >
+                      <CheckSquare className="h-3 w-3 text-indigo-600" /> Select All CRUD
+                    </button>
+                    <button
+                      type="button"
+                      onClick={selectViewOnlyPermissions}
+                      className="px-2.5 py-1 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-lg text-[11px] font-semibold transition-colors flex items-center gap-1 cursor-pointer"
+                    >
+                      <Eye className="h-3 w-3 text-emerald-600" /> View Only
+                    </button>
+                    <button
+                      type="button"
+                      onClick={resetToRolePreset}
+                      className="px-2.5 py-1 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-lg text-[11px] font-semibold transition-colors flex items-center gap-1 cursor-pointer"
+                      title="Reset to recommended preset for current role"
+                    >
+                      <RotateCcw className="h-3 w-3 text-slate-500" /> Preset
+                    </button>
+                    <button
+                      type="button"
+                      onClick={clearAllPermissions}
+                      className="px-2.5 py-1 bg-white hover:bg-rose-50 text-rose-600 border border-rose-200 rounded-lg text-[11px] font-semibold transition-colors flex items-center gap-1 cursor-pointer"
+                    >
+                      <Square className="h-3 w-3 text-rose-500" /> Clear All
+                    </button>
+                  </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 pt-1">
-                  {MODULE_PERMISSIONS.map(perm => {
-                    const isChecked = formData.permissions.includes(perm.id);
-                    return (
-                      <label
-                        key={perm.id}
-                        onClick={() => togglePermission(perm.id)}
-                        className={`p-2.5 rounded-xl border flex items-center gap-2 cursor-pointer transition-all ${
-                          isChecked
-                            ? 'bg-white border-indigo-500 text-slate-900 shadow-2xs ring-1 ring-indigo-500/20'
-                            : 'bg-white/60 border-slate-200 text-slate-600 hover:bg-white'
-                        }`}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={isChecked}
-                          onChange={() => {}}
-                          className="rounded text-indigo-600 focus:ring-indigo-500"
-                        />
-                        <span className="text-[11px] font-semibold">{perm.label}</span>
-                      </label>
-                    );
-                  })}
+                {/* Permissions Matrix Table */}
+                <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-2xs">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs">
+                      <thead className="bg-slate-100/70 text-[10px] uppercase font-bold text-slate-600 border-b border-slate-200">
+                        <tr>
+                          <th className="py-2.5 px-4 w-1/3">Module</th>
+                          <th className="py-2.5 px-3 text-center">
+                            <span className="inline-flex items-center gap-1 text-emerald-700 font-bold">
+                              <span className="h-2 w-2 rounded-full bg-emerald-500"></span> View
+                            </span>
+                          </th>
+                          <th className="py-2.5 px-3 text-center">
+                            <span className="inline-flex items-center gap-1 text-blue-700 font-bold">
+                              <span className="h-2 w-2 rounded-full bg-blue-500"></span> Create
+                            </span>
+                          </th>
+                          <th className="py-2.5 px-3 text-center">
+                            <span className="inline-flex items-center gap-1 text-amber-700 font-bold">
+                              <span className="h-2 w-2 rounded-full bg-amber-500"></span> Edit
+                            </span>
+                          </th>
+                          <th className="py-2.5 px-3 text-center">
+                            <span className="inline-flex items-center gap-1 text-rose-700 font-bold">
+                              <span className="h-2 w-2 rounded-full bg-rose-500"></span> Delete
+                            </span>
+                          </th>
+                          <th className="py-2.5 px-3 text-right">Row Toggle</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 font-medium">
+                        {MODULE_PERMISSIONS.map(mod => {
+                          const isView = hasPermission(formData.permissions, mod.id, 'view');
+                          const isCreate = hasPermission(formData.permissions, mod.id, 'create');
+                          const isEdit = hasPermission(formData.permissions, mod.id, 'edit');
+                          const isDelete = hasPermission(formData.permissions, mod.id, 'delete');
+                          const allModuleChecked = isView && isCreate && isEdit && isDelete;
+
+                          return (
+                            <tr key={mod.id} className="hover:bg-slate-50/70 transition-colors">
+                              <td className="py-3 px-4">
+                                <div className="flex items-center gap-2">
+                                  <span className="font-bold text-slate-800">{mod.label}</span>
+                                  <span className="px-1.5 py-0.5 rounded text-[9px] font-semibold bg-slate-100 text-slate-500 border border-slate-200">
+                                    {mod.category}
+                                  </span>
+                                </div>
+                              </td>
+
+                              {/* View Action */}
+                              <td className="py-3 px-3 text-center">
+                                <label className="inline-flex items-center justify-center cursor-pointer p-1">
+                                  <input
+                                    type="checkbox"
+                                    checked={isView}
+                                    onChange={() => toggleSubPermission(mod.id, 'view')}
+                                    className="h-4 w-4 rounded text-emerald-600 focus:ring-emerald-500 border-slate-300 cursor-pointer"
+                                  />
+                                </label>
+                              </td>
+
+                              {/* Create Action */}
+                              <td className="py-3 px-3 text-center">
+                                <label className="inline-flex items-center justify-center cursor-pointer p-1">
+                                  <input
+                                    type="checkbox"
+                                    checked={isCreate}
+                                    onChange={() => toggleSubPermission(mod.id, 'create')}
+                                    className="h-4 w-4 rounded text-blue-600 focus:ring-blue-500 border-slate-300 cursor-pointer"
+                                  />
+                                </label>
+                              </td>
+
+                              {/* Edit Action */}
+                              <td className="py-3 px-3 text-center">
+                                <label className="inline-flex items-center justify-center cursor-pointer p-1">
+                                  <input
+                                    type="checkbox"
+                                    checked={isEdit}
+                                    onChange={() => toggleSubPermission(mod.id, 'edit')}
+                                    className="h-4 w-4 rounded text-amber-600 focus:ring-amber-500 border-slate-300 cursor-pointer"
+                                  />
+                                </label>
+                              </td>
+
+                              {/* Delete Action */}
+                              <td className="py-3 px-3 text-center">
+                                <label className="inline-flex items-center justify-center cursor-pointer p-1">
+                                  <input
+                                    type="checkbox"
+                                    checked={isDelete}
+                                    onChange={() => toggleSubPermission(mod.id, 'delete')}
+                                    className="h-4 w-4 rounded text-rose-600 focus:ring-rose-500 border-slate-300 cursor-pointer"
+                                  />
+                                </label>
+                              </td>
+
+                              {/* Row Toggle All */}
+                              <td className="py-3 px-3 text-right">
+                                <button
+                                  type="button"
+                                  onClick={() => toggleModuleAll(mod.id)}
+                                  className={`px-2 py-0.5 text-[10px] font-semibold rounded border transition-colors cursor-pointer ${
+                                    allModuleChecked
+                                      ? 'bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100'
+                                      : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
+                                  }`}
+                                >
+                                  {allModuleChecked ? 'Clear' : 'All CRUD'}
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
 
@@ -709,14 +979,14 @@ export default function StaffManagementPage() {
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl"
+                  className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-5 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-sm shadow-indigo-200 disabled:opacity-50 transition-all active:scale-[0.98]"
+                  className="px-5 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-sm shadow-indigo-200 disabled:opacity-50 transition-all active:scale-[0.98] cursor-pointer"
                 >
                   {isSubmitting ? 'Saving...' : modalMode === 'create' ? 'Provision Employee' : 'Save Changes'}
                 </button>
@@ -742,7 +1012,7 @@ export default function StaffManagementPage() {
               </div>
               <button
                 onClick={() => setResetModalUser(null)}
-                className="p-1 text-slate-400 hover:text-slate-600"
+                className="p-1 text-slate-400 hover:text-slate-600 cursor-pointer"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -779,14 +1049,14 @@ export default function StaffManagementPage() {
                 <button
                   type="button"
                   onClick={() => setResetModalUser(null)}
-                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-semibold"
+                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-semibold cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isResetting}
-                  className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold shadow-2xs disabled:opacity-50"
+                  className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold shadow-2xs disabled:opacity-50 cursor-pointer"
                 >
                   {isResetting ? 'Resetting...' : 'Reset & Email Credentials'}
                 </button>
@@ -812,7 +1082,7 @@ export default function StaffManagementPage() {
               </div>
               <button
                 onClick={() => setActivityModalUser(null)}
-                className="p-1 text-slate-400 hover:text-slate-600"
+                className="p-1 text-slate-400 hover:text-slate-600 cursor-pointer"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -844,7 +1114,7 @@ export default function StaffManagementPage() {
               <button
                 type="button"
                 onClick={() => setActivityModalUser(null)}
-                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-xs"
+                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-xs cursor-pointer"
               >
                 Close
               </button>

@@ -106,9 +106,10 @@
     "message": "Your shop account \"Urban Cafe Hub\" status is now Activated.",
     "type": "success",
     "link": "/login",
-    "isRead": false,
+    "isRead": true,
     "createdAt": "2026-09-04T06:03:12.247Z",
-    "id": "5be60c38-c4aa-46e7-8f32-c4e694af2d10"
+    "id": "5be60c38-c4aa-46e7-8f32-c4e694af2d10",
+    "updatedAt": "2026-09-11T13:39:00.281Z"
   },
   {
     "recipientId": "usr_super_admin",
@@ -127,9 +128,10 @@
     "message": "Payment of USD 129 is now Approved & Verified.",
     "type": "success",
     "link": "/shop-owner/subscription",
-    "isRead": false,
+    "isRead": true,
     "createdAt": "2026-09-04T06:14:07.259Z",
-    "id": "9b4a74f4-4aef-4882-8f58-38e9537ae73f"
+    "id": "9b4a74f4-4aef-4882-8f58-38e9537ae73f",
+    "updatedAt": "2026-09-11T13:39:00.282Z"
   },
   {
     "recipientId": "usr_super_admin",
@@ -140,5 +142,150 @@
     "isRead": false,
     "createdAt": "2026-09-04T06:15:34.693Z",
     "id": "807c6d8c-4bcf-4c8b-9b8e-46690b5e2b3a"
+  },
+  {
+    "recipientId": "usr_shop_owner_1",
+    "shopId": "shp_urban_cafe",
+    "title": "Account Change Request Approved",
+    "message": "Your change request for email was approved and updated.",
+    "type": "success",
+    "link": "/shop-owner/change-requests",
+    "isRead": true,
+    "createdAt": "2026-09-11T08:19:22.251Z",
+    "id": "c9725db8-ae5b-4cef-baa1-eb1ab6c60a93",
+    "updatedAt": "2026-09-11T13:39:00.285Z"
+  },
+  {
+    "recipientId": "usr_shop_owner_1",
+    "shopId": "shp_urban_cafe",
+    "title": "Change Request Approved - email updated for Urban Cafe Hub & Roastery",
+    "message": "Your change request for email has been approved and applied.",
+    "type": "success",
+    "link": "/shop-owner/change-requests",
+    "isRead": true,
+    "createdAt": "2026-09-11T08:19:22.259Z",
+    "id": "9c2db6cd-3a32-4daa-9517-2d74685c8622",
+    "updatedAt": "2026-09-11T13:39:00.290Z"
+  },
+  {
+    "recipientId": "usr_1787930675212",
+    "shopId": "shp_1787930675212",
+    "title": "Super Admin Replied to Ticket",
+    "message": "New message on ticket #TKT-597440: \"Need to increase branches\"",
+    "type": "info",
+    "link": "/shop-owner/communication",
+    "isRead": false,
+    "createdAt": "2026-09-11T08:19:57.294Z",
+    "id": "3dba02fc-4bec-4658-ba52-4129c159b313"
+  },
+  {
+    "recipientId": "usr_1787930675212",
+    "shopId": "shp_1787930675212",
+    "title": "Account Change Request Approved",
+    "message": "Your change request for Business / Shop Name was approved and updated.",
+    "type": "success",
+    "link": "/shop-owner/change-requests",
+    "isRead": false,
+    "createdAt": "2026-09-11T08:34:09.483Z",
+    "id": "ad869d2b-5fed-4dd5-b2c3-e57201e5405f"
+  },
+  {
+    "recipientId": "usr_1787930675212",
+    "shopId": "shp_1787930675212",
+    "title": "Change Request Approved - Business / Shop Name updated for Pothhala",
+    "message": "Your change request for Business / Shop Name has been approved and applied.",
+    "type": "success",
+    "link": "/shop-owner/change-requests",
+    "isRead": false,
+    "createdAt": "2026-09-11T08:34:09.489Z",
+    "id": "d432935c-8623-449e-84ce-f7525200925d"
+  },
+  {
+    "recipientId": "usr_shop_owner_1",
+    "shopId": "shp_urban_cafe",
+    "title": "Job Completed",
+    "message": "Job #JOB-701041 has been finalized and converted to completed order.",
+    "type": "success",
+    "link": "/shop-owner/orders",
+    "isRead": false,
+    "createdAt": "2026-09-12T14:18:27.527Z",
+    "id": "67e32dc1-875d-453c-8bda-9dedce3b6401"
+  },
+  {
+    "recipientId": "usr_manager_1",
+    "shopId": "shp_urban_cafe",
+    "title": "Job Completed",
+    "message": "Job #JOB-701041 has been finalized and converted to completed order.",
+    "type": "success",
+    "link": "/shop-owner/orders",
+    "isRead": false,
+    "createdAt": "2026-09-12T14:18:27.529Z",
+    "id": "a054f61b-e0d8-4665-bfd5-21119e533c46"
+  },
+  {
+    "recipientId": "usr_worker_1",
+    "shopId": "shp_urban_cafe",
+    "title": "Job Completed",
+    "message": "Job #JOB-701041 has been finalized and converted to completed order.",
+    "type": "success",
+    "link": "/shop-owner/orders",
+    "isRead": false,
+    "createdAt": "2026-09-12T14:18:27.531Z",
+    "id": "af0116c3-0c54-4222-a3e8-37700463164f"
+  },
+  {
+    "recipientId": "c810d135-4b2d-4dcd-a363-55950330e3a0",
+    "shopId": "shp_urban_cafe",
+    "title": "Job Completed",
+    "message": "Job #JOB-701041 has been finalized and converted to completed order.",
+    "type": "success",
+    "link": "/shop-owner/orders",
+    "isRead": false,
+    "createdAt": "2026-09-12T14:18:27.534Z",
+    "id": "5080ede2-1ef9-4af0-a36e-f28fce9849ea"
+  },
+  {
+    "recipientId": "usr_shop_owner_1",
+    "shopId": "shp_urban_cafe",
+    "title": "Order Status Changed",
+    "message": "Order #JOB-701041 is now marked as \"COMPLETED\".",
+    "type": "info",
+    "link": "/shop-owner/orders",
+    "isRead": false,
+    "createdAt": "2026-09-12T14:18:37.392Z",
+    "id": "71b17adc-884f-4773-bdd6-3f191dae01a3"
+  },
+  {
+    "recipientId": "usr_manager_1",
+    "shopId": "shp_urban_cafe",
+    "title": "Order Status Changed",
+    "message": "Order #JOB-701041 is now marked as \"COMPLETED\".",
+    "type": "info",
+    "link": "/shop-owner/orders",
+    "isRead": false,
+    "createdAt": "2026-09-12T14:18:37.397Z",
+    "id": "12eeb8a6-927a-42dc-ba23-79247d1f6c14"
+  },
+  {
+    "recipientId": "usr_worker_1",
+    "shopId": "shp_urban_cafe",
+    "title": "Order Status Changed",
+    "message": "Order #JOB-701041 is now marked as \"COMPLETED\".",
+    "type": "info",
+    "link": "/shop-owner/orders",
+    "isRead": false,
+    "createdAt": "2026-09-12T14:18:37.400Z",
+    "id": "63f76f76-70d5-4fa9-827d-fe17db469b5c"
+  },
+  {
+    "recipientId": "c810d135-4b2d-4dcd-a363-55950330e3a0",
+    "shopId": "shp_urban_cafe",
+    "title": "Order Status Changed",
+    "message": "Order #JOB-701041 is now marked as \"COMPLETED\".",
+    "type": "info",
+    "link": "/shop-owner/orders",
+    "isRead": false,
+    "createdAt": "2026-09-12T14:18:37.405Z",
+    "id": "7f4db2a6-6545-45c8-a48a-e8593a5486a8"
   }
 ]

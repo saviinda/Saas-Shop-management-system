@@ -4,8 +4,8 @@ import { Shop, Subscription, SubscriptionPackage } from '@saas/types';
 export class PackageLimitExceededError extends Error {
   public code = 'PACKAGE_LIMIT_EXCEEDED';
   public statusCode = 403;
-  constructor(public resource: string, public current: number, public limit: number) {
-    super(`Your current package limit for ${resource} has been reached (${current}/${limit}). Please contact the Super Admin to upgrade your package.`);
+  constructor(public resource: string, public current: number, public limit: number, message?: string) {
+    super(message || `Your current package limit for ${resource} has been reached (${current}/${limit}). Please contact the Super Admin to upgrade your package.`);
   }
 }
 
@@ -79,7 +79,7 @@ export class PackageLimitService {
 
     const limit = planInfo.subscription.limits.branches || planInfo.pkg.limits.branches;
     if (currentBranches >= limit) {
-      throw new PackageLimitExceededError('Branches', currentBranches, limit);
+      throw new PackageLimitExceededError('Branches', currentBranches, limit, 'Branch limit reached. You cannot create a new branch under your current plan.');
     }
   }
 
@@ -93,7 +93,7 @@ export class PackageLimitService {
 
     const limit = planInfo.subscription.limits.users || planInfo.pkg.limits.users;
     if (currentUsers >= limit) {
-      throw new PackageLimitExceededError('Staff Users', currentUsers, limit);
+      throw new PackageLimitExceededError('Staff Users', currentUsers, limit, 'Staff user limit reached. You cannot add a new staff member under your current plan.');
     }
   }
 
@@ -107,7 +107,7 @@ export class PackageLimitService {
 
     const limit = planInfo.subscription.limits.products || planInfo.pkg.limits.products;
     if (currentProducts >= limit) {
-      throw new PackageLimitExceededError('Products', currentProducts, limit);
+      throw new PackageLimitExceededError('Products', currentProducts, limit, 'Product limit reached. You cannot create a new product under your current plan.');
     }
   }
 
@@ -121,7 +121,7 @@ export class PackageLimitService {
 
     const limit = planInfo.subscription.limits.services || planInfo.pkg.limits.services;
     if (currentServices >= limit) {
-      throw new PackageLimitExceededError('Services', currentServices, limit);
+      throw new PackageLimitExceededError('Services', currentServices, limit, 'Service limit reached. You cannot create a new service under your current plan.');
     }
   }
 

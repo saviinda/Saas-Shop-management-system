@@ -127,8 +127,8 @@ export const createProductSchema = z.object({
   description: z.string().optional(),
   category: z.string().min(2),
   imageUrl: z.string().optional(),
-  costPrice: z.number().min(0),
-  sellingPrice: z.number().min(0),
+  costPrice: z.number().min(0).default(0),
+  sellingPrice: z.number().min(0).default(0),
   minimumStockLevel: z.number().int().min(0).default(5),
   supplierId: z.string().optional(),
   supplierName: z.string().optional(),
@@ -148,6 +148,23 @@ export const createProductSchema = z.object({
 export const updateProductSchema = createProductSchema.partial().extend({
   status: z.enum(['active', 'inactive']).optional(),
 });
+
+export const createProductBatchSchema = z.object({
+  batchNumber: z.string().min(1),
+  branchId: z.string().optional(),
+  branchName: z.string().optional(),
+  costPrice: z.number().min(0),
+  sellingPrice: z.number().min(0),
+  quantity: z.number().int().min(0),
+  manufacturingDate: z.string().optional(),
+  expiryDate: z.string().optional(),
+  supplierId: z.string().optional(),
+  supplierName: z.string().optional(),
+  status: z.enum(['active', 'depleted', 'expired', 'quarantine']).default('active'),
+  notes: z.string().optional(),
+});
+
+export const updateProductBatchSchema = createProductBatchSchema.partial();
 
 export const createServiceSchema = z.object({
   name: z.string().min(2),
@@ -192,6 +209,8 @@ export const createOrderSchema = z.object({
       sku: z.string().optional(),
       quantity: z.number().int().min(1),
       unitPrice: z.number().min(0).optional(),
+      batchId: z.string().optional(),
+      batchNumber: z.string().optional(),
       variant: z.string().optional(),
       assignedStaffId: z.string().optional(),
       assignedStaffName: z.string().optional(),
@@ -199,13 +218,18 @@ export const createOrderSchema = z.object({
   ).min(1),
   tax: z.number().min(0).default(0),
   discount: z.number().min(0).default(0),
+  status: z.enum(['draft', 'pending', 'confirmed', 'processing', 'ready', 'completed', 'cancelled']).optional(),
   paymentStatus: z.enum(['unpaid', 'partial', 'paid', 'refunded']).default('paid'),
   paymentMethod: z.string().default('cash'),
   notes: z.string().optional(),
+  isJob: z.boolean().optional(),
+  jobTitle: z.string().optional(),
 });
 
+export const updateOrderSchema = createOrderSchema.partial();
+
 export const updateOrderStatusSchema = z.object({
-  status: z.enum(['pending', 'confirmed', 'processing', 'ready', 'completed', 'cancelled']),
+  status: z.enum(['draft', 'pending', 'confirmed', 'processing', 'ready', 'completed', 'cancelled']).optional(),
   paymentStatus: z.enum(['unpaid', 'partial', 'paid', 'refunded']).optional(),
   notes: z.string().optional(),
 });

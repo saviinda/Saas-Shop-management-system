@@ -9,11 +9,30 @@ export type UserRole =
 
 export type UserStatus = 'active' | 'inactive' | 'suspended';
 
+export type PermissionAction = 'view' | 'create' | 'edit' | 'delete';
+
+export interface RolePermission {
+  module: string;
+  actions: PermissionAction[];
+}
+
+export interface Role {
+  id: string;
+  name: string;
+  slug?: string;
+  description?: string;
+  isSystem?: boolean;
+  permissions: RolePermission[];
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface User {
   id: string;
   email: string;
   name: string;
   role: UserRole;
+  roles?: string[];
   status: UserStatus;
   shopId?: string;
   branchIds?: string[];
@@ -150,6 +169,29 @@ export interface ChangeRequest {
   updatedAt: string;
 }
 
+export type ProductBatchStatus = 'active' | 'depleted' | 'expired' | 'quarantine';
+
+export interface ProductBatch {
+  id: string;
+  shopId: string;
+  productId: string;
+  branchId?: string;
+  branchName?: string;
+  batchNumber: string;
+  costPrice: number;
+  sellingPrice: number;
+  quantity: number;
+  initialQuantity: number;
+  manufacturingDate?: string;
+  expiryDate?: string;
+  supplierId?: string;
+  supplierName?: string;
+  status: ProductBatchStatus;
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Product {
   id: string;
   shopId: string;
@@ -169,6 +211,8 @@ export interface Product {
   isFeatured?: boolean;
   tags?: string[];
   variants?: Array<{ name: string; options: string[]; priceModifier?: number; sku?: string; stock?: number }>;
+  batches?: ProductBatch[];
+  batchesCount?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -209,7 +253,7 @@ export interface Customer {
   updatedAt: string;
 }
 
-export type OrderStatus = 'pending' | 'confirmed' | 'processing' | 'ready' | 'completed' | 'cancelled';
+export type OrderStatus = 'draft' | 'pending' | 'confirmed' | 'processing' | 'ready' | 'completed' | 'cancelled';
 export type OrderPaymentStatus = 'unpaid' | 'partial' | 'paid' | 'refunded';
 
 export interface OrderItem {
@@ -220,6 +264,8 @@ export interface OrderItem {
   quantity: number;
   unitPrice: number;
   totalPrice: number;
+  batchId?: string;
+  batchNumber?: string;
   variant?: string;
   assignedStaffId?: string;
   assignedStaffName?: string;
@@ -245,6 +291,8 @@ export interface Order {
   paymentStatus: OrderPaymentStatus;
   paymentMethod?: string;
   notes?: string;
+  isJob?: boolean;
+  jobTitle?: string;
   statusHistory?: Array<{ status: OrderStatus; timestamp: string; note?: string; updatedBy?: string }>;
   createdBy: string;
   createdAt: string;

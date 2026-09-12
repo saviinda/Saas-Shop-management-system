@@ -14,6 +14,7 @@ interface AuthContextType {
   login: (token: string, user: User, shop?: Shop | null, defaultBranch?: Branch | null) => void;
   logout: () => void;
   refreshUser: () => Promise<void>;
+  hasPermission: (module: string, action?: 'view' | 'create' | 'edit' | 'delete') => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -48,6 +49,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     window.location.href = '/login';
   };
 
+  const hasPermission = (module: string, action?: 'view' | 'create' | 'edit' | 'delete'): boolean => {
+    if (!user) return false;
+    // Super admin has unrestricted permission across all modules
+    if (user.role === 'super_admin' || user.roles?.includes('super_admin') || user.roles?.includes('role_super_admin')) {
+      return true;
+    }
+
+    const perms = user.permissions || [];
+    if (perms.includes('*')) return true;
+
+    if (!action) {
+      return perms.some(p => p.startsWith(`${module}:`) || p === module || p === `${module}:view`);
+    }
+
+    return perms.includes(`${module}:${action}`) || perms.includes(`${module}:*`) || perms.includes(module);
+  };
+
   const refreshUser = async () => {
     const savedToken = localStorage.getItem('saas_token');
     if (!savedToken) {
@@ -79,7 +97,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, shop, defaultBranch, branches, token, isLoading, login, logout, refreshUser }}>
+    <AuthContext.Provider value={{ user, shop, defaultBranch, branches, token, isLoading, login, logout, refreshUser, hasPermission }}>
       {children}
     </AuthContext.Provider>
   );

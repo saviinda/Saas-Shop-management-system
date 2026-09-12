@@ -2,14 +2,17 @@
   {
     "id": "sup_colombia_beans",
     "shopId": "shp_urban_cafe",
-    "name": "Highland Coffee Importers",
+    "name": "Atlas",
     "contactPerson": "Carlos Mendez",
     "email": "orders@highlandbeans.com",
     "phone": "+1 555 889 0011",
     "address": "Warehouse 4, Roaster Row, Seattle",
     "status": "active",
-    "createdAt": "2026-08-28T16:36:07.286Z",
-    "updatedAt": "2026-08-28T16:36:07.286Z"
+    "createdAt": "2026-09-11T10:16:53.334Z",
+    "updatedAt": "2026-09-11T13:35:16.249Z",
+    "taxId": "",
+    "paymentTerms": "Net 30",
+    "productsSupplied": []
   },
   {
     "shopId": "shp_1787930675212",

@@ -36,8 +36,8 @@
     "paymentStatus": "paid",
     "paymentMethod": "credit_card",
     "createdBy": "Sarah Jenkins",
-    "createdAt": "2026-08-28T14:36:07.299Z",
-    "updatedAt": "2026-08-28T16:36:07.299Z"
+    "createdAt": "2026-09-11T08:16:53.361Z",
+    "updatedAt": "2026-09-11T10:16:53.361Z"
   },
   {
     "orderNumber": "ORD-512819",
@@ -108,5 +108,49 @@
     "createdAt": "2026-09-03T04:23:54.106Z",
     "updatedAt": "2026-09-03T04:23:54.106Z",
     "id": "35cc4341-5fb4-4bf6-8187-607a9a67d267"
+  },
+  {
+    "orderNumber": "JOB-701041",
+    "shopId": "shp_urban_cafe",
+    "branchId": "br_urban_downtown",
+    "branchName": "Downtown Main Branch",
+    "customerId": "b33117ca-446a-4aa9-91cc-8ef61f004dd9",
+    "customerName": "Walk-in Customer",
+    "customerPhone": "+1 555 000 0000",
+    "items": [
+      {
+        "type": "product",
+        "itemId": "prod_almond_croissant",
+        "name": "A4 pack",
+        "sku": "UCH-BAK-001",
+        "quantity": 2,
+        "unitPrice": 24,
+        "totalPrice": 48,
+        "batchId": "3c10fbab-ffc7-437e-a4bd-838844cab1a3",
+        "batchNumber": "BTH-2609-758BTH-TEST-01"
+      },
+      {
+        "type": "service",
+        "itemId": "1e3c2356-a5aa-46f8-b67d-a7c718f781e7",
+        "name": "Color printings",
+        "quantity": 1,
+        "unitPrice": 10,
+        "totalPrice": 10,
+        "assignedStaffId": "usr_worker_1"
+      }
+    ],
+    "subtotal": 58,
+    "tax": 0,
+    "discount": 0,
+    "totalAmount": 58,
+    "status": "completed",
+    "paymentStatus": "paid",
+    "paymentMethod": "cash",
+    "isJob": false,
+    "jobTitle": "Job - Walk-in Customer (2 items)",
+    "createdBy": "Marcus Vance",
+    "createdAt": "2026-09-12T14:18:21.041Z",
+    "updatedAt": "2026-09-12T14:18:37.389Z",
+    "id": "5288a95d-4c89-481c-af05-ae1c12f8acb4"
   }
 ]

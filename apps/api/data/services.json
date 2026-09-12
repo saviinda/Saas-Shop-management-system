@@ -1,20 +1,5 @@
 [
   {
-    "id": "srv_barista_class",
-    "shopId": "shp_urban_cafe",
-    "name": "Masterclass Latte Art & Espresso Crafting",
-    "description": "2-hour hands-on barista calibration with sensory tasting.",
-    "category": "Workshops & Training",
-    "price": 85,
-    "durationMinutes": 120,
-    "assignedStaffIds": [
-      "usr_worker_1"
-    ],
-    "status": "active",
-    "createdAt": "2026-08-28T16:36:07.297Z",
-    "updatedAt": "2026-08-28T16:36:07.297Z"
-  },
-  {
     "shopId": "shp_1787930675212",
     "name": "Business card printing",
     "description": "Print Business card with their own design",
@@ -29,15 +14,27 @@
   },
   {
     "shopId": "shp_urban_cafe",
-    "name": "Coffee Catering for Corporate Events",
-    "description": "Mobile espresso bar with professional barista serving up to 50 guests.",
-    "category": "Event Catering",
-    "price": 350,
-    "durationMinutes": 180,
-    "assignedStaffIds": [],
+    "name": "Color printings",
+    "description": "Color printouts",
+    "category": "printouts",
+    "price": 10,
+    "durationMinutes": 15,
+    "assignedStaffIds": [
+      "usr_worker_1",
+      "usr_manager_1",
+      "usr_shop_owner_1"
+    ],
     "status": "active",
     "createdAt": "2026-09-05T08:09:36.934Z",
-    "updatedAt": "2026-09-05T08:09:36.934Z",
-    "id": "1e3c2356-a5aa-46f8-b67d-a7c718f781e7"
+    "updatedAt": "2026-09-11T13:33:51.931Z",
+    "id": "1e3c2356-a5aa-46f8-b67d-a7c718f781e7",
+    "availability": "Monday - Saturday: 9:00 AM - 7:00 PM",
+    "assignedStaffNames": [
+      "Alex Rivera",
+      "Sarah Jenkins",
+      "Marcus Vance"
+    ],
+    "isPublic": true,
+    "isFeatured": false
   }
 ]

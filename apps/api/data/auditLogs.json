@@ -1135,5 +1135,1679 @@
     },
     "createdAt": "2026-09-05T08:09:38.678Z",
     "id": "b22a52a9-3d44-41c5-9eba-79d5c63d6d55"
+  },
+  {
+    "actorId": "usr_super_admin",
+    "actorName": "Super Admin",
+    "actorRole": "super_admin",
+    "action": "LOGIN",
+    "entity": "users",
+    "entityId": "usr_super_admin",
+    "createdAt": "2026-09-09T11:09:03.444Z",
+    "id": "d03af94b-2846-4c9e-b4ce-52c1f3a41c61"
+  },
+  {
+    "actorId": "usr_super_admin",
+    "actorName": "Super Admin",
+    "actorRole": "super_admin",
+    "action": "LOGIN",
+    "entity": "users",
+    "entityId": "usr_super_admin",
+    "createdAt": "2026-09-09T11:09:07.393Z",
+    "id": "244eb7bf-1761-4f97-ae96-cda946475a5a"
+  },
+  {
+    "actorId": "usr_super_admin",
+    "actorName": "Super Admin",
+    "actorRole": "super_admin",
+    "action": "LOGIN",
+    "entity": "users",
+    "entityId": "usr_super_admin",
+    "createdAt": "2026-09-09T11:09:08.947Z",
+    "id": "d8d17717-d378-44e4-a5ae-379a69775424"
+  },
+  {
+    "actorId": "usr_super_admin",
+    "actorName": "Super Admin",
+    "actorRole": "super_admin",
+    "shopId": "shp_1788434253146",
+    "action": "DELETE_SHOP",
+    "entity": "shops",
+    "entityId": "shp_1788434253146",
+    "before": {
+      "id": "shp_1788434253146",
+      "name": "Artisan Bakery & Sweets",
+      "ownerId": "usr_1788434253146",
+      "ownerName": "Jonathan Wright",
+      "ownerEmail": "jonathan.wright@gmail.com",
+      "contactNumber": "+1 555 777 9999",
+      "email": "jonathan.wright@gmail.com",
+      "address": "88 Pastry Boulevard, Suite 10",
+      "category": "Bakery & Confectionery",
+      "status": "active",
+      "packageId": "pkg_standard",
+      "packageName": "Standard Tier",
+      "subscriptionId": "sub_1788434253146",
+      "defaultBranchId": "br_1788434253146",
+      "createdAt": "2026-09-03T11:17:33.151Z",
+      "updatedAt": "2026-09-03T11:17:33.151Z"
+    },
+    "createdAt": "2026-09-10T13:48:45.832Z",
+    "id": "32f77c48-dc76-4f2a-b38b-ef7c5adcfc36"
+  },
+  {
+    "actorId": "usr_super_admin",
+    "actorName": "Super Admin",
+    "actorRole": "super_admin",
+    "shopId": "shp_tech_gear",
+    "action": "DELETE_SHOP",
+    "entity": "shops",
+    "entityId": "shp_tech_gear",
+    "before": {
+      "id": "shp_tech_gear",
+      "name": "TechGear Pro",
+      "ownerId": "usr_owner_2",
+      "ownerName": "Elena Rostova",
+      "ownerEmail": "elena@techgear.io",
+      "contactNumber": "+1 555 901 2233",
+      "email": "sales@techgear.io",
+      "address": "77 Silicon Way, Tech Park",
+      "category": "Consumer Electronics & Hardware",
+      "status": "active",
+      "packageId": "pkg_premium",
+      "packageName": "Premium Tier",
+      "defaultBranchId": "br_tech_01",
+      "createdAt": "2026-08-18T16:36:07.212Z",
+      "updatedAt": "2026-08-28T16:36:07.212Z"
+    },
+    "createdAt": "2026-09-10T13:48:50.174Z",
+    "id": "5d75f05a-bd86-46f7-89fc-9c57d5418f4b"
+  },
+  {
+    "actorId": "usr_super_admin",
+    "actorName": "Super Admin",
+    "actorRole": "super_admin",
+    "action": "LOGIN",
+    "entity": "users",
+    "entityId": "usr_super_admin",
+    "createdAt": "2026-09-10T13:53:31.415Z",
+    "id": "cba7986a-df37-4bf5-b15c-3158a576b411"
+  },
+  {
+    "actorId": "usr_super_admin",
+    "actorName": "Super Admin",
+    "actorRole": "super_admin",
+    "action": "LOGIN",
+    "entity": "users",
+    "entityId": "usr_super_admin",
+    "createdAt": "2026-09-11T07:45:36.243Z",
+    "id": "4bb8c43c-b96f-485f-b564-6d91b1beed05"
+  },
+  {
+    "actorId": "usr_super_admin",
+    "actorName": "Super Admin",
+    "actorRole": "super_admin",
+    "action": "CREATE_ROLE",
+    "entity": "roles",
+    "entityId": "a54d1561-95ca-4d07-8013-b2bb2442d8c4",
+    "after": {
+      "name": "Quality Assurance Inspector",
+      "slug": "quality_assurance_inspector",
+      "description": "Can inspect shops and audit logs",
+      "isSystem": false,
+      "permissions": [
+        {
+          "module": "shops",
+          "actions": [
+            "view"
+          ]
+        },
+        {
+          "module": "audit_logs",
+          "actions": [
+            "view",
+            "create"
+          ]
+        }
+      ],
+      "createdAt": "2026-09-11T07:45:36.707Z",
+      "updatedAt": "2026-09-11T07:45:36.707Z",
+      "id": "a54d1561-95ca-4d07-8013-b2bb2442d8c4"
+    },
+    "createdAt": "2026-09-11T07:45:36.709Z",
+    "id": "cb24fa4b-1127-49df-9513-14118a5d4306"
+  },
+  {
+    "actorId": "usr_super_admin",
+    "actorName": "Super Admin",
+    "actorRole": "super_admin",
+    "action": "DELETE_ROLE",
+    "entity": "roles",
+    "entityId": "a54d1561-95ca-4d07-8013-b2bb2442d8c4",
+    "before": {
+      "name": "Quality Assurance Inspector",
+      "slug": "quality_assurance_inspector",
+      "description": "Can inspect shops and audit logs",
+      "isSystem": false,
+      "permissions": [
+        {
+          "module": "shops",
+          "actions": [
+            "view"
+          ]
+        },
+        {
+          "module": "audit_logs",
+          "actions": [
+            "view",
+            "create"
+          ]
+        }
+      ],
+      "createdAt": "2026-09-11T07:45:36.707Z",
+      "updatedAt": "2026-09-11T07:45:36.707Z",
+      "id": "a54d1561-95ca-4d07-8013-b2bb2442d8c4"
+    },
+    "createdAt": "2026-09-11T07:45:36.725Z",
+    "id": "18f9417c-6af5-4010-be93-e137484c0d3f"
+  },
+  {
+    "actorId": "usr_super_admin",
+    "actorName": "Super Admin",
+    "actorRole": "super_admin",
+    "action": "CREATE_USER",
+    "entity": "users",
+    "entityId": "011ad62f-79f3-4d2a-bc92-9c4adfc65e39",
+    "after": {
+      "name": "RBAC Test User",
+      "email": "rbac_test_1789112736728@example.com",
+      "role": "manager",
+      "roles": [
+        "manager",
+        "finance_auditor"
+      ]
+    },
+    "createdAt": "2026-09-11T07:45:36.807Z",
+    "id": "f9fdf4d0-307a-4848-a12d-f8682019b559"
+  },
+  {
+    "actorId": "usr_super_admin",
+    "actorName": "Super Admin",
+    "actorRole": "super_admin",
+    "action": "DELETE_STAFF_USER",
+    "entity": "users",
+    "entityId": "011ad62f-79f3-4d2a-bc92-9c4adfc65e39",
+    "before": {
+      "email": "rbac_test_1789112736728@example.com",
+      "name": "RBAC Test User",
+      "phone": "+94 77 999 8888",
+      "role": "manager",
+      "roles": [
+        "manager",
+        "finance_auditor"
+      ],
+      "permissions": [
+        "dashboard",
+        "branches",
+        "staff",
+        "products",
+        "services",
+        "customers",
+        "orders",
+        "inventory",
+        "procurement",
+        "tasks",
+        "communication"
+      ],
+      "status": "active",
+      "branchIds": [],
+      "passwordHash": "$2a$10$U/sCD1vJc8VMHiUoYIIukuOzQasbno7BqYJmgkfxXQNhzSXLafBBG",
+      "createdAt": "2026-09-11T07:45:36.804Z",
+      "updatedAt": "2026-09-11T07:45:36.804Z",
+      "id": "011ad62f-79f3-4d2a-bc92-9c4adfc65e39"
+    },
+    "createdAt": "2026-09-11T07:45:37.000Z",
+    "id": "a1ac8c63-d06d-4aba-8ab1-450e21f8e072"
+  },
+  {
+    "actorId": "usr_super_admin",
+    "actorName": "Super Admin",
+    "actorRole": "super_admin",
+    "action": "LOGIN",
+    "entity": "users",
+    "entityId": "usr_super_admin",
+    "createdAt": "2026-09-11T07:49:17.544Z",
+    "id": "bbc59cd8-7d31-42ed-8723-e009753591ba"
+  },
+  {
+    "actorId": "usr_super_admin",
+    "actorName": "Super Admin",
+    "actorRole": "super_admin",
+    "action": "CREATE_ROLE",
+    "entity": "roles",
+    "entityId": "dec85ece-9913-4fad-9c18-4cb93147c5b3",
+    "after": {
+      "name": "Quality Assurance Inspector",
+      "slug": "quality_assurance_inspector",
+      "description": "Can inspect shops and audit logs",
+      "isSystem": false,
+      "permissions": [
+        {
+          "module": "shops",
+          "actions": [
+            "view"
+          ]
+        },
+        {
+          "module": "audit_logs",
+          "actions": [
+            "view",
+            "create"
+          ]
+        }
+      ],
+      "createdAt": "2026-09-11T07:49:17.568Z",
+      "updatedAt": "2026-09-11T07:49:17.568Z",
+      "id": "dec85ece-9913-4fad-9c18-4cb93147c5b3"
+    },
+    "createdAt": "2026-09-11T07:49:17.570Z",
+    "id": "02eb6292-a7c0-464c-a925-b94c6bd0ea51"
+  },
+  {
+    "actorId": "usr_super_admin",
+    "actorName": "Super Admin",
+    "actorRole": "super_admin",
+    "action": "UPDATE_ROLE",
+    "entity": "roles",
+    "entityId": "dec85ece-9913-4fad-9c18-4cb93147c5b3",
+    "before": {
+      "name": "Quality Assurance Inspector",
+      "slug": "quality_assurance_inspector",
+      "description": "Can inspect shops and audit logs",
+      "isSystem": false,
+      "permissions": [
+        {
+          "module": "shops",
+          "actions": [
+            "view"
+          ]
+        },
+        {
+          "module": "audit_logs",
+          "actions": [
+            "view",
+            "create"
+          ]
+        }
+      ],
+      "createdAt": "2026-09-11T07:49:17.568Z",
+      "updatedAt": "2026-09-11T07:49:17.568Z",
+      "id": "dec85ece-9913-4fad-9c18-4cb93147c5b3"
+    },
+    "after": {
+      "name": "QA Lead Inspector",
+      "slug": "quality_assurance_inspector",
+      "description": "Updated QA lead permissions",
+      "isSystem": false,
+      "permissions": [
+        {
+          "module": "shops",
+          "actions": [
+            "view",
+            "edit"
+          ]
+        },
+        {
+          "module": "audit_logs",
+          "actions": [
+            "view",
+            "create"
+          ]
+        }
+      ],
+      "createdAt": "2026-09-11T07:49:17.568Z",
+      "updatedAt": "2026-09-11T07:49:17.578Z",
+      "id": "dec85ece-9913-4fad-9c18-4cb93147c5b3"
+    },
+    "createdAt": "2026-09-11T07:49:17.580Z",
+    "id": "66722e8b-8cf4-4f5e-8884-dcd2cd7bd083"
+  },
+  {
+    "actorId": "usr_super_admin",
+    "actorName": "Super Admin",
+    "actorRole": "super_admin",
+    "action": "DELETE_ROLE",
+    "entity": "roles",
+    "entityId": "dec85ece-9913-4fad-9c18-4cb93147c5b3",
+    "before": {
+      "name": "QA Lead Inspector",
+      "slug": "quality_assurance_inspector",
+      "description": "Updated QA lead permissions",
+      "isSystem": false,
+      "permissions": [
+        {
+          "module": "shops",
+          "actions": [
+            "view",
+            "edit"
+          ]
+        },
+        {
+          "module": "audit_logs",
+          "actions": [
+            "view",
+            "create"
+          ]
+        }
+      ],
+      "createdAt": "2026-09-11T07:49:17.568Z",
+      "updatedAt": "2026-09-11T07:49:17.578Z",
+      "id": "dec85ece-9913-4fad-9c18-4cb93147c5b3"
+    },
+    "createdAt": "2026-09-11T07:49:17.589Z",
+    "id": "3be40e39-d30c-4ed6-b7e4-c8e7c1071857"
+  },
+  {
+    "actorId": "usr_super_admin",
+    "actorName": "Super Admin",
+    "actorRole": "super_admin",
+    "action": "CREATE_USER",
+    "entity": "users",
+    "entityId": "7897153e-f5da-49a6-ad8b-4f496a509831",
+    "after": {
+      "name": "RBAC Test User",
+      "email": "rbac_test_1789112957591@example.com",
+      "role": "manager",
+      "roles": [
+        "manager",
+        "finance_auditor"
+      ]
+    },
+    "createdAt": "2026-09-11T07:49:17.669Z",
+    "id": "3584ff57-0a68-4f58-af3b-72df849d8f9c"
+  },
+  {
+    "actorId": "usr_super_admin",
+    "actorName": "Super Admin",
+    "actorRole": "super_admin",
+    "action": "DELETE_STAFF_USER",
+    "entity": "users",
+    "entityId": "7897153e-f5da-49a6-ad8b-4f496a509831",
+    "before": {
+      "email": "rbac_test_1789112957591@example.com",
+      "name": "RBAC Test User",
+      "phone": "+94 77 999 8888",
+      "role": "manager",
+      "roles": [
+        "manager",
+        "finance_auditor"
+      ],
+      "permissions": [
+        "dashboard",
+        "branches",
+        "staff",
+        "products",
+        "services",
+        "customers",
+        "orders",
+        "inventory",
+        "procurement",
+        "tasks",
+        "communication"
+      ],
+      "status": "active",
+      "branchIds": [],
+      "passwordHash": "$2a$10$mrKrd71dvWizLkE1IF5fue23bkFKnX5kOXE3r3AaHS.wEWkewRLfK",
+      "createdAt": "2026-09-11T07:49:17.668Z",
+      "updatedAt": "2026-09-11T07:49:17.668Z",
+      "id": "7897153e-f5da-49a6-ad8b-4f496a509831"
+    },
+    "createdAt": "2026-09-11T07:49:17.676Z",
+    "id": "fbe99a7b-9ea2-47c1-a3da-da2f4b809575"
+  },
+  {
+    "actorId": "usr_super_admin",
+    "actorName": "Super Admin",
+    "actorRole": "super_admin",
+    "action": "CREATE_ROLE",
+    "entity": "roles",
+    "entityId": "15a83c7b-0253-413e-9824-c7ae241f2d1c",
+    "after": {
+      "name": "Safety & Audit Officer",
+      "slug": "safety_audit_officer",
+      "description": "Responsible for safety audits and complianceResponsible for safety audits and compliance",
+      "isSystem": false,
+      "permissions": [
+        {
+          "module": "dashboard",
+          "actions": [
+            "view"
+          ]
+        },
+        {
+          "module": "shops",
+          "actions": [
+            "view",
+            "edit"
+          ]
+        },
+        {
+          "module": "roles",
+          "actions": [
+            "view"
+          ]
+        },
+        {
+          "module": "users",
+          "actions": [
+            "view"
+          ]
+        },
+        {
+          "module": "packages",
+          "actions": [
+            "view"
+          ]
+        },
+        {
+          "module": "change_requests",
+          "actions": [
+            "view"
+          ]
+        },
+        {
+          "module": "audit_logs",
+          "actions": [
+            "view"
+          ]
+        },
+        {
+          "module": "subscriptions",
+          "actions": [
+            "view"
+          ]
+        },
+        {
+          "module": "payments",
+          "actions": [
+            "view"
+          ]
+        },
+        {
+          "module": "reports",
+          "actions": [
+            "view"
+          ]
+        },
+        {
+          "module": "branches",
+          "actions": [
+            "view"
+          ]
+        },
+        {
+          "module": "products",
+          "actions": [
+            "view"
+          ]
+        },
+        {
+          "module": "services",
+          "actions": [
+            "view"
+          ]
+        },
+        {
+          "module": "customers",
+          "actions": [
+            "view"
+          ]
+        },
+        {
+          "module": "orders",
+          "actions": [
+            "view"
+          ]
+        },
+        {
+          "module": "inventory",
+          "actions": [
+            "view"
+          ]
+        },
+        {
+          "module": "procurement",
+          "actions": [
+            "view"
+          ]
+        },
+        {
+          "module": "tasks",
+          "actions": [
+            "view"
+          ]
+        },
+        {
+          "module": "communication",
+          "actions": [
+            "view"
+          ]
+        }
+      ],
+      "createdAt": "2026-09-11T08:00:08.838Z",
+      "updatedAt": "2026-09-11T08:00:08.838Z",
+      "id": "15a83c7b-0253-413e-9824-c7ae241f2d1c"
+    },
+    "createdAt": "2026-09-11T08:00:08.870Z",
+    "id": "a7228419-d1c4-449b-8d7a-80f4b2427c01"
+  },
+  {
+    "actorId": "usr_super_admin",
+    "actorName": "Super Admin",
+    "actorRole": "super_admin",
+    "shopId": "shp_urban_cafe",
+    "action": "CREATE_USER",
+    "entity": "users",
+    "entityId": "c810d135-4b2d-4dcd-a363-55950330e3a0",
+    "after": {
+      "name": "Marcus Vance",
+      "email": "marcus.vance@apexstore.com",
+      "role": "sales_staff",
+      "roles": [
+        "sales_staff",
+        "role_manager"
+      ]
+    },
+    "createdAt": "2026-09-11T08:07:16.833Z",
+    "id": "1819a234-c858-4dac-8f36-2be04dbf52f1"
+  },
+  {
+    "actorId": "usr_super_admin",
+    "actorName": "Super Admin",
+    "actorRole": "super_admin",
+    "action": "UPDATE_PACKAGE",
+    "entity": "packages",
+    "entityId": "pkg_premium",
+    "before": {
+      "id": "pkg_premium",
+      "name": "Premium Tier",
+      "description": "Full enterprise SaaS capability with unlimited staff, branches and high throughput",
+      "price": 299,
+      "durationDays": 30,
+      "limits": {
+        "shops": 5,
+        "branches": 10,
+        "users": 50,
+        "products": 2500,
+        "services": 250,
+        "storageMb": 10000
+      },
+      "features": [
+        "multi_shop",
+        "multi_branch",
+        "full_reports",
+        "custom_roles",
+        "dedicated_support",
+        "audit_export"
+      ],
+      "status": "active",
+      "createdAt": "2026-08-28T16:36:06.999Z",
+      "updatedAt": "2026-08-28T16:36:06.999Z"
+    },
+    "after": {
+      "id": "pkg_premium",
+      "name": "Premium Tier",
+      "description": "Full enterprise SaaS capability with unlimited staff, branches and high throughput",
+      "price": 299,
+      "durationDays": 30,
+      "limits": {
+        "shops": 5,
+        "branches": 10,
+        "users": 50,
+        "products": 2500,
+        "services": 250,
+        "storageMb": 10000
+      },
+      "features": [
+        "multi_shop",
+        "multi_branch",
+        "full_reports",
+        "custom_roles",
+        "dedicated_support",
+        "audit_export"
+      ],
+      "status": "active",
+      "createdAt": "2026-08-28T16:36:06.999Z",
+      "updatedAt": "2026-09-11T08:16:14.606Z"
+    },
+    "createdAt": "2026-09-11T08:16:14.611Z",
+    "id": "c3fc48ec-6b9d-4e57-8920-27d79ecaf948"
+  },
+  {
+    "actorId": "usr_super_admin",
+    "actorName": "Super Admin",
+    "actorRole": "super_admin",
+    "shopId": "shp_urban_cafe",
+    "action": "UPDATE_SUBSCRIPTION",
+    "entity": "subscriptions",
+    "entityId": "sub_urban_cafe",
+    "before": {
+      "id": "sub_urban_cafe",
+      "shopId": "shp_urban_cafe",
+      "packageId": "pkg_standard",
+      "packageName": "Standard Tier",
+      "limits": {
+        "shops": 1,
+        "branches": 3,
+        "users": 15,
+        "products": 500,
+        "services": 50,
+        "storageMb": 2000
+      },
+      "price": 139,
+      "startAt": "2026-09-04T06:14:07.253Z",
+      "expiryAt": "2026-10-04T06:14:07.253Z",
+      "status": "active",
+      "autoRenew": true,
+      "createdAt": "2026-08-28T16:36:07.135Z",
+      "updatedAt": "2026-09-04T06:14:07.253Z"
+    },
+    "after": {
+      "id": "sub_urban_cafe",
+      "shopId": "shp_urban_cafe",
+      "packageId": "pkg_standard",
+      "packageName": "Standard Tier",
+      "limits": {
+        "shops": 1,
+        "branches": 3,
+        "users": 15,
+        "products": 500,
+        "services": 50,
+        "storageMb": 2000
+      },
+      "price": 139,
+      "startAt": "2026-09-04T06:14:07.253Z",
+      "expiryAt": "2026-11-03T23:59:59.000Z",
+      "status": "active",
+      "autoRenew": true,
+      "createdAt": "2026-08-28T16:36:07.135Z",
+      "updatedAt": "2026-09-11T08:17:14.104Z"
+    },
+    "createdAt": "2026-09-11T08:17:14.137Z",
+    "id": "435cfe8d-26b6-4257-a89c-07eba18e3713"
+  },
+  {
+    "actorId": "usr_super_admin",
+    "actorName": "Super Admin",
+    "actorRole": "super_admin",
+    "shopId": "shp_urban_cafe",
+    "action": "REVIEW_CHANGE_REQUEST_APPROVED",
+    "entity": "changeRequests",
+    "entityId": "45a142e9-1bc2-48f0-99e0-707f0d40ee9b",
+    "before": {
+      "shopId": "shp_urban_cafe",
+      "shopName": "Urban Cafe Hub & Roastery",
+      "requesterId": "usr_shop_owner_1",
+      "requesterName": "Marcus Vance",
+      "field": "email",
+      "currentValue": "contact@urbancafe.com",
+      "requestedValue": "hq.operations@urbancafe.com",
+      "reason": "Company domain migration to new corporate email structure.",
+      "status": "pending",
+      "createdAt": "2026-09-04T06:15:34.691Z",
+      "updatedAt": "2026-09-04T06:15:34.691Z",
+      "id": "45a142e9-1bc2-48f0-99e0-707f0d40ee9b"
+    },
+    "after": {
+      "shopId": "shp_urban_cafe",
+      "shopName": "Urban Cafe Hub & Roastery",
+      "requesterId": "usr_shop_owner_1",
+      "requesterName": "Marcus Vance",
+      "field": "email",
+      "currentValue": "contact@urbancafe.com",
+      "requestedValue": "hq.operations@urbancafe.com",
+      "reason": "Company domain migration to new corporate email structure.",
+      "status": "approved",
+      "createdAt": "2026-09-04T06:15:34.691Z",
+      "updatedAt": "2026-09-11T08:19:22.217Z",
+      "id": "45a142e9-1bc2-48f0-99e0-707f0d40ee9b",
+      "reviewedBy": "Super Admin",
+      "reviewedAt": "2026-09-11T08:19:22.217Z"
+    },
+    "createdAt": "2026-09-11T08:19:22.297Z",
+    "id": "31107c2c-53ee-4692-9aa3-637550dc291f"
+  },
+  {
+    "actorId": "usr_super_admin",
+    "actorName": "Super Admin",
+    "actorRole": "super_admin",
+    "action": "DELETE_ROLE",
+    "entity": "roles",
+    "entityId": "role_support_lead",
+    "before": {
+      "id": "role_support_lead",
+      "name": "Platform Support Specialist",
+      "slug": "support_lead",
+      "description": "Helpdesk operator managing shop communication tickets, change requests, and client accounts.",
+      "isSystem": false,
+      "permissions": [
+        {
+          "module": "dashboard",
+          "actions": [
+            "view"
+          ]
+        },
+        {
+          "module": "communication",
+          "actions": [
+            "view",
+            "create",
+            "edit"
+          ]
+        },
+        {
+          "module": "change_requests",
+          "actions": [
+            "view",
+            "edit"
+          ]
+        },
+        {
+          "module": "shops",
+          "actions": [
+            "view"
+          ]
+        },
+        {
+          "module": "users",
+          "actions": [
+            "view"
+          ]
+        }
+      ],
+      "createdAt": "2026-08-15T00:00:00.000Z",
+      "updatedAt": "2026-08-15T00:00:00.000Z"
+    },
+    "createdAt": "2026-09-11T08:30:00.950Z",
+    "id": "9f6531fd-9b39-4e37-a027-14bf13a7944b"
+  },
+  {
+    "actorId": "usr_super_admin",
+    "actorName": "Super Admin",
+    "actorRole": "super_admin",
+    "action": "DELETE_ROLE",
+    "entity": "roles",
+    "entityId": "15a83c7b-0253-413e-9824-c7ae241f2d1c",
+    "before": {
+      "name": "Safety & Audit Officer",
+      "slug": "safety_audit_officer",
+      "description": "Responsible for safety audits and complianceResponsible for safety audits and compliance",
+      "isSystem": false,
+      "permissions": [
+        {
+          "module": "dashboard",
+          "actions": [
+            "view"
+          ]
+        },
+        {
+          "module": "shops",
+          "actions": [
+            "view",
+            "edit"
+          ]
+        },
+        {
+          "module": "roles",
+          "actions": [
+            "view"
+          ]
+        },
+        {
+          "module": "users",
+          "actions": [
+            "view"
+          ]
+        },
+        {
+          "module": "packages",
+          "actions": [
+            "view"
+          ]
+        },
+        {
+          "module": "change_requests",
+          "actions": [
+            "view"
+          ]
+        },
+        {
+          "module": "audit_logs",
+          "actions": [
+            "view"
+          ]
+        },
+        {
+          "module": "subscriptions",
+          "actions": [
+            "view"
+          ]
+        },
+        {
+          "module": "payments",
+          "actions": [
+            "view"
+          ]
+        },
+        {
+          "module": "reports",
+          "actions": [
+            "view"
+          ]
+        },
+        {
+          "module": "branches",
+          "actions": [
+            "view"
+          ]
+        },
+        {
+          "module": "products",
+          "actions": [
+            "view"
+          ]
+        },
+        {
+          "module": "services",
+          "actions": [
+            "view"
+          ]
+        },
+        {
+          "module": "customers",
+          "actions": [
+            "view"
+          ]
+        },
+        {
+          "module": "orders",
+          "actions": [
+            "view"
+          ]
+        },
+        {
+          "module": "inventory",
+          "actions": [
+            "view"
+          ]
+        },
+        {
+          "module": "procurement",
+          "actions": [
+            "view"
+          ]
+        },
+        {
+          "module": "tasks",
+          "actions": [
+            "view"
+          ]
+        },
+        {
+          "module": "communication",
+          "actions": [
+            "view"
+          ]
+        }
+      ],
+      "createdAt": "2026-09-11T08:00:08.838Z",
+      "updatedAt": "2026-09-11T08:00:08.838Z",
+      "id": "15a83c7b-0253-413e-9824-c7ae241f2d1c"
+    },
+    "createdAt": "2026-09-11T08:30:04.327Z",
+    "id": "4a1d5c53-f6d8-4242-bc24-082cb110931b"
+  },
+  {
+    "actorId": "usr_super_admin",
+    "actorName": "Super Admin",
+    "actorRole": "super_admin",
+    "shopId": "shp_1787930675212",
+    "action": "REVIEW_CHANGE_REQUEST_APPROVED",
+    "entity": "changeRequests",
+    "entityId": "50c40bc5-0289-4f65-bde8-f1be6b1cb7b3",
+    "before": {
+      "shopId": "shp_1787930675212",
+      "shopName": "Pothhala",
+      "requesterId": "usr_1787930675212",
+      "requesterName": "Dilshan ",
+      "field": "Business / Shop Name",
+      "currentValue": "Pothhala",
+      "requestedValue": "Poth Hala",
+      "reason": "sddsf",
+      "status": "pending",
+      "createdAt": "2026-09-02T08:12:59.085Z",
+      "updatedAt": "2026-09-02T08:12:59.085Z",
+      "id": "50c40bc5-0289-4f65-bde8-f1be6b1cb7b3"
+    },
+    "after": {
+      "shopId": "shp_1787930675212",
+      "shopName": "Pothhala",
+      "requesterId": "usr_1787930675212",
+      "requesterName": "Dilshan ",
+      "field": "Business / Shop Name",
+      "currentValue": "Pothhala",
+      "requestedValue": "Poth Hala",
+      "reason": "sddsf",
+      "status": "approved",
+      "createdAt": "2026-09-02T08:12:59.085Z",
+      "updatedAt": "2026-09-11T08:34:09.479Z",
+      "id": "50c40bc5-0289-4f65-bde8-f1be6b1cb7b3",
+      "reviewedBy": "Super Admin",
+      "reviewedAt": "2026-09-11T08:34:09.479Z"
+    },
+    "createdAt": "2026-09-11T08:34:09.493Z",
+    "id": "366f6d0f-92ad-40a0-bcfe-662eda47fbb0"
+  },
+  {
+    "actorId": "usr_super_admin",
+    "actorName": "Super Admin",
+    "actorRole": "super_admin",
+    "action": "LOGIN",
+    "entity": "users",
+    "entityId": "usr_super_admin",
+    "createdAt": "2026-09-11T08:39:55.781Z",
+    "id": "6c91fe6f-188a-468c-af0e-c79629eb1f97"
+  },
+  {
+    "actorId": "usr_super_admin",
+    "actorName": "Super Admin",
+    "actorRole": "super_admin",
+    "action": "LOGIN",
+    "entity": "users",
+    "entityId": "usr_super_admin",
+    "createdAt": "2026-09-11T08:42:48.388Z",
+    "id": "52c6b107-ea22-4263-b896-0cb13100b833"
+  },
+  {
+    "actorId": "usr_super_admin",
+    "actorName": "Super Admin",
+    "actorRole": "super_admin",
+    "action": "LOGIN",
+    "entity": "users",
+    "entityId": "usr_super_admin",
+    "createdAt": "2026-09-11T08:49:37.396Z",
+    "id": "56adc2e5-c68c-441e-8247-778336c4e33a"
+  },
+  {
+    "actorId": "usr_super_admin",
+    "actorName": "Super Admin",
+    "actorRole": "super_admin",
+    "shopId": "shp_1787930675212",
+    "action": "CREATE_USER",
+    "entity": "users",
+    "entityId": "eaf765ef-c2f9-412f-943b-65f5bb714198",
+    "after": {
+      "name": "Nimal JayasuriyaniNimal Jayasuriyamal.j@testshop.com",
+      "email": "nimal.j@testshop.com",
+      "role": "sales_staff",
+      "roles": [
+        "sales_staff",
+        "role_shop_owner"
+      ]
+    },
+    "createdAt": "2026-09-11T09:14:57.340Z",
+    "id": "15deb177-9bcb-4716-a8e7-444345875429"
+  },
+  {
+    "actorId": "usr_1787930675212",
+    "actorName": "Dilshan ",
+    "actorRole": "shop_owner",
+    "shopId": "shp_1787930675212",
+    "action": "LOGIN",
+    "entity": "users",
+    "entityId": "usr_1787930675212",
+    "createdAt": "2026-09-11T09:40:13.761Z",
+    "id": "f6c084f4-ef22-470a-9d72-f31bed0e534b"
+  },
+  {
+    "actorId": "usr_super_admin",
+    "actorName": "Super Admin",
+    "actorRole": "super_admin",
+    "action": "PLATFORM_BOOTSTRAP",
+    "entity": "system",
+    "entityId": "sys_root",
+    "after": {
+      "version": "1.0.0",
+      "status": "ready"
+    },
+    "createdAt": "2026-09-11T10:16:53.389Z",
+    "id": "0be1d767-6fe3-45b2-be65-d33a3acb39a3"
+  },
+  {
+    "actorId": "usr_shop_owner_1",
+    "actorName": "Marcus Vance",
+    "actorRole": "shop_owner",
+    "shopId": "shp_urban_cafe",
+    "action": "LOGIN",
+    "entity": "users",
+    "entityId": "usr_shop_owner_1",
+    "createdAt": "2026-09-11T10:16:53.546Z",
+    "id": "2b7c5313-76cb-4695-a948-1b685e1198f9"
+  },
+  {
+    "actorId": "usr_shop_owner_1",
+    "actorName": "Marcus Vance",
+    "actorRole": "shop_owner",
+    "shopId": "shp_urban_cafe",
+    "action": "LOGIN",
+    "entity": "users",
+    "entityId": "usr_shop_owner_1",
+    "createdAt": "2026-09-11T10:57:55.008Z",
+    "id": "a1c56fa2-b9db-46a8-b84c-4b941be14b98"
+  },
+  {
+    "actorId": "usr_shop_owner_1",
+    "actorName": "Marcus Vance",
+    "actorRole": "shop_owner",
+    "shopId": "shp_urban_cafe",
+    "action": "CREATE_PRODUCT_BATCH",
+    "entity": "productBatches",
+    "entityId": "3c10fbab-ffc7-437e-a4bd-838844cab1a3",
+    "after": {
+      "shopId": "shp_urban_cafe",
+      "productId": "prod_almond_croissant",
+      "branchId": "br_urban_downtown",
+      "branchName": "Downtown Main Branch",
+      "batchNumber": "BTH-2609-758BTH-TEST-01",
+      "costPrice": 12,
+      "sellingPrice": 24,
+      "quantity": 5025,
+      "initialQuantity": 5025,
+      "manufacturingDate": "2026-09-11",
+      "status": "active",
+      "createdAt": "2026-09-11T11:07:42.486Z",
+      "updatedAt": "2026-09-11T11:07:42.486Z",
+      "id": "3c10fbab-ffc7-437e-a4bd-838844cab1a3"
+    },
+    "createdAt": "2026-09-11T11:07:44.310Z",
+    "id": "5fcccb35-2175-4e13-bb73-e7011137b6e6"
+  },
+  {
+    "actorId": "usr_shop_owner_1",
+    "actorName": "Marcus Vance",
+    "actorRole": "shop_owner",
+    "shopId": "shp_urban_cafe",
+    "action": "LOGIN",
+    "entity": "users",
+    "entityId": "usr_shop_owner_1",
+    "createdAt": "2026-09-11T11:45:37.007Z",
+    "id": "f571950d-5c20-4df1-82b0-4c0e50972af1"
+  },
+  {
+    "actorId": "usr_shop_owner_1",
+    "actorName": "Marcus Vance",
+    "actorRole": "shop_owner",
+    "shopId": "shp_urban_cafe",
+    "action": "LOGIN",
+    "entity": "users",
+    "entityId": "usr_shop_owner_1",
+    "createdAt": "2026-09-11T11:46:12.880Z",
+    "id": "30e1a305-7f9b-4078-9ad0-d4c9d243bcfb"
+  },
+  {
+    "actorId": "usr_shop_owner_1",
+    "actorName": "Marcus Vance",
+    "actorRole": "shop_owner",
+    "shopId": "shp_urban_cafe",
+    "action": "LOGIN",
+    "entity": "users",
+    "entityId": "usr_shop_owner_1",
+    "createdAt": "2026-09-11T13:02:41.133Z",
+    "id": "1053d31f-e7ad-4a20-82da-2debcbb0f097"
+  },
+  {
+    "actorId": "usr_shop_owner_1",
+    "actorName": "Marcus Vance",
+    "actorRole": "shop_owner",
+    "shopId": "shp_urban_cafe",
+    "action": "DELETE_PRODUCT",
+    "entity": "products",
+    "entityId": "prod_espresso_machine",
+    "before": {
+      "id": "prod_espresso_machine",
+      "shopId": "shp_urban_cafe",
+      "sku": "UCH-EQP-002",
+      "name": "Dual Boiler Commercial Espresso Machine",
+      "description": "Precision temperature PID commercial grade 2-group machine.",
+      "category": "Brewing Equipment",
+      "costPrice": 1200,
+      "sellingPrice": 1850,
+      "minimumStockLevel": 2,
+      "status": "active",
+      "createdAt": "2026-09-11T10:16:53.342Z",
+      "updatedAt": "2026-09-11T10:16:53.342Z"
+    },
+    "createdAt": "2026-09-11T13:30:17.702Z",
+    "id": "3349dad0-1a7f-4b5a-a6fb-472f46e27639"
+  },
+  {
+    "actorId": "usr_shop_owner_1",
+    "actorName": "Marcus Vance",
+    "actorRole": "shop_owner",
+    "shopId": "shp_urban_cafe",
+    "action": "DELETE_PRODUCT",
+    "entity": "products",
+    "entityId": "prod_ethiopian_roast",
+    "before": {
+      "id": "prod_ethiopian_roast",
+      "shopId": "shp_urban_cafe",
+      "sku": "UCH-COF-001",
+      "name": "Single-Origin Ethiopian Yirgacheffe (1kg)",
+      "description": "Floral aroma with bright citrus and bergamot notes.",
+      "category": "Coffee Beans",
+      "costPrice": 18,
+      "sellingPrice": 34,
+      "minimumStockLevel": 10,
+      "supplierId": "sup_colombia_beans",
+      "status": "active",
+      "createdAt": "2026-09-11T10:16:53.337Z",
+      "updatedAt": "2026-09-11T10:16:53.337Z"
+    },
+    "createdAt": "2026-09-11T13:30:20.433Z",
+    "id": "b1443576-153b-44cc-ac61-4b75129f5b61"
+  },
+  {
+    "actorId": "usr_shop_owner_1",
+    "actorName": "Marcus Vance",
+    "actorRole": "shop_owner",
+    "shopId": "shp_urban_cafe",
+    "action": "DELETE_PRODUCT",
+    "entity": "products",
+    "entityId": "fc6a9027-f43f-4ab1-8b9b-dc8902e1ff7b",
+    "before": {
+      "shopId": "shp_urban_cafe",
+      "sku": "UCH-TEA-004",
+      "name": "Organic Japanese Ceremonial Matcha (100g)",
+      "description": "Stone-ground ceremonial grade green tea powder from Uji, Kyoto.",
+      "category": "Specialty Teas",
+      "costPrice": 14.5,
+      "sellingPrice": 28,
+      "minimumStockLevel": 8,
+      "status": "active",
+      "createdAt": "2026-09-05T08:00:31.614Z",
+      "updatedAt": "2026-09-05T08:00:31.614Z",
+      "id": "fc6a9027-f43f-4ab1-8b9b-dc8902e1ff7b"
+    },
+    "createdAt": "2026-09-11T13:30:23.281Z",
+    "id": "848ac245-cb14-4101-b268-47ae42f69aad"
+  },
+  {
+    "actorId": "usr_shop_owner_1",
+    "actorName": "Marcus Vance",
+    "actorRole": "shop_owner",
+    "shopId": "shp_urban_cafe",
+    "action": "UPDATE_PRODUCT",
+    "entity": "products",
+    "entityId": "prod_almond_croissant",
+    "before": {
+      "id": "prod_almond_croissant",
+      "shopId": "shp_urban_cafe",
+      "sku": "UCH-BAK-003",
+      "name": "Fresh Baked Almond Croissant",
+      "description": "Flaky French butter pastry with toasted frangipane filling.",
+      "category": "Bakery & Pastries",
+      "costPrice": 12,
+      "sellingPrice": 24,
+      "minimumStockLevel": 15,
+      "status": "active",
+      "createdAt": "2026-09-11T10:16:53.346Z",
+      "updatedAt": "2026-09-11T11:07:44.303Z"
+    },
+    "after": {
+      "id": "prod_almond_croissant",
+      "shopId": "shp_urban_cafe",
+      "sku": "UCH-BAK-001",
+      "name": "A4 pack",
+      "description": "White color",
+      "category": "Papers",
+      "costPrice": 12,
+      "sellingPrice": 24,
+      "minimumStockLevel": 1,
+      "status": "active",
+      "createdAt": "2026-09-11T10:16:53.346Z",
+      "updatedAt": "2026-09-11T13:31:25.122Z",
+      "isPublic": true,
+      "isFeatured": false,
+      "tags": [],
+      "variants": []
+    },
+    "createdAt": "2026-09-11T13:31:25.135Z",
+    "id": "3868e895-993b-4044-b6da-6c82b0d1c7d4"
+  },
+  {
+    "actorId": "usr_shop_owner_1",
+    "actorName": "Marcus Vance",
+    "actorRole": "shop_owner",
+    "shopId": "shp_urban_cafe",
+    "action": "CREATE_PRODUCT_BATCH",
+    "entity": "productBatches",
+    "entityId": "86222558-2cab-451f-9edb-5fdf326b17c0",
+    "after": {
+      "shopId": "shp_urban_cafe",
+      "productId": "prod_almond_croissant",
+      "branchId": "br_urban_downtown",
+      "branchName": "Downtown Main Branch",
+      "batchNumber": "BTH-2609-643",
+      "costPrice": 20,
+      "sellingPrice": 24,
+      "quantity": 40,
+      "initialQuantity": 40,
+      "manufacturingDate": "2026-09-11",
+      "status": "active",
+      "createdAt": "2026-09-11T13:32:31.469Z",
+      "updatedAt": "2026-09-11T13:32:31.469Z",
+      "id": "86222558-2cab-451f-9edb-5fdf326b17c0"
+    },
+    "createdAt": "2026-09-11T13:32:33.222Z",
+    "id": "6398c44e-c17c-4cbc-bd50-abdba911dd76"
+  },
+  {
+    "actorId": "usr_shop_owner_1",
+    "actorName": "Marcus Vance",
+    "actorRole": "shop_owner",
+    "shopId": "shp_urban_cafe",
+    "action": "DELETE_SERVICE",
+    "entity": "services",
+    "entityId": "srv_barista_class",
+    "before": {
+      "id": "srv_barista_class",
+      "shopId": "shp_urban_cafe",
+      "name": "Masterclass Latte Art & Espresso Crafting",
+      "description": "2-hour hands-on barista calibration with sensory tasting.",
+      "category": "Workshops & Training",
+      "price": 85,
+      "durationMinutes": 120,
+      "assignedStaffIds": [
+        "usr_worker_1"
+      ],
+      "status": "active",
+      "createdAt": "2026-09-11T10:16:53.358Z",
+      "updatedAt": "2026-09-11T10:16:53.358Z"
+    },
+    "createdAt": "2026-09-11T13:32:51.576Z",
+    "id": "cc496846-ca03-444a-ae50-6ff30a40dc80"
+  },
+  {
+    "actorId": "usr_shop_owner_1",
+    "actorName": "Marcus Vance",
+    "actorRole": "shop_owner",
+    "shopId": "shp_urban_cafe",
+    "action": "UPDATE_SERVICE",
+    "entity": "services",
+    "entityId": "1e3c2356-a5aa-46f8-b67d-a7c718f781e7",
+    "before": {
+      "shopId": "shp_urban_cafe",
+      "name": "Coffee Catering for Corporate Events",
+      "description": "Mobile espresso bar with professional barista serving up to 50 guests.",
+      "category": "Event Catering",
+      "price": 350,
+      "durationMinutes": 180,
+      "assignedStaffIds": [],
+      "status": "active",
+      "createdAt": "2026-09-05T08:09:36.934Z",
+      "updatedAt": "2026-09-05T08:09:36.934Z",
+      "id": "1e3c2356-a5aa-46f8-b67d-a7c718f781e7"
+    },
+    "after": {
+      "shopId": "shp_urban_cafe",
+      "name": "Color printings",
+      "description": "Color printouts",
+      "category": "printouts",
+      "price": 10,
+      "durationMinutes": 15,
+      "assignedStaffIds": [
+        "usr_worker_1",
+        "usr_manager_1",
+        "usr_shop_owner_1"
+      ],
+      "status": "active",
+      "createdAt": "2026-09-05T08:09:36.934Z",
+      "updatedAt": "2026-09-11T13:33:51.931Z",
+      "id": "1e3c2356-a5aa-46f8-b67d-a7c718f781e7",
+      "availability": "Monday - Saturday: 9:00 AM - 7:00 PM",
+      "assignedStaffNames": [
+        "Alex Rivera",
+        "Sarah Jenkins",
+        "Marcus Vance"
+      ],
+      "isPublic": true,
+      "isFeatured": false
+    },
+    "createdAt": "2026-09-11T13:33:51.933Z",
+    "id": "6e49cb24-ad21-419b-90f3-31f6b27b0796"
+  },
+  {
+    "actorId": "usr_shop_owner_1",
+    "actorName": "Marcus Vance",
+    "actorRole": "shop_owner",
+    "shopId": "shp_urban_cafe",
+    "action": "UPDATE_SUPPLIER",
+    "entity": "supplier",
+    "entityId": "sup_colombia_beans",
+    "before": {
+      "id": "sup_colombia_beans",
+      "shopId": "shp_urban_cafe",
+      "name": "Highland Coffee Importers",
+      "contactPerson": "Carlos Mendez",
+      "email": "orders@highlandbeans.com",
+      "phone": "+1 555 889 0011",
+      "address": "Warehouse 4, Roaster Row, Seattle",
+      "status": "active",
+      "createdAt": "2026-09-11T10:16:53.334Z",
+      "updatedAt": "2026-09-11T10:16:53.334Z"
+    },
+    "after": {
+      "id": "sup_colombia_beans",
+      "shopId": "shp_urban_cafe",
+      "name": "Atlas",
+      "contactPerson": "Carlos Mendez",
+      "email": "orders@highlandbeans.com",
+      "phone": "+1 555 889 0011",
+      "address": "Warehouse 4, Roaster Row, Seattle",
+      "status": "active",
+      "createdAt": "2026-09-11T10:16:53.334Z",
+      "updatedAt": "2026-09-11T13:35:16.249Z",
+      "taxId": "",
+      "paymentTerms": "Net 30",
+      "productsSupplied": []
+    },
+    "createdAt": "2026-09-11T13:35:16.250Z",
+    "id": "b4cb98f4-36ab-4b9e-ab0d-88aa36ee89bc"
+  },
+  {
+    "actorId": "usr_shop_owner_1",
+    "actorName": "Marcus Vance",
+    "actorRole": "shop_owner",
+    "shopId": "shp_urban_cafe",
+    "action": "CREATE_PURCHASE_ORDER",
+    "entity": "purchaseOrders",
+    "entityId": "72729fba-c176-4e1e-9441-cb5fe3b211f9",
+    "after": {
+      "poNumber": "PO-768866",
+      "shopId": "shp_urban_cafe",
+      "branchId": "br_urban_downtown",
+      "supplierId": "sup_colombia_beans",
+      "supplierName": "Atlas",
+      "items": [
+        {
+          "productId": "prod_almond_croissant",
+          "productName": "A4 pack",
+          "sku": "UCH-BAK-001",
+          "orderedQty": 10,
+          "receivedQty": 0,
+          "unitCost": 20,
+          "totalCost": 200
+        }
+      ],
+      "totalAmount": 200,
+      "expectedDate": "2026-09-18",
+      "notes": "Standard delivery via logistics partner",
+      "status": "submitted",
+      "createdBy": "Marcus Vance",
+      "createdAt": "2026-09-11T13:36:08.866Z",
+      "updatedAt": "2026-09-11T13:36:08.866Z",
+      "id": "72729fba-c176-4e1e-9441-cb5fe3b211f9"
+    },
+    "createdAt": "2026-09-11T13:36:08.867Z",
+    "id": "09e0fe76-3e5c-4e25-ab93-a301cd2d221a"
+  },
+  {
+    "actorId": "usr_shop_owner_1",
+    "actorName": "Marcus Vance",
+    "actorRole": "shop_owner",
+    "shopId": "shp_urban_cafe",
+    "action": "CREATE_GRN",
+    "entity": "grns",
+    "entityId": "940b3da4-6f94-45b8-9e3b-4842fd160ce5",
+    "after": {
+      "grnNumber": "GRN-780395",
+      "shopId": "shp_urban_cafe",
+      "branchId": "br_urban_downtown",
+      "purchaseOrderId": "72729fba-c176-4e1e-9441-cb5fe3b211f9",
+      "supplierId": "sup_colombia_beans",
+      "supplierName": "Atlas",
+      "receivedItems": [
+        {
+          "productId": "prod_almond_croissant",
+          "productName": "A4 pack",
+          "receivedQty": 10,
+          "damagedQty": 0,
+          "unitCost": 20
+        }
+      ],
+      "totalValue": 200,
+      "notes": "Goods received against PO #PO-768866",
+      "receivedBy": "Marcus Vance",
+      "status": "completed",
+      "createdAt": "2026-09-11T13:36:20.395Z",
+      "id": "940b3da4-6f94-45b8-9e3b-4842fd160ce5"
+    },
+    "createdAt": "2026-09-11T13:36:20.406Z",
+    "id": "897a5ebb-7b88-4767-b6ae-6511d3154577"
+  },
+  {
+    "actorId": "usr_shop_owner_1",
+    "actorName": "Marcus Vance",
+    "actorRole": "shop_owner",
+    "shopId": "shp_urban_cafe",
+    "action": "UPDATE_PRODUCT_BATCH",
+    "entity": "productBatches",
+    "entityId": "3c10fbab-ffc7-437e-a4bd-838844cab1a3",
+    "before": {
+      "shopId": "shp_urban_cafe",
+      "productId": "prod_almond_croissant",
+      "branchId": "br_urban_downtown",
+      "branchName": "Downtown Main Branch",
+      "batchNumber": "BTH-2609-758BTH-TEST-01",
+      "costPrice": 12,
+      "sellingPrice": 24,
+      "quantity": 5025,
+      "initialQuantity": 5025,
+      "manufacturingDate": "2026-09-11",
+      "status": "active",
+      "createdAt": "2026-09-11T11:07:42.486Z",
+      "updatedAt": "2026-09-11T11:07:42.486Z",
+      "id": "3c10fbab-ffc7-437e-a4bd-838844cab1a3"
+    },
+    "after": {
+      "shopId": "shp_urban_cafe",
+      "productId": "prod_almond_croissant",
+      "branchId": "br_urban_downtown",
+      "branchName": "Downtown Main Branch",
+      "batchNumber": "BTH-2609-758BTH-TEST-01",
+      "costPrice": 12,
+      "sellingPrice": 24,
+      "quantity": 20,
+      "initialQuantity": 5025,
+      "manufacturingDate": "2026-09-11",
+      "status": "active",
+      "createdAt": "2026-09-11T11:07:42.486Z",
+      "updatedAt": "2026-09-12T14:17:07.784Z",
+      "id": "3c10fbab-ffc7-437e-a4bd-838844cab1a3"
+    },
+    "createdAt": "2026-09-12T14:17:07.950Z",
+    "id": "621854f3-e7d9-46a2-8a38-e94c402d0e59"
+  },
+  {
+    "actorId": "usr_shop_owner_1",
+    "actorName": "Marcus Vance",
+    "actorRole": "shop_owner",
+    "shopId": "shp_urban_cafe",
+    "action": "CREATE_JOB_DRAFT",
+    "entity": "orders",
+    "entityId": "5288a95d-4c89-481c-af05-ae1c12f8acb4",
+    "after": {
+      "orderNumber": "JOB-701041",
+      "shopId": "shp_urban_cafe",
+      "branchId": "br_urban_downtown",
+      "branchName": "Downtown Main Branch",
+      "customerId": "b33117ca-446a-4aa9-91cc-8ef61f004dd9",
+      "customerName": "Walk-in Customer",
+      "customerPhone": "+1 555 000 0000",
+      "items": [
+        {
+          "type": "product",
+          "itemId": "prod_almond_croissant",
+          "name": "A4 pack",
+          "sku": "UCH-BAK-001",
+          "quantity": 2,
+          "unitPrice": 24,
+          "totalPrice": 48,
+          "batchId": "3c10fbab-ffc7-437e-a4bd-838844cab1a3",
+          "batchNumber": "BTH-2609-758BTH-TEST-01"
+        },
+        {
+          "type": "service",
+          "itemId": "1e3c2356-a5aa-46f8-b67d-a7c718f781e7",
+          "name": "Color printings",
+          "quantity": 1,
+          "unitPrice": 10,
+          "totalPrice": 10,
+          "assignedStaffId": "usr_worker_1"
+        }
+      ],
+      "subtotal": 58,
+      "tax": 0,
+      "discount": 0,
+      "totalAmount": 58,
+      "status": "draft",
+      "paymentStatus": "unpaid",
+      "paymentMethod": "cash",
+      "isJob": true,
+      "jobTitle": "Job - Walk-in Customer (2 items)",
+      "createdBy": "Marcus Vance",
+      "createdAt": "2026-09-12T14:18:21.041Z",
+      "updatedAt": "2026-09-12T14:18:21.041Z",
+      "id": "5288a95d-4c89-481c-af05-ae1c12f8acb4"
+    },
+    "createdAt": "2026-09-12T14:18:21.043Z",
+    "id": "4761372a-8a78-4ff4-a243-fb0bcccb0e39"
+  },
+  {
+    "actorId": "usr_shop_owner_1",
+    "actorName": "Marcus Vance",
+    "actorRole": "shop_owner",
+    "shopId": "shp_urban_cafe",
+    "action": "UPDATE_ORDER",
+    "entity": "orders",
+    "entityId": "5288a95d-4c89-481c-af05-ae1c12f8acb4",
+    "before": {
+      "orderNumber": "JOB-701041",
+      "shopId": "shp_urban_cafe",
+      "branchId": "br_urban_downtown",
+      "branchName": "Downtown Main Branch",
+      "customerId": "b33117ca-446a-4aa9-91cc-8ef61f004dd9",
+      "customerName": "Walk-in Customer",
+      "customerPhone": "+1 555 000 0000",
+      "items": [
+        {
+          "type": "product",
+          "itemId": "prod_almond_croissant",
+          "name": "A4 pack",
+          "sku": "UCH-BAK-001",
+          "quantity": 2,
+          "unitPrice": 24,
+          "totalPrice": 48,
+          "batchId": "3c10fbab-ffc7-437e-a4bd-838844cab1a3",
+          "batchNumber": "BTH-2609-758BTH-TEST-01"
+        },
+        {
+          "type": "service",
+          "itemId": "1e3c2356-a5aa-46f8-b67d-a7c718f781e7",
+          "name": "Color printings",
+          "quantity": 1,
+          "unitPrice": 10,
+          "totalPrice": 10,
+          "assignedStaffId": "usr_worker_1"
+        }
+      ],
+      "subtotal": 58,
+      "tax": 0,
+      "discount": 0,
+      "totalAmount": 58,
+      "status": "draft",
+      "paymentStatus": "unpaid",
+      "paymentMethod": "cash",
+      "isJob": true,
+      "jobTitle": "Job - Walk-in Customer (2 items)",
+      "createdBy": "Marcus Vance",
+      "createdAt": "2026-09-12T14:18:21.041Z",
+      "updatedAt": "2026-09-12T14:18:21.041Z",
+      "id": "5288a95d-4c89-481c-af05-ae1c12f8acb4"
+    },
+    "after": {
+      "orderNumber": "JOB-701041",
+      "shopId": "shp_urban_cafe",
+      "branchId": "br_urban_downtown",
+      "branchName": "Downtown Main Branch",
+      "customerId": "b33117ca-446a-4aa9-91cc-8ef61f004dd9",
+      "customerName": "Walk-in Customer",
+      "customerPhone": "+1 555 000 0000",
+      "items": [
+        {
+          "type": "product",
+          "itemId": "prod_almond_croissant",
+          "name": "A4 pack",
+          "sku": "UCH-BAK-001",
+          "quantity": 2,
+          "unitPrice": 24,
+          "totalPrice": 48,
+          "batchId": "3c10fbab-ffc7-437e-a4bd-838844cab1a3",
+          "batchNumber": "BTH-2609-758BTH-TEST-01"
+        },
+        {
+          "type": "service",
+          "itemId": "1e3c2356-a5aa-46f8-b67d-a7c718f781e7",
+          "name": "Color printings",
+          "quantity": 1,
+          "unitPrice": 10,
+          "totalPrice": 10,
+          "assignedStaffId": "usr_worker_1"
+        }
+      ],
+      "subtotal": 58,
+      "tax": 0,
+      "discount": 0,
+      "totalAmount": 58,
+      "status": "confirmed",
+      "paymentStatus": "paid",
+      "paymentMethod": "cash",
+      "isJob": false,
+      "jobTitle": "Job - Walk-in Customer (2 items)",
+      "createdBy": "Marcus Vance",
+      "createdAt": "2026-09-12T14:18:21.041Z",
+      "updatedAt": "2026-09-12T14:18:27.511Z",
+      "id": "5288a95d-4c89-481c-af05-ae1c12f8acb4"
+    },
+    "createdAt": "2026-09-12T14:18:27.537Z",
+    "id": "ca1915e8-3412-4a18-9aac-febf2026f76f"
+  },
+  {
+    "actorId": "usr_shop_owner_1",
+    "actorName": "Marcus Vance",
+    "actorRole": "shop_owner",
+    "shopId": "shp_urban_cafe",
+    "action": "UPDATE_ORDER_STATUS",
+    "entity": "orders",
+    "entityId": "5288a95d-4c89-481c-af05-ae1c12f8acb4",
+    "before": {
+      "status": "confirmed",
+      "paymentStatus": "paid"
+    },
+    "after": {
+      "status": "completed"
+    },
+    "createdAt": "2026-09-12T14:18:37.409Z",
+    "id": "3576465c-ec75-4aea-8168-f45fd28e8fcc"
   }
 ]

@@ -33,6 +33,7 @@ export class SubscriptionController {
         const shop = await dbStore.collection<Shop>('shops').get(sub.shopId);
         return {
           ...sub,
+          shop: shop || null,
           shopName: shop?.name || 'Unknown',
           ownerName: shop?.ownerName || 'Unknown',
           ownerEmail: shop?.ownerEmail || shop?.email || '',

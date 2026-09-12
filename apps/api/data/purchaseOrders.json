@@ -24,5 +24,31 @@
     "createdAt": "2026-09-02T12:07:02.883Z",
     "updatedAt": "2026-09-02T12:08:03.557Z",
     "id": "357cb8ca-d2fa-43da-9432-f34940f73dff"
+  },
+  {
+    "poNumber": "PO-768866",
+    "shopId": "shp_urban_cafe",
+    "branchId": "br_urban_downtown",
+    "supplierId": "sup_colombia_beans",
+    "supplierName": "Atlas",
+    "items": [
+      {
+        "productId": "prod_almond_croissant",
+        "productName": "A4 pack",
+        "sku": "UCH-BAK-001",
+        "orderedQty": 10,
+        "receivedQty": 0,
+        "unitCost": 20,
+        "totalCost": 200
+      }
+    ],
+    "totalAmount": 200,
+    "expectedDate": "2026-09-18",
+    "notes": "Standard delivery via logistics partner",
+    "status": "fully_received",
+    "createdBy": "Marcus Vance",
+    "createdAt": "2026-09-11T13:36:08.866Z",
+    "updatedAt": "2026-09-11T13:36:20.401Z",
+    "id": "72729fba-c176-4e1e-9441-cb5fe3b211f9"
   }
 ]

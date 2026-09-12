@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import { api } from '@/lib/api-client';
 import { formatCurrency, formatDate } from '@/lib/utils';
+import { TablePagination } from '@/components/TablePagination';
 import {
   TrendingUp,
   AlertCircle,
@@ -18,6 +19,9 @@ import {
   Store,
   ShieldCheck,
   Zap,
+  ChevronsUpDown,
+  Layers,
+  ArrowUp,
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -78,6 +82,41 @@ export default function SuperAdminDashboard() {
   const revenueTrendData = data?.revenueTrend || [];
   const pieData = data?.subDistribution || [];
   const recentActivities = data?.recentActivity || [];
+
+  // View mode & pagination controls for Recent Platform Activity
+  const [viewMode, setViewMode] = useState<'scroll' | 'paginated'>('scroll');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const tableContainerRef = useRef<HTMLDivElement>(null);
+
+  const totalActivities = recentActivities.length;
+  const totalPages = Math.ceil(totalActivities / pageSize) || 1;
+  const safeCurrentPage = Math.min(Math.max(1, currentPage), totalPages);
+
+  const displayedActivities = viewMode === 'scroll'
+    ? recentActivities
+    : recentActivities.slice((safeCurrentPage - 1) * pageSize, safeCurrentPage * pageSize);
+
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+    if (tableContainerRef.current) {
+      tableContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  const handlePageSizeChange = (newSize: number) => {
+    setPageSize(newSize);
+    setCurrentPage(1);
+    if (tableContainerRef.current) {
+      tableContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  const scrollToTop = () => {
+    if (tableContainerRef.current) {
+      tableContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto">
@@ -251,34 +290,92 @@ export default function SuperAdminDashboard() {
       </div>
 
       {/* Real-time Activity Table from Audit Logs */}
-      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm shadow-slate-200/50 overflow-hidden">
-        <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm shadow-slate-200/50 overflow-hidden flex flex-col">
+        <div className="p-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white z-20">
           <div>
-            <h3 className="font-bold text-slate-900 text-base tracking-tight">Recent Platform Activity</h3>
+            <div className="flex items-center gap-2.5">
+              <h3 className="font-bold text-slate-900 text-base tracking-tight">Recent Platform Activity</h3>
+              <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200/80">
+                {totalActivities} Records
+              </span>
+              {viewMode === 'scroll' && (
+                <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">
+                  <span className="h-1.5 w-1.5 rounded-full bg-indigo-500 animate-pulse" />
+                  Scroll Option Active
+                </span>
+              )}
+            </div>
             <p className="text-xs text-slate-500 mt-0.5">Real-time tenant transactions, logins, and lifecycle events</p>
           </div>
-          <Link href="/super-admin/audit-logs" className="text-xs font-semibold text-indigo-600 hover:text-indigo-700 flex items-center gap-1 transition-colors">
-            View All Logs <ArrowUpRight className="h-3.5 w-3.5" />
-          </Link>
+
+          <div className="flex items-center gap-3 flex-wrap">
+            {/* Scroll Option / View Mode Toggle */}
+            <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200/80 text-xs">
+              <button
+                type="button"
+                onClick={() => setViewMode('scroll')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-semibold transition-all ${
+                  viewMode === 'scroll'
+                    ? 'bg-indigo-600 text-white shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+                title="Continuous vertical scrolling of all activity records"
+              >
+                <ChevronsUpDown className="h-3.5 w-3.5" />
+                Scroll View
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setViewMode('paginated')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-semibold transition-all ${
+                  viewMode === 'paginated'
+                    ? 'bg-white text-slate-900 shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+                title="Paginated view with page navigation"
+              >
+                <Layers className="h-3.5 w-3.5" />
+                Paginated
+              </button>
+            </div>
+
+            <Link
+              href="/super-admin/audit-logs"
+              className="text-xs font-semibold text-indigo-600 hover:text-indigo-700 flex items-center gap-1 py-1.5 px-2.5 rounded-xl hover:bg-indigo-50/60 transition-colors"
+            >
+              View All Logs <ArrowUpRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs text-slate-600">
-            <thead className="bg-slate-50/80 text-[11px] uppercase tracking-wider text-slate-500 font-semibold border-b border-slate-100">
+        {/* Scrollable Viewport with Fixed Sticky Header */}
+        <div
+          ref={tableContainerRef}
+          tabIndex={0}
+          aria-label="Recent platform activity table scroll area"
+          className={`overflow-x-auto relative divide-y divide-slate-100 focus:outline-none scroll-smooth ${
+            viewMode === 'scroll' ? 'h-[360px] overflow-y-scroll' : 'max-h-[360px] overflow-y-auto'
+          }`}
+        >
+          <table className="w-full text-left text-xs text-slate-600 border-collapse">
+            <thead className="sticky top-0 z-10 bg-slate-50 border-b border-slate-200/90 shadow-2xs">
               <tr>
-                <th className="py-3.5 px-6">Actor / User</th>
-                <th className="py-3.5 px-6">Action / Event</th>
-                <th className="py-3.5 px-6">Target Entity</th>
-                <th className="py-3.5 px-6">Timestamp</th>
+                <th className="py-3.5 px-6 bg-slate-50 font-semibold text-[11px] uppercase tracking-wider text-slate-500">Actor / User</th>
+                <th className="py-3.5 px-6 bg-slate-50 font-semibold text-[11px] uppercase tracking-wider text-slate-500">Action / Event</th>
+                <th className="py-3.5 px-6 bg-slate-50 font-semibold text-[11px] uppercase tracking-wider text-slate-500">Target Entity</th>
+                <th className="py-3.5 px-6 bg-slate-50 font-semibold text-[11px] uppercase tracking-wider text-slate-500">Timestamp</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 font-medium">
-              {recentActivities.length === 0 ? (
+            <tbody className="divide-y divide-slate-100 font-medium bg-white">
+              {displayedActivities.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="py-8 text-center text-slate-400">No activity recorded yet.</td>
+                  <td colSpan={4} className="py-10 text-center text-slate-400">
+                    {isLoading ? 'Loading platform activity...' : 'No activity recorded yet.'}
+                  </td>
                 </tr>
               ) : (
-                recentActivities.map((log: any) => (
+                displayedActivities.map((log: any) => (
                   <tr key={log.id} className="hover:bg-slate-50/80 transition-colors">
                     <td className="py-3.5 px-6">
                       <p className="font-bold text-slate-900">{log.actorName || 'System'}</p>
@@ -301,6 +398,36 @@ export default function SuperAdminDashboard() {
             </tbody>
           </table>
         </div>
+
+        {/* Footer: either Scroll Mode Bar or Pagination Bar */}
+        {viewMode === 'scroll' ? (
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-6 py-3 bg-slate-50/80 border-t border-slate-100 text-xs text-slate-600">
+            <span className="font-medium text-slate-500">
+              Showing all <span className="font-bold text-slate-900">{totalActivities}</span> records in vertical scroll view &bull; Header fixed at top
+            </span>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={scrollToTop}
+                className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 font-semibold hover:bg-slate-100 hover:text-slate-900 shadow-2xs transition-colors"
+              >
+                <ArrowUp className="h-3.5 w-3.5" />
+                Scroll to Top
+              </button>
+            </div>
+          </div>
+        ) : (
+          <TablePagination
+            currentPage={safeCurrentPage}
+            totalPages={totalPages}
+            totalItems={totalActivities}
+            pageSize={pageSize}
+            pageSizeOptions={[5, 10, 20, 50]}
+            onPageChange={handlePageChange}
+            onPageSizeChange={handlePageSizeChange}
+            itemName="activities"
+          />
+        )}
       </div>
     </div>
   );

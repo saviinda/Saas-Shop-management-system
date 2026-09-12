@@ -20,6 +20,7 @@ import communicationRoutes from '../modules/communication/routes';
 import notificationRoutes from '../modules/notifications/routes';
 import reportRoutes from '../modules/reports/routes';
 import auditLogRoutes from '../modules/audit-logs/routes';
+import roleRoutes from '../modules/roles/routes';
 
 const router = Router();
 
@@ -27,6 +28,7 @@ router.use('/auth', authRoutes);
 router.use('/shops', shopRoutes);
 router.use('/branches', branchRoutes);
 router.use('/users', userRoutes);
+router.use('/roles', roleRoutes);
 router.use('/packages', packageRoutes);
 router.use('/subscriptions', subscriptionRoutes);
 router.use('/payments', paymentRoutes);

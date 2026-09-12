@@ -30,9 +30,6 @@ export class UserController {
       where.push({ field: 'shopId', op: '==', value: queryShopId });
     }
 
-    if (role && role !== 'all') {
-      where.push({ field: 'role', op: '==', value: role });
-    }
     if (status && status !== 'all') {
       where.push({ field: 'status', op: '==', value: status });
     }
@@ -43,6 +40,13 @@ export class UserController {
     });
 
     let users = result.data.map(({ passwordHash, ...safe }: any) => safe);
+
+    if (role && role !== 'all') {
+      const targetRole = role as string;
+      users = users.filter(
+        u => u.role === targetRole || (Array.isArray(u.roles) && u.roles.includes(targetRole))
+      );
+    }
 
     if (branchId && branchId !== 'all') {
       users = users.filter(u => u.branchIds?.includes(branchId as string));
@@ -90,7 +94,7 @@ export class UserController {
           shopStatus,
           packageName,
           branchNames,
-          isOwner: u.role === 'shop_owner',
+          isOwner: u.role === 'shop_owner' || (Array.isArray(u.roles) && u.roles.includes('shop_owner')),
           isWorker: u.role !== 'shop_owner' && u.role !== 'super_admin',
         };
       })
@@ -110,16 +114,19 @@ export class UserController {
       });
 
       const superAdmins: any[] = [];
+      const unassignedUsers: any[] = [];
 
       enrichedUsers.forEach(u => {
-        if (u.role === 'super_admin') {
+        if (u.role === 'super_admin' || (Array.isArray(u.roles) && u.roles.includes('super_admin'))) {
           superAdmins.push(u);
         } else if (u.shopId && shopMap[u.shopId]) {
-          if (u.role === 'shop_owner') {
+          if (u.role === 'shop_owner' || (Array.isArray(u.roles) && u.roles.includes('shop_owner'))) {
             shopMap[u.shopId].owner = u;
           } else {
             shopMap[u.shopId].workers.push(u);
           }
+        } else {
+          unassignedUsers.push(u);
         }
       });
 
@@ -127,8 +134,11 @@ export class UserController {
 
       return sendSuccess(res, {
         grouped,
+        shopGroups: grouped,
         superAdmins,
+        unassignedUsers,
         all: enrichedUsers,
+        allUsers: enrichedUsers,
       });
     }
 
@@ -247,6 +257,57 @@ export class UserController {
     return sendSuccess(res, logsRes.data);
   }
 
+  static async createUser(req: AuthenticatedRequest, res: Response) {
+    const { name, email, password, phone, role, roles, branchIds, permissions, status, shopId } = req.body;
+
+    if (!email || !name || !password) {
+      return sendError(res, 'BAD_REQUEST', 'Name, email, and password are required', 400);
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+
+    const existing = await dbStore.collection<User>('users').query({
+      where: [{ field: 'email', op: '==', value: normalizedEmail }],
+    });
+
+    if (existing.data.length > 0) {
+      return sendError(res, 'EMAIL_EXISTS', 'Email is already registered to another account', 400);
+    }
+
+    const assignedRoles: string[] = Array.isArray(roles) && roles.length > 0
+      ? roles
+      : (role ? [role] : ['sales_staff']);
+    const primaryRole = (role || assignedRoles[0] || 'sales_staff') as any;
+
+    const passwordHash = await bcrypt.hash(password.trim(), 10);
+    const newUser = await dbStore.collection<User & { passwordHash: string }>('users').create({
+      email: normalizedEmail,
+      name: name.trim(),
+      phone: phone ? phone.trim() : '',
+      role: primaryRole,
+      roles: assignedRoles,
+      permissions: Array.isArray(permissions) ? permissions : (DEFAULT_ROLE_PERMISSIONS[primaryRole] || []),
+      status: status || 'active',
+      shopId: shopId || undefined,
+      branchIds: Array.isArray(branchIds) ? branchIds : [],
+      passwordHash,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    });
+
+    await AuditLogService.log({
+      actor: req.user!,
+      action: 'CREATE_USER',
+      entity: 'users',
+      entityId: newUser.id,
+      shopId: newUser.shopId,
+      after: { name: newUser.name, email: newUser.email, role: newUser.role, roles: newUser.roles },
+    });
+
+    const { passwordHash: _, ...safeUser } = newUser;
+    return sendSuccess(res, safeUser, { message: 'User created successfully' }, 201);
+  }
+
   static async createStaffUser(req: AuthenticatedRequest, res: Response) {
     const shopId = req.shopId;
     if (!shopId) return sendError(res, 'BAD_REQUEST', 'Shop ID is required', 400);
@@ -258,7 +319,7 @@ export class UserController {
       return sendError(res, 'LIMIT_EXCEEDED', err.message || 'Staff user limit reached', 403);
     }
 
-    const { name, email, password, phone, role, branchIds, branchId, permissions } = req.body;
+    const { name, email, password, phone, role, roles, branchIds, branchId, permissions } = req.body;
 
     if (!email || !name || !password) {
       return sendError(res, 'BAD_REQUEST', 'Name, email, and password are required', 400);
@@ -291,6 +352,10 @@ export class UserController {
     }
 
     const selectedRole = role || 'sales_staff';
+    const assignedRoles: string[] = Array.isArray(roles) && roles.length > 0
+      ? roles
+      : [selectedRole];
+
     const effectivePermissions = Array.isArray(permissions) && permissions.length > 0
       ? permissions
       : DEFAULT_ROLE_PERMISSIONS[selectedRole] || [];
@@ -301,6 +366,7 @@ export class UserController {
       name: name.trim(),
       phone: phone ? phone.trim() : '',
       role: selectedRole,
+      roles: assignedRoles,
       permissions: effectivePermissions,
       status: 'active',
       shopId,
@@ -316,7 +382,7 @@ export class UserController {
       entity: 'users',
       entityId: user.id,
       shopId,
-      after: { name: user.name, email: user.email, role: user.role, branchIds: effectiveBranchIds, permissions: effectivePermissions },
+      after: { name: user.name, email: user.email, role: user.role, roles: user.roles, branchIds: effectiveBranchIds, permissions: effectivePermissions },
     });
 
     const { passwordHash: _, ...safeUser } = user;
@@ -325,7 +391,7 @@ export class UserController {
 
   static async updateUserStatus(req: AuthenticatedRequest, res: Response) {
     const { id } = req.params;
-    const { status, role, branchIds, name, phone, email, permissions } = req.body;
+    const { status, role, roles, branchIds, name, phone, email, permissions } = req.body;
 
     const user = await dbStore.collection<User>('users').get(id);
     if (!user || (req.user?.role !== 'super_admin' && user.shopId !== req.shopId)) {
@@ -335,6 +401,7 @@ export class UserController {
     const updated = await dbStore.collection<User>('users').update(id, {
       ...(status && { status }),
       ...(role && { role }),
+      ...(roles && { roles }),
       ...(branchIds && { branchIds }),
       ...(name && { name: name.trim() }),
       ...(phone !== undefined && { phone: phone.trim() }),

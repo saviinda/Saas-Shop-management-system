@@ -21,5 +21,28 @@
     "status": "completed",
     "createdAt": "2026-09-02T12:08:03.555Z",
     "id": "92457aa3-6bbb-4545-867c-e3e6896356b7"
+  },
+  {
+    "grnNumber": "GRN-780395",
+    "shopId": "shp_urban_cafe",
+    "branchId": "br_urban_downtown",
+    "purchaseOrderId": "72729fba-c176-4e1e-9441-cb5fe3b211f9",
+    "supplierId": "sup_colombia_beans",
+    "supplierName": "Atlas",
+    "receivedItems": [
+      {
+        "productId": "prod_almond_croissant",
+        "productName": "A4 pack",
+        "receivedQty": 10,
+        "damagedQty": 0,
+        "unitCost": 20
+      }
+    ],
+    "totalValue": 200,
+    "notes": "Goods received against PO #PO-768866",
+    "receivedBy": "Marcus Vance",
+    "status": "completed",
+    "createdAt": "2026-09-11T13:36:20.395Z",
+    "id": "940b3da4-6f94-45b8-9e3b-4842fd160ce5"
   }
 ]

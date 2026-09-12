@@ -10,6 +10,7 @@ const router = Router();
 router.use(authenticate);
 
 router.get('/', UserController.listUsers);
+router.post('/', isSuperAdmin, UserController.createUser);
 router.get('/owners', isSuperAdmin, UserController.listShopOwners);
 router.get('/:id/activity', isShopOwnerOrAbove, UserController.getUserActivity);
 router.post('/staff', isShopOwnerOrAbove, validateBody(createStaffUserSchema), UserController.createStaffUser);

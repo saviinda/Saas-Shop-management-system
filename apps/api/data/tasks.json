@@ -11,18 +11,18 @@
     "createdByName": "Sarah Jenkins",
     "priority": "high",
     "status": "in_progress",
-    "dueDate": "2026-08-28T20:36:07.301Z",
+    "dueDate": "2026-09-11T14:16:53.365Z",
     "comments": [
       {
         "id": "comm_1",
         "userId": "usr_worker_1",
         "userName": "Alex Rivera",
         "comment": "Burrs inspected, running test shots at 18g in / 36g out.",
-        "createdAt": "2026-08-28T16:36:07.301Z"
+        "createdAt": "2026-09-11T10:16:53.365Z"
       }
     ],
-    "createdAt": "2026-08-28T16:36:07.301Z",
-    "updatedAt": "2026-08-28T16:36:07.301Z"
+    "createdAt": "2026-09-11T10:16:53.365Z",
+    "updatedAt": "2026-09-11T10:16:53.365Z"
   },
   {
     "shopId": "shp_1787930675212",

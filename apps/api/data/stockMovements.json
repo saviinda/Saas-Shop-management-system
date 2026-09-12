@@ -61,5 +61,67 @@
     "performedBy": "Marcus Vance",
     "createdAt": "2026-09-05T08:00:33.326Z",
     "id": "e0d10c12-b45c-4003-8894-8d907cfe4f46"
+  },
+  {
+    "shopId": "shp_urban_cafe",
+    "branchId": "br_urban_downtown",
+    "productId": "prod_almond_croissant",
+    "type": "adjustment",
+    "quantityDelta": 5025,
+    "newQuantity": 5029,
+    "reason": "Batch BTH-2609-758BTH-TEST-01 added",
+    "performedBy": "Marcus Vance",
+    "createdAt": "2026-09-11T11:07:42.486Z",
+    "id": "15844101-cb85-47b2-b9a8-8811489540b5"
+  },
+  {
+    "shopId": "shp_urban_cafe",
+    "branchId": "br_urban_downtown",
+    "productId": "prod_almond_croissant",
+    "type": "adjustment",
+    "quantityDelta": 40,
+    "newQuantity": 5069,
+    "reason": "Batch BTH-2609-643 added",
+    "performedBy": "Marcus Vance",
+    "createdAt": "2026-09-11T13:32:31.469Z",
+    "id": "e8a0e19b-3289-496a-afda-288b47b71d82"
+  },
+  {
+    "shopId": "shp_urban_cafe",
+    "branchId": "br_urban_downtown",
+    "productId": "prod_almond_croissant",
+    "type": "po_receive",
+    "quantityDelta": 10,
+    "newQuantity": 5079,
+    "reason": "GRN from PO #PO-768866",
+    "referenceId": "72729fba-c176-4e1e-9441-cb5fe3b211f9",
+    "performedBy": "Marcus Vance",
+    "createdAt": "2026-09-11T13:36:20.394Z",
+    "id": "67c430cc-70f9-4c35-b3dc-44ed7c217bbb"
+  },
+  {
+    "shopId": "shp_urban_cafe",
+    "branchId": "br_urban_downtown",
+    "productId": "prod_almond_croissant",
+    "type": "adjustment",
+    "quantityDelta": -5005,
+    "newQuantity": 74,
+    "reason": "Batch BTH-2609-758BTH-TEST-01 updated",
+    "performedBy": "Marcus Vance",
+    "createdAt": "2026-09-12T14:17:07.784Z",
+    "id": "74251bd6-dd9e-498c-ab8b-db229ebc8a6c"
+  },
+  {
+    "shopId": "shp_urban_cafe",
+    "branchId": "br_urban_downtown",
+    "productId": "prod_almond_croissant",
+    "type": "sale",
+    "quantityDelta": -2,
+    "newQuantity": 72,
+    "reason": "Order sale #JOB-701041 (Batch: BTH-2609-758BTH-TEST-01)",
+    "referenceId": "5288a95d-4c89-481c-af05-ae1c12f8acb4",
+    "performedBy": "Marcus Vance",
+    "createdAt": "2026-09-12T14:18:27.522Z",
+    "id": "311b9eda-e156-4f4f-976a-ea4561eeca4a"
   }
 ]

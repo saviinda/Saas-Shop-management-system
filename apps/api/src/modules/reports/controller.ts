@@ -36,7 +36,7 @@ export class ReportController {
       dbStore.collection<Subscription>('subscriptions').query(),
       dbStore.collection<PaymentTransaction>('payments').query(),
       dbStore.collection<ChangeRequest>('changeRequests').query({ where: [{ field: 'status', op: '==', value: 'pending' }] }),
-      dbStore.collection('auditLogs').query({ orderBy: { field: 'createdAt', direction: 'desc' }, limit: 15 }),
+      dbStore.collection('auditLogs').query({ orderBy: { field: 'createdAt', direction: 'desc' }, limit: 50 }),
       dbStore.collection<User>('users').query(),
       dbStore.collection<Order>('orders').query(),
       dbStore.collection<Branch>('branches').query(),
