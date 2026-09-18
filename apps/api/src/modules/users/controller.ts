@@ -199,7 +199,13 @@ export class UserController {
       return sendError(res, 'FORBIDDEN', 'Access denied to this user account', 403);
     }
 
-    const tempPassword = newPassword && newPassword.trim().length >= 6 ? newPassword.trim() : 'TempPass@' + Math.floor(1000 + Math.random() * 9000);
+    let tempPassword = 'TempPass@' + Math.floor(1000 + Math.random() * 9000);
+    if (newPassword && typeof newPassword === 'string' && newPassword.trim().length > 0) {
+      if (newPassword.trim().length < 6) {
+        return sendError(res, 'VALIDATION_ERROR', 'Custom temporary password must be at least 6 characters', 400);
+      }
+      tempPassword = newPassword.trim();
+    }
     const passwordHash = await bcrypt.hash(tempPassword, 10);
 
     const updated = await dbStore.collection<User & { passwordHash?: string }>('users').update(id, {
@@ -215,7 +221,7 @@ export class UserController {
     }
 
     // Send reset email with credentials
-    await EmailService.sendResetAccessEmail({
+    const emailResult = await EmailService.sendResetAccessEmail({
       email: user.email,
       name: user.name,
       userId: user.id,
@@ -237,6 +243,7 @@ export class UserController {
     return sendSuccess(res, {
       user: safeUser,
       temporaryPassword: tempPassword,
+      previewUrl: emailResult?.previewUrl,
       message: `Account access reset successfully. New credentials have been emailed to ${user.email}.`,
     });
   }

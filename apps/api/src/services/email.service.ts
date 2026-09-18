@@ -1,5 +1,7 @@
 import { dbStore } from '../db/store';
 import { AppNotification } from '@saas/types';
+import nodemailer, { Transporter } from 'nodemailer';
+import { config } from '../config/env';
 
 export interface EmailOptions {
   to: string;
@@ -18,24 +20,172 @@ export interface EmailOptions {
   data: Record<string, any>;
 }
 
+let cachedTransporter: Transporter | null = null;
+let etherealAccount: any = null;
+
+async function getTransporter(): Promise<{ transporter: Transporter; isEthereal: boolean }> {
+  if (config.email.host && config.email.user && config.email.pass) {
+    if (!cachedTransporter) {
+      cachedTransporter = nodemailer.createTransport({
+        host: config.email.host,
+        port: config.email.port,
+        secure: config.email.secure,
+        auth: {
+          user: config.email.user,
+          pass: config.email.pass,
+        },
+      });
+    }
+    return { transporter: cachedTransporter, isEthereal: false };
+  }
+
+  // Fallback: If user provided user & pass without custom host, default to Gmail SMTP
+  if (config.email.user && config.email.pass) {
+    if (!cachedTransporter) {
+      cachedTransporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user: config.email.user,
+          pass: config.email.pass,
+        },
+      });
+    }
+    return { transporter: cachedTransporter, isEthereal: false };
+  }
+
+  // Fallback for local development/testing: auto-create Ethereal test account
+  if (!cachedTransporter) {
+    try {
+      if (!etherealAccount) {
+        etherealAccount = await nodemailer.createTestAccount();
+        console.log(`[EMAIL DISPATCH SERVICE] Initialized Ethereal test inbox for: ${etherealAccount.user}`);
+      }
+      cachedTransporter = nodemailer.createTransport({
+        host: 'smtp.ethereal.email',
+        port: 587,
+        secure: false,
+        auth: {
+          user: etherealAccount.user,
+          pass: etherealAccount.pass,
+        },
+      });
+    } catch (err) {
+      console.warn('[EMAIL DISPATCH SERVICE] Could not setup test transporter, using stream fallback:', err);
+      cachedTransporter = nodemailer.createTransport({
+        streamTransport: true,
+        newline: 'windows',
+      });
+      return { transporter: cachedTransporter, isEthereal: false };
+    }
+  }
+
+  return { transporter: cachedTransporter, isEthereal: true };
+}
+
 export class EmailService {
   /**
    * Dispatches a structured transactional email to the shop owner or user.
-   * Logs email content to console, creates an in-app notification, and persists email dispatch log.
+   * Prioritizes Brevo Transactional Email API (https://api.brevo.com/v3/smtp/email),
+   * falls back to Brevo/Nodemailer SMTP, and generates in-app notifications.
    */
-  static async sendEmail(options: EmailOptions): Promise<{ success: boolean; messageId: string }> {
-    const messageId = 'msg_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
+  static async sendEmail(options: EmailOptions): Promise<{ success: boolean; messageId: string; previewUrl?: string }> {
+    let messageId = 'msg_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
     const timestamp = new Date().toISOString();
 
     const formattedBody = this.renderEmailBody(options.template, options.data, options.recipientName);
+    const htmlBody = this.renderHtmlEmail(options.template, options.subject, options.data, options.recipientName);
 
-    console.log(`\n======================================================`);
-    console.log(`[EMAIL DISPATCH SERVICE] -> To: ${options.to} (${options.recipientName || 'User'})`);
-    console.log(`[SUBJECT]: ${options.subject}`);
-    console.log(`[MESSAGE ID]: ${messageId} | [TIME]: ${timestamp}`);
-    console.log(`------------------------------------------------------`);
-    console.log(formattedBody);
-    console.log(`======================================================\n`);
+    let previewUrl: string | undefined;
+
+    // 1. Prioritize Brevo REST API if configured
+    if (config.brevo.apiKey) {
+      try {
+        const senderEmail = config.brevo.senderEmail || config.email.user || 'noreply@saasplatform.com';
+        const senderName = config.brevo.senderName || 'SaaS Platform Admin';
+
+        const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+          method: 'POST',
+          headers: {
+            'accept': 'application/json',
+            'api-key': config.brevo.apiKey,
+            'content-type': 'application/json',
+          },
+          body: JSON.stringify({
+            sender: {
+              name: senderName,
+              email: senderEmail,
+            },
+            to: [
+              {
+                email: options.to,
+                name: options.recipientName || options.to,
+              },
+            ],
+            subject: options.subject,
+            htmlContent: htmlBody,
+            textContent: formattedBody,
+          }),
+        });
+
+        const resData: any = await response.json();
+        if (!response.ok) {
+          console.error('[EMAIL DISPATCH SERVICE] Brevo API Error response:', resData);
+          throw new Error(resData?.message || 'Brevo API rejected email dispatch');
+        }
+
+        if (resData?.messageId) {
+          messageId = resData.messageId;
+        }
+
+        console.log(`\n======================================================`);
+        console.log(`[EMAIL DISPATCH SERVICE] -> Dispatched via Brevo API`);
+        console.log(`[TO]: ${options.to} (${options.recipientName || 'User'})`);
+        console.log(`[SUBJECT]: ${options.subject}`);
+        console.log(`[MESSAGE ID]: ${messageId} | [TIME]: ${timestamp}`);
+        console.log(`------------------------------------------------------`);
+        console.log(formattedBody);
+        console.log(`======================================================\n`);
+      } catch (error) {
+        console.error(`[EMAIL DISPATCH SERVICE] Error dispatching via Brevo API to ${options.to}:`, error);
+      }
+    } else {
+      // 2. Otherwise use Nodemailer (Brevo SMTP, custom SMTP, or Ethereal test inbox)
+      try {
+        const { transporter, isEthereal } = await getTransporter();
+        const mailOptions = {
+          from: config.email.from,
+          to: options.to,
+          subject: options.subject,
+          text: formattedBody,
+          html: htmlBody,
+        };
+
+        const info = await transporter.sendMail(mailOptions);
+        if (info?.messageId) {
+          messageId = info.messageId;
+        }
+
+        if (isEthereal) {
+          const testUrl = nodemailer.getTestMessageUrl(info);
+          if (testUrl) {
+            previewUrl = testUrl;
+          }
+        }
+
+        console.log(`\n======================================================`);
+        console.log(`[EMAIL DISPATCH SERVICE] -> To: ${options.to} (${options.recipientName || 'User'})`);
+        console.log(`[SUBJECT]: ${options.subject}`);
+        console.log(`[MESSAGE ID]: ${messageId} | [TIME]: ${timestamp}`);
+        if (previewUrl) {
+          console.log(`[ETHEREAL INBOX PREVIEW]: ${previewUrl}`);
+        }
+        console.log(`------------------------------------------------------`);
+        console.log(formattedBody);
+        console.log(`======================================================\n`);
+      } catch (error) {
+        console.error(`[EMAIL DISPATCH SERVICE] Error sending email via SMTP to ${options.to}:`, error);
+      }
+    }
 
     // If a recipient userId is provided, create an in-app notification matching the email
     if (options.data.userId || options.data.recipientId) {
@@ -56,7 +206,7 @@ export class EmailService {
       }
     }
 
-    return { success: true, messageId };
+    return { success: true, messageId, previewUrl };
   }
 
   /**
@@ -475,5 +625,103 @@ Best regards,
 Platform Support
         `.trim();
     }
+  }
+
+  private static renderHtmlEmail(template: string, subject: string, data: Record<string, any>, recipientName?: string): string {
+    const greeting = recipientName ? `Dear ${recipientName},` : `Dear Store Owner,`;
+    const appUrl = config.corsOrigin || 'http://localhost:3000';
+
+    if (template === 'reset_access') {
+      return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>${subject}</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f1f5f9; margin: 0; padding: 24px; color: #1e293b; }
+    .card { max-width: 580px; margin: 0 auto; background: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+    .header { background: #4f46e5; padding: 24px; text-align: center; color: #ffffff; }
+    .header h1 { margin: 0; font-size: 18px; font-weight: 700; letter-spacing: -0.02em; }
+    .content { padding: 32px 28px; font-size: 14px; line-height: 1.6; }
+    .box { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 12px; padding: 20px; margin: 20px 0; }
+    .row { margin-bottom: 10px; font-size: 13px; }
+    .label { font-weight: 600; color: #475569; display: inline-block; width: 140px; }
+    .val { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-weight: 600; color: #0f172a; }
+    .pwd-badge { background: #e0e7ff; color: #3730a3; padding: 5px 12px; border-radius: 6px; font-size: 15px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-weight: 700; letter-spacing: 0.5px; border: 1px solid #c7d2fe; display: inline-block; }
+    .btn { display: inline-block; background: #4f46e5; color: #ffffff !important; text-decoration: none; padding: 12px 28px; border-radius: 10px; font-weight: 600; font-size: 14px; margin-top: 16px; text-align: center; }
+    .footer { padding: 20px 28px; background: #f8fafc; border-top: 1px solid #e2e8f0; font-size: 12px; color: #64748b; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="header">
+      <h1>Account Access & Credentials Update</h1>
+    </div>
+    <div class="content">
+      <p style="font-size: 15px; font-weight: 600; margin-top: 0;">${greeting}</p>
+      <p>Your account access credentials for <b>${data.shopName || 'SaaS Shop Management Platform'}</b> have been updated by an Administrator.</p>
+      
+      <div class="box">
+        <div class="row">
+          <span class="label">Email / Login:</span>
+          <span class="val">${data.email}</span>
+        </div>
+        <div class="row" style="margin-top: 12px; margin-bottom: 12px;">
+          <span class="label" style="vertical-align: middle;">Temporary Password:</span>
+          <span class="pwd-badge">${data.temporaryPassword}</span>
+        </div>
+        <div class="row" style="margin-bottom: 0;">
+          <span class="label">Reset Reason:</span>
+          <span style="color: #64748b;">${data.resetReason || 'Administrator performed account access reset'}</span>
+        </div>
+      </div>
+
+      <p style="color: #b45309; background: #fef3c7; border: 1px solid #fde68a; padding: 12px; border-radius: 8px; font-size: 12px; margin: 20px 0;">
+        <b>Security Notice:</b> Please log in to your portal immediately with these temporary credentials and set a new personal password.
+      </p>
+
+      <div style="text-align: center;">
+        <a href="${appUrl}/login" class="btn">Log In to Your Account</a>
+      </div>
+
+      <p style="margin-top: 32px; color: #64748b; font-size: 13px;">
+        Best regards,<br>
+        <b>Platform Security & Administration Team</b>
+      </p>
+    </div>
+    <div class="footer">
+      This is an automated notification sent to ${data.email}. Please do not reply directly to this email.
+    </div>
+  </div>
+</body>
+</html>
+      `.trim();
+    }
+
+    // Default HTML wrapper for other templates
+    return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>${subject}</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f8fafc; padding: 24px; color: #1e293b; }
+    .card { max-width: 580px; margin: 0 auto; background: #ffffff; border-radius: 14px; border: 1px solid #e2e8f0; padding: 28px; }
+    .pre { white-space: pre-wrap; font-family: inherit; font-size: 14px; line-height: 1.6; }
+    .btn { display: inline-block; background: #4f46e5; color: #ffffff !important; padding: 10px 24px; border-radius: 8px; text-decoration: none; font-size: 13px; font-weight: 600; margin-top: 16px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="pre">${this.renderEmailBody(template, data, recipientName)}</div>
+    <div style="margin-top: 20px; text-align: center;">
+      <a href="${appUrl}/login" class="btn">Access Portal</a>
+    </div>
+  </div>
+</body>
+</html>
+    `.trim();
   }
 }

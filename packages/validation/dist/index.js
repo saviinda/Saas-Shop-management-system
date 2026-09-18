@@ -27,7 +27,7 @@ exports.restrictShopPaymentSchema = zod_1.z.object({
 });
 exports.registerShopOwnerSchema = zod_1.z.object({
     name: zod_1.z.string().min(2),
-    email: zod_1.z.string().email(),
+    email: zod_1.z.string().email('Invalid email format'),
     password: zod_1.z.string().min(6),
     phone: zod_1.z.string().min(8),
     businessName: zod_1.z.string().min(2),
@@ -38,7 +38,7 @@ exports.registerShopOwnerSchema = zod_1.z.object({
 exports.createShopSchema = zod_1.z.object({
     name: zod_1.z.string().min(2),
     ownerId: zod_1.z.string().min(1),
-    email: zod_1.z.string().email(),
+    email: zod_1.z.string().email('Invalid email format'),
     contactNumber: zod_1.z.string().min(8),
     address: zod_1.z.string().min(3),
     category: zod_1.z.string().min(2),

@@ -31,7 +31,7 @@ export const restrictShopPaymentSchema = z.object({
 
 export const registerShopOwnerSchema = z.object({
   name: z.string().min(2),
-  email: z.string().email(),
+  email: z.string().email('Invalid email format'),
   password: z.string().min(6),
   phone: z.string().min(8),
   businessName: z.string().min(2),
@@ -43,7 +43,7 @@ export const registerShopOwnerSchema = z.object({
 export const createShopSchema = z.object({
   name: z.string().min(2),
   ownerId: z.string().min(1),
-  email: z.string().email(),
+  email: z.string().email('Invalid email format'),
   contactNumber: z.string().min(8),
   address: z.string().min(3),
   category: z.string().min(2),

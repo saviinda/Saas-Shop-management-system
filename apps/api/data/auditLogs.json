@@ -2809,5 +2809,161 @@
     },
     "createdAt": "2026-09-12T14:18:37.409Z",
     "id": "3576465c-ec75-4aea-8168-f45fd28e8fcc"
+  },
+  {
+    "actorId": "usr_super_admin",
+    "actorName": "Super Admin",
+    "actorRole": "super_admin",
+    "action": "RESET_USER_ACCESS",
+    "entity": "users",
+    "entityId": "27c2d078-101a-4182-b8f2-f44bc28c7205",
+    "after": {
+      "email": "savi077nda@gmail.com",
+      "name": "Test user",
+      "status": "active",
+      "reason": "Super Administrator password reset"
+    },
+    "createdAt": "2026-09-18T11:42:22.591Z",
+    "id": "a4a12bc0-e7c3-481e-be57-981dd362f9d3"
+  },
+  {
+    "id": "2d2c79fa-70ec-40bc-882b-3cb5d2091e17",
+    "createdAt": "2026-09-18T10:59:35.617Z",
+    "actorId": "usr_super_admin",
+    "actorRole": "super_admin",
+    "action": "RESET_USER_ACCESS",
+    "actorName": "Super Admin",
+    "entityId": "27c2d078-101a-4182-b8f2-f44bc28c7205",
+    "after": {
+      "reason": "Super Administrator password reset",
+      "name": "Test user",
+      "email": "savi077nda@gmail.com",
+      "status": "active"
+    },
+    "entity": "users"
+  },
+  {
+    "id": "3ff5cdf3-cce6-4df3-baef-0ffdd9cf313f",
+    "createdAt": "2026-09-18T07:44:34.709Z",
+    "actorId": "usr_super_admin",
+    "actorRole": "super_admin",
+    "action": "LOGIN",
+    "actorName": "Super Admin",
+    "entityId": "usr_super_admin",
+    "entity": "users"
+  },
+  {
+    "id": "529a9cdd-0494-4c5d-a8da-f39ef72039a0",
+    "createdAt": "2026-09-18T07:44:43.308Z",
+    "actorId": "usr_super_admin",
+    "actorRole": "super_admin",
+    "action": "LOGIN",
+    "actorName": "Super Admin",
+    "entityId": "usr_super_admin",
+    "entity": "users"
+  },
+  {
+    "id": "57dd2817-8ecb-4c2c-8d4a-d975d03cab20",
+    "createdAt": "2026-09-18T07:44:40.385Z",
+    "actorId": "usr_super_admin",
+    "actorRole": "super_admin",
+    "action": "LOGIN",
+    "actorName": "Super Admin",
+    "entityId": "usr_super_admin",
+    "entity": "users"
+  },
+  {
+    "id": "6922bcab-d094-44e7-8d94-6046cd5b92d3",
+    "createdAt": "2026-09-18T11:21:21.171Z",
+    "actorId": "usr_super_admin",
+    "actorRole": "super_admin",
+    "action": "RESET_USER_ACCESS",
+    "actorName": "Super Admin",
+    "entityId": "27c2d078-101a-4182-b8f2-f44bc28c7205",
+    "after": {
+      "reason": "Super Administrator password reset",
+      "name": "Test user",
+      "email": "savi077nda@gmail.com",
+      "status": "active"
+    },
+    "entity": "users"
+  },
+  {
+    "id": "70ae6800-a9a4-4e1e-b0f3-4d5508474865",
+    "createdAt": "2026-09-18T07:44:45.148Z",
+    "actorId": "usr_super_admin",
+    "actorRole": "super_admin",
+    "action": "LOGIN",
+    "actorName": "Super Admin",
+    "entityId": "usr_super_admin",
+    "entity": "users"
+  },
+  {
+    "id": "a159219e-7ae5-45d7-9771-9da0f144dbdf",
+    "createdAt": "2026-09-18T10:58:19.388Z",
+    "actorId": "usr_super_admin",
+    "actorRole": "super_admin",
+    "action": "CREATE_USER",
+    "actorName": "Super Admin",
+    "entityId": "27c2d078-101a-4182-b8f2-f44bc28c7205",
+    "after": {
+      "role": "sales_staff",
+      "roles": [
+        "sales_staff"
+      ],
+      "name": "Test user",
+      "email": "savi077nda@gmail.com"
+    },
+    "entity": "users"
+  },
+  {
+    "id": "a5bca8ec-f5ec-4aff-ba85-d5cb6c355a2e",
+    "createdAt": "2026-09-18T07:44:44.106Z",
+    "actorId": "usr_super_admin",
+    "actorRole": "super_admin",
+    "action": "LOGIN",
+    "actorName": "Super Admin",
+    "entityId": "usr_super_admin",
+    "entity": "users"
+  },
+  {
+    "id": "bf19d59b-11a5-4f3f-8080-acd6c06c126f",
+    "createdAt": "2026-09-18T07:44:44.940Z",
+    "actorId": "usr_super_admin",
+    "actorRole": "super_admin",
+    "action": "LOGIN",
+    "actorName": "Super Admin",
+    "entityId": "usr_super_admin",
+    "entity": "users"
+  },
+  {
+    "id": "c26b5a31-84b4-42da-9f6f-8789488642fa",
+    "createdAt": "2026-09-18T07:44:39.313Z",
+    "actorId": "usr_super_admin",
+    "actorRole": "super_admin",
+    "action": "LOGIN",
+    "actorName": "Super Admin",
+    "entityId": "usr_super_admin",
+    "entity": "users"
+  },
+  {
+    "id": "d2b44c07-f362-4fb2-8390-74609a40cf3f",
+    "createdAt": "2026-09-18T07:44:44.727Z",
+    "actorId": "usr_super_admin",
+    "actorRole": "super_admin",
+    "action": "LOGIN",
+    "actorName": "Super Admin",
+    "entityId": "usr_super_admin",
+    "entity": "users"
+  },
+  {
+    "id": "f244530f-004d-4da8-ad3f-45d0e25966a3",
+    "createdAt": "2026-09-18T07:44:45.378Z",
+    "actorId": "usr_super_admin",
+    "actorRole": "super_admin",
+    "action": "LOGIN",
+    "actorName": "Super Admin",
+    "entityId": "usr_super_admin",
+    "entity": "users"
   }
 ]

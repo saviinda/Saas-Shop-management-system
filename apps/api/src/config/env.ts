@@ -33,5 +33,18 @@ export const config = {
     clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
     privateKey: parsePrivateKey(process.env.FIREBASE_PRIVATE_KEY),
     storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
-  }
+  },
+  brevo: {
+    apiKey: process.env.BREVO_API_KEY || '',
+    senderEmail: process.env.BREVO_SENDER_EMAIL || process.env.BREVO_SENDER || '',
+    senderName: process.env.BREVO_SENDER_NAME || 'SaaS Platform Admin',
+  },
+  email: {
+    host: process.env.SMTP_HOST || (process.env.BREVO_SMTP_KEY ? 'smtp-relay.brevo.com' : undefined),
+    port: parseInt(process.env.SMTP_PORT || '587', 10),
+    secure: process.env.SMTP_SECURE === 'true' || process.env.SMTP_PORT === '465',
+    user: process.env.BREVO_SMTP_USER || process.env.SMTP_USER || process.env.EMAIL_USER || process.env.GMAIL_USER || '',
+    pass: process.env.BREVO_SMTP_KEY || process.env.SMTP_PASS || process.env.EMAIL_PASS || process.env.GMAIL_APP_PASSWORD || '',
+    from: process.env.SMTP_FROM || process.env.EMAIL_FROM || '"SaaS Platform Admin" <noreply@saasplatform.com>',
+  },
 };

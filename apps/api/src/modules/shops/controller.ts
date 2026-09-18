@@ -110,6 +110,15 @@ export class ShopController {
 
     const normalizedEmail = (ownerEmail || email || '').trim().toLowerCase();
 
+    if (!normalizedEmail) {
+      return sendError(res, 'VALIDATION_ERROR', 'Owner email is required', 400);
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(normalizedEmail)) {
+      return sendError(res, 'VALIDATION_ERROR', 'Invalid email format', 400);
+    }
+
     const existingUsers = await dbStore.collection<User>('users').query({
       where: [{ field: 'email', op: '==', value: normalizedEmail }],
     });
@@ -242,6 +251,14 @@ export class ShopController {
       password,
       description,
     } = req.body;
+
+    const targetEmail = (ownerEmail || email || '').trim().toLowerCase();
+    if (targetEmail) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(targetEmail)) {
+        return sendError(res, 'VALIDATION_ERROR', 'Invalid email format', 400);
+      }
+    }
 
     let packageName = shop.packageName;
     let subscriptionId = shop.subscriptionId;

@@ -287,5 +287,45 @@
     "isRead": false,
     "createdAt": "2026-09-12T14:18:37.405Z",
     "id": "7f4db2a6-6545-45c8-a48a-e8593a5486a8"
+  },
+  {
+    "id": "31e0489e-32aa-4325-bc02-eadcee98c056",
+    "createdAt": "2026-09-18T11:21:15.145Z",
+    "isRead": false,
+    "link": "/login",
+    "recipientId": "27c2d078-101a-4182-b8f2-f44bc28c7205",
+    "message": "Your account access credentials have been reset by the platform administrator.",
+    "title": "Account Access & Credentials Update - Platform",
+    "type": "warning"
+  },
+  {
+    "id": "568259ae-fef4-4fa3-bfcb-be78c21ffbf2",
+    "createdAt": "2026-09-18T11:17:06.768Z",
+    "isRead": false,
+    "link": "/login",
+    "recipientId": "usr_super_admin",
+    "message": "Your account access credentials have been reset by the platform administrator.",
+    "title": "Account Access & Credentials Update - Apex Electronics",
+    "type": "warning"
+  },
+  {
+    "id": "5e4e31fd-2770-4e4c-b0f6-3113eca632a9",
+    "createdAt": "2026-09-18T10:59:35.610Z",
+    "isRead": false,
+    "link": "/login",
+    "recipientId": "27c2d078-101a-4182-b8f2-f44bc28c7205",
+    "message": "Your account access credentials have been reset by the platform administrator.",
+    "title": "Account Access & Credentials Update - Platform",
+    "type": "warning"
+  },
+  {
+    "recipientId": "27c2d078-101a-4182-b8f2-f44bc28c7205",
+    "title": "Account Access & Credentials Update - Platform",
+    "message": "Your account access credentials have been reset by the platform administrator.",
+    "type": "warning",
+    "link": "/login",
+    "isRead": false,
+    "createdAt": "2026-09-18T11:42:21.490Z",
+    "id": "e86de2ec-7210-4a28-9c9d-4da898b26059"
   }
 ]

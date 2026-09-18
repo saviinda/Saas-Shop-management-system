@@ -201,11 +201,17 @@ export default function UsersManagementPage() {
   const handleExecuteResetAccess = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!resetModalUser) return;
+
+    if (customPassword.trim() && customPassword.trim().length < 6) {
+      showError('Password Too Short', 'Custom temporary password must be at least 6 characters.');
+      return;
+    }
+
     setIsResetting(true);
     try {
       const res = await api.post<any>(`/users/${resetModalUser.id}/reset-access`, {
-        newPassword: customPassword || undefined,
-        reason: resetReason,
+        newPassword: customPassword.trim() || undefined,
+        reason: resetReason.trim() || undefined,
       });
       setResetModalUser(null);
       await fetchUsersData();
@@ -1077,7 +1083,7 @@ export default function UsersManagementPage() {
             <form onSubmit={handleExecuteResetAccess} className="space-y-3">
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Custom Temporary Password (leave blank to auto-generate)
+                  Custom Temporary Password (leave blank to auto-generate, min 6 characters)
                 </label>
                 <input
                   type="text"

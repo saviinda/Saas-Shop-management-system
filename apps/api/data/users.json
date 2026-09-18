@@ -194,5 +194,28 @@
     "createdAt": "2026-09-11T09:14:57.333Z",
     "updatedAt": "2026-09-11T09:14:57.333Z",
     "id": "eaf765ef-c2f9-412f-943b-65f5bb714198"
+  },
+  {
+    "id": "27c2d078-101a-4182-b8f2-f44bc28c7205",
+    "createdAt": "2026-09-18T10:58:19.375Z",
+    "role": "sales_staff",
+    "phone": "+9477444555",
+    "permissions": [
+      "dashboard",
+      "products",
+      "services",
+      "customers",
+      "orders",
+      "tasks"
+    ],
+    "roles": [
+      "sales_staff"
+    ],
+    "name": "Test user",
+    "branchIds": [],
+    "email": "savi077nda@gmail.com",
+    "status": "active",
+    "passwordHash": "$2a$10$C5KSNbFT7L04Y7YQE4x.O.bnP8wQNZGpJr1oZyuVpsFkQmnWmLVvK",
+    "updatedAt": "2026-09-18T11:42:21.484Z"
   }
 ]

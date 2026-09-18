@@ -33,7 +33,10 @@ import {
   UserCheck,
   Check,
   AlertTriangle,
+  AlertCircle,
 } from 'lucide-react';
+
+const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
 
 export default function ShopsManagementPage() {
   const { showSuccess, showError, showConfirm } = useModal();
@@ -55,6 +58,7 @@ export default function ShopsManagementPage() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedShop, setSelectedShop] = useState<Shop | null>(null);
   const [modalError, setModalError] = useState<string | null>(null);
+  const [ownerEmailError, setOwnerEmailError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Reset Access Modal State
@@ -124,6 +128,7 @@ export default function ShopsManagementPage() {
       packageId: packages.length > 0 ? packages[0].id : '',
     });
     setModalError(null);
+    setOwnerEmailError(null);
     setShowCreateModal(true);
   };
 
@@ -143,6 +148,7 @@ export default function ShopsManagementPage() {
       description: shop.description || '',
     });
     setModalError(null);
+    setOwnerEmailError(null);
     setShowEditModal(true);
   };
 
@@ -156,8 +162,16 @@ export default function ShopsManagementPage() {
     }
     if (!formData.ownerEmail.trim()) {
       setModalError('Owner Email is required');
+      setOwnerEmailError('Owner Email is required');
       return;
     }
+    if (!isValidEmail(formData.ownerEmail)) {
+      setModalError('Invalid email format');
+      setOwnerEmailError('Invalid email format');
+      return;
+    }
+    setOwnerEmailError(null);
+
     if (!formData.packageId) {
       setModalError('Please select a valid subscription tier');
       return;
@@ -184,6 +198,15 @@ export default function ShopsManagementPage() {
     e.preventDefault();
     if (!selectedShop) return;
     setModalError(null);
+
+    if (formData.ownerEmail && formData.ownerEmail.trim()) {
+      if (!isValidEmail(formData.ownerEmail)) {
+        setModalError('Invalid email format');
+        setOwnerEmailError('Invalid email format');
+        return;
+      }
+    }
+    setOwnerEmailError(null);
 
     setIsSubmitting(true);
     try {
@@ -249,11 +272,17 @@ export default function ShopsManagementPage() {
   const handleExecuteResetAccess = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!resetModalUser) return;
+
+    if (customPassword.trim() && customPassword.trim().length < 6) {
+      showError('Password Too Short', 'Custom temporary password must be at least 6 characters.');
+      return;
+    }
+
     setIsResetting(true);
     try {
       const res = await api.post<any>(`/users/${resetModalUser.id}/reset-access`, {
-        newPassword: customPassword || undefined,
-        reason: resetReason,
+        newPassword: customPassword.trim() || undefined,
+        reason: resetReason.trim() || undefined,
       });
       setResetModalUser(null);
       await fetchShopsAndOwners();
@@ -915,12 +944,13 @@ export default function ShopsManagementPage() {
             <h2 className="text-lg font-bold text-slate-900">Create New Shop & Owner Account</h2>
 
             {modalError && (
-              <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-xl">
-                {modalError}
+              <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-xl flex items-center gap-2">
+                <AlertCircle className="h-4 w-4 shrink-0" />
+                <span>{modalError}</span>
               </div>
             )}
 
-            <form onSubmit={handleCreateShop} className="space-y-3 text-xs">
+            <form onSubmit={handleCreateShop} noValidate className="space-y-3 text-xs">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block font-bold text-slate-700 mb-1">Business / Shop Name *</label>
@@ -959,15 +989,48 @@ export default function ShopsManagementPage() {
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Owner Email *</label>
+                  <label className="block font-bold text-slate-700 mb-1">
+                    Owner Email <span className="text-rose-500">*</span>
+                  </label>
                   <input
                     type="email"
                     required
                     placeholder="e.g. owner@apextech.com"
                     value={formData.ownerEmail}
-                    onChange={e => setFormData(prev => ({ ...prev, ownerEmail: e.target.value }))}
-                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-indigo-500"
+                    onChange={e => {
+                      const val = e.target.value;
+                      setFormData(prev => ({ ...prev, ownerEmail: val }));
+                      if (val.trim()) {
+                        if (!isValidEmail(val)) {
+                          setOwnerEmailError('Invalid email format');
+                        } else {
+                          setOwnerEmailError(null);
+                          if (modalError === 'Invalid email format' || modalError === 'Owner Email is required') {
+                            setModalError(null);
+                          }
+                        }
+                      } else {
+                        setOwnerEmailError(null);
+                      }
+                    }}
+                    onBlur={() => {
+                      const val = formData.ownerEmail.trim();
+                      if (val && !isValidEmail(val)) {
+                        setOwnerEmailError('Invalid email format');
+                      }
+                    }}
+                    className={`w-full p-2.5 bg-slate-50 border rounded-xl focus:bg-white focus:outline-none transition-colors ${
+                      ownerEmailError || modalError === 'Invalid email format'
+                        ? 'border-rose-400 focus:border-rose-500 bg-rose-50/20 ring-1 ring-rose-300'
+                        : 'border-slate-200 focus:border-indigo-500'
+                    }`}
                   />
+                  {(ownerEmailError || modalError === 'Invalid email format') && (
+                    <p className="mt-1 text-[11px] text-rose-600 font-medium flex items-center gap-1">
+                      <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+                      <span>Invalid email format</span>
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -1048,12 +1111,13 @@ export default function ShopsManagementPage() {
             <h2 className="text-lg font-bold text-slate-900">Edit Shop & Business Category Details</h2>
 
             {modalError && (
-              <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-xl">
-                {modalError}
+              <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-xl flex items-center gap-2">
+                <AlertCircle className="h-4 w-4 shrink-0" />
+                <span>{modalError}</span>
               </div>
             )}
 
-            <form onSubmit={handleEditShop} className="space-y-3 text-xs">
+            <form onSubmit={handleEditShop} noValidate className="space-y-3 text-xs">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block font-bold text-slate-700 mb-1">Business / Shop Name</label>
@@ -1092,9 +1156,40 @@ export default function ShopsManagementPage() {
                   <input
                     type="email"
                     value={formData.ownerEmail}
-                    onChange={e => setFormData(prev => ({ ...prev, ownerEmail: e.target.value }))}
-                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-indigo-500"
+                    onChange={e => {
+                      const val = e.target.value;
+                      setFormData(prev => ({ ...prev, ownerEmail: val }));
+                      if (val.trim()) {
+                        if (!isValidEmail(val)) {
+                          setOwnerEmailError('Invalid email format');
+                        } else {
+                          setOwnerEmailError(null);
+                          if (modalError === 'Invalid email format') {
+                            setModalError(null);
+                          }
+                        }
+                      } else {
+                        setOwnerEmailError(null);
+                      }
+                    }}
+                    onBlur={() => {
+                      const val = formData.ownerEmail.trim();
+                      if (val && !isValidEmail(val)) {
+                        setOwnerEmailError('Invalid email format');
+                      }
+                    }}
+                    className={`w-full p-2.5 bg-slate-50 border rounded-xl focus:bg-white focus:outline-none transition-colors ${
+                      ownerEmailError || modalError === 'Invalid email format'
+                        ? 'border-rose-400 focus:border-rose-500 bg-rose-50/20 ring-1 ring-rose-300'
+                        : 'border-slate-200 focus:border-indigo-500'
+                    }`}
                   />
+                  {(ownerEmailError || modalError === 'Invalid email format') && (
+                    <p className="mt-1 text-[11px] text-rose-600 font-medium flex items-center gap-1">
+                      <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+                      <span>Invalid email format</span>
+                    </p>
+                  )}
                 </div>
               </div>
 
