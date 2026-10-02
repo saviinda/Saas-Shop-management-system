@@ -9,7 +9,14 @@ export const requireRole = (allowedRoles: UserRole[]) => {
       return sendError(res, 'UNAUTHORIZED', 'Authentication required', 401);
     }
 
-    if (!allowedRoles.includes(req.user.role)) {
+    const userRoles = [
+      req.user.role,
+      ...(Array.isArray((req.user as any).roles) ? (req.user as any).roles : []),
+    ];
+
+    const hasAllowedRole = allowedRoles.some(role => userRoles.includes(role));
+
+    if (!hasAllowedRole) {
       return sendError(
         res,
         'FORBIDDEN',
@@ -24,6 +31,7 @@ export const requireRole = (allowedRoles: UserRole[]) => {
 
 export const isSuperAdmin = requireRole(['super_admin']);
 export const isShopOwnerOrAbove = requireRole(['super_admin', 'shop_owner']);
+export const isManagerOrAbove = requireRole(['super_admin', 'shop_owner', 'manager']);
 export const isShopStaff = requireRole([
   'super_admin',
   'shop_owner',

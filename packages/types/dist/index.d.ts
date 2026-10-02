@@ -386,6 +386,7 @@ export interface EmployeeTask {
     id: string;
     shopId: string;
     branchId: string;
+    branchName?: string;
     title: string;
     description: string;
     assigneeId: string;

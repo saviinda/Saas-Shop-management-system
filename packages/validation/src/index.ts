@@ -307,10 +307,10 @@ export const createGRNSchema = z.object({
 });
 
 export const createTaskSchema = z.object({
-  branchId: z.string().min(1),
-  title: z.string().min(2),
-  description: z.string().min(5),
-  assigneeId: z.string().min(1),
+  branchId: z.string().optional(),
+  title: z.string().min(1, 'Task title is required'),
+  description: z.string().min(1, 'Description is required'),
+  assigneeId: z.string().min(1, 'Assignee is required'),
   priority: z.enum(['low', 'medium', 'high', 'urgent']).default('medium'),
   dueDate: z.string().optional(),
   attachments: z.array(z.string()).optional(),

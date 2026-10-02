@@ -64,7 +64,7 @@ export declare const registerShopOwnerSchema: z.ZodObject<{
     businessName: z.ZodString;
     businessAddress: z.ZodString;
     businessCategory: z.ZodString;
-    packageId: z.ZodString;
+    packageId: z.ZodOptional<z.ZodString>;
 }, "strip", z.ZodTypeAny, {
     email: string;
     password: string;
@@ -73,7 +73,7 @@ export declare const registerShopOwnerSchema: z.ZodObject<{
     businessName: string;
     businessAddress: string;
     businessCategory: string;
-    packageId: string;
+    packageId?: string | undefined;
 }, {
     email: string;
     password: string;
@@ -82,7 +82,7 @@ export declare const registerShopOwnerSchema: z.ZodObject<{
     businessName: string;
     businessAddress: string;
     businessCategory: string;
-    packageId: string;
+    packageId?: string | undefined;
 }>;
 export declare const createShopSchema: z.ZodObject<{
     name: z.ZodString;
@@ -1083,7 +1083,7 @@ export declare const createGRNSchema: z.ZodObject<{
     documentUrl?: string | undefined;
 }>;
 export declare const createTaskSchema: z.ZodObject<{
-    branchId: z.ZodString;
+    branchId: z.ZodOptional<z.ZodString>;
     title: z.ZodString;
     description: z.ZodString;
     assigneeId: z.ZodString;
@@ -1092,17 +1092,17 @@ export declare const createTaskSchema: z.ZodObject<{
     attachments: z.ZodOptional<z.ZodArray<z.ZodString, "many">>;
 }, "strip", z.ZodTypeAny, {
     description: string;
-    branchId: string;
     title: string;
     assigneeId: string;
     priority: "low" | "medium" | "high" | "urgent";
+    branchId?: string | undefined;
     dueDate?: string | undefined;
     attachments?: string[] | undefined;
 }, {
     description: string;
-    branchId: string;
     title: string;
     assigneeId: string;
+    branchId?: string | undefined;
     priority?: "low" | "medium" | "high" | "urgent" | undefined;
     dueDate?: string | undefined;
     attachments?: string[] | undefined;

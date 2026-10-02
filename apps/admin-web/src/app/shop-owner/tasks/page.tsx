@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { api } from '@/lib/api-client';
 import { useBranch } from '@/lib/branch-context';
 import { useAuth } from '@/lib/auth-context';
@@ -26,11 +27,13 @@ import {
   Eye,
   User as UserIcon,
   AlertTriangle,
+  Building2,
+  ArrowRight,
 } from 'lucide-react';
 
 export default function TasksPage() {
   const { showSuccess, showError, showConfirm } = useModal();
-  const { activeBranch } = useBranch();
+  const { activeBranch, branches } = useBranch();
   const { user } = useAuth();
 
   const [tasks, setTasks] = useState<EmployeeTask[]>([]);
@@ -39,6 +42,7 @@ export default function TasksPage() {
 
   // Filters & Search
   const [search, setSearch] = useState('');
+  const [selectedBranchFilter, setSelectedBranchFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState('all');
   const [priorityFilter, setPriorityFilter] = useState('all');
   const [assigneeFilter, setAssigneeFilter] = useState('all');
@@ -53,6 +57,7 @@ export default function TasksPage() {
 
   // Create Task Form State
   const [formData, setFormData] = useState({
+    branchId: '',
     title: '',
     description: '',
     assigneeId: '',
@@ -60,18 +65,28 @@ export default function TasksPage() {
     dueDate: '',
   });
 
-  const loadData = async () => {
+  const isOwnerOrManager =
+    user?.role === 'shop_owner' ||
+    user?.role === 'manager' ||
+    user?.role === 'super_admin' ||
+    Boolean((user as any)?.roles?.includes('shop_owner') || (user as any)?.roles?.includes('manager'));
+
+  const loadData = async (branchFilter = selectedBranchFilter) => {
     try {
       setIsLoading(true);
+      const queryParams: Record<string, string | undefined> = {};
+      if (branchFilter && branchFilter !== 'all') {
+        queryParams.branchId = branchFilter;
+      }
+
       const [tskRes, stfRes] = await Promise.all([
-        api.get<EmployeeTask[]>('/tasks', { branchId: activeBranch?.id }),
+        api.get<EmployeeTask[]>('/tasks', queryParams),
         api.get<User[]>('/users'),
       ]);
+
       setTasks(tskRes.data || []);
-      setStaff(stfRes.data || []);
-      if (stfRes.data?.length > 0 && !formData.assigneeId) {
-        setFormData(prev => ({ ...prev, assigneeId: stfRes.data[0].id }));
-      }
+      const activeStaff = (stfRes.data || []).filter(u => u.status === 'active' && u.role !== 'super_admin');
+      setStaff(activeStaff);
     } catch (err) {
       console.error('Failed to load tasks:', err);
     } finally {
@@ -80,24 +95,61 @@ export default function TasksPage() {
   };
 
   useEffect(() => {
-    loadData();
-  }, [activeBranch]);
+    loadData(selectedBranchFilter);
+  }, [selectedBranchFilter]);
+
+  // Listen to soft branch switch events across components
+  useEffect(() => {
+    const handleBranchChange = () => {
+      loadData(selectedBranchFilter);
+    };
+    window.addEventListener('branch_changed', handleBranchChange);
+    return () => window.removeEventListener('branch_changed', handleBranchChange);
+  }, [selectedBranchFilter]);
 
   const openCreateModal = () => {
+    const initialBranchId =
+      (selectedBranchFilter !== 'all' ? selectedBranchFilter : null) ||
+      activeBranch?.id ||
+      branches[0]?.id ||
+      '';
+
+    const initialAssigneeId = staff[0]?.id || '';
+
     setFormData({
+      branchId: initialBranchId,
       title: '',
       description: '',
-      assigneeId: staff[0]?.id || '',
+      assigneeId: initialAssigneeId,
       priority: 'medium',
       dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
     });
     setShowCreateModal(true);
   };
 
+  const handleAssigneeChange = (assigneeId: string) => {
+    const targetUser = staff.find(u => u.id === assigneeId);
+    let targetBranchId = formData.branchId;
+
+    // If assigned user has explicit branch assignments, auto-select their branch if needed
+    if (targetUser?.branchIds && targetUser.branchIds.length > 0) {
+      if (!targetBranchId || !targetUser.branchIds.includes(targetBranchId)) {
+        targetBranchId = targetUser.branchIds[0];
+      }
+    }
+
+    setFormData(prev => ({
+      ...prev,
+      assigneeId,
+      branchId: targetBranchId || prev.branchId,
+    }));
+  };
+
   const handleCreateTask = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!activeBranch?.id) {
-      showError('Branch Required', 'Please select an active branch.');
+
+    if (!formData.title.trim()) {
+      showError('Title Required', 'Please enter a task title.');
       return;
     }
     if (!formData.assigneeId) {
@@ -105,10 +157,16 @@ export default function TasksPage() {
       return;
     }
 
+    const branchToUse = formData.branchId || activeBranch?.id || branches[0]?.id;
+    if (!branchToUse) {
+      showError('Branch Required', 'Please select a branch for this task.');
+      return;
+    }
+
     try {
       setIsSubmitting(true);
-      await api.post('/tasks', {
-        branchId: activeBranch.id,
+      const res = await api.post<EmployeeTask>('/tasks', {
+        branchId: branchToUse,
         title: formData.title.trim(),
         description: formData.description.trim(),
         assigneeId: formData.assigneeId,
@@ -118,9 +176,32 @@ export default function TasksPage() {
 
       setShowCreateModal(false);
       showSuccess('Task Assigned', `Task "${formData.title}" assigned successfully.`);
-      await loadData();
+
+      // Ensure newly created task is visible:
+      // If currently filtered by a different branch, switch to 'all' so it is visible
+      if (selectedBranchFilter !== 'all' && selectedBranchFilter !== branchToUse) {
+        setSelectedBranchFilter('all');
+        await loadData('all');
+      } else {
+        await loadData(selectedBranchFilter);
+      }
+
+      // Reset any active filters that would hide the newly created task
+      if (statusFilter !== 'all' && statusFilter !== 'todo') {
+        setStatusFilter('all');
+      }
+      if (priorityFilter !== 'all' && priorityFilter !== formData.priority) {
+        setPriorityFilter('all');
+      }
+      if (assigneeFilter !== 'all' && assigneeFilter !== formData.assigneeId) {
+        setAssigneeFilter('all');
+      }
+      setSearch('');
     } catch (err: any) {
-      showError('Task Creation Failed', err.message || 'Failed to assign task.');
+      const detailMsg = Array.isArray(err.details)
+        ? err.details.map((d: any) => `${d.field ? d.field + ': ' : ''}${d.message}`).join(', ')
+        : err.message || 'Failed to assign task.';
+      showError('Task Creation Failed', detailMsg);
     } finally {
       setIsSubmitting(false);
     }
@@ -188,7 +269,8 @@ export default function TasksPage() {
     return (
       t.title.toLowerCase().includes(q) ||
       t.description.toLowerCase().includes(q) ||
-      (t.assigneeName && t.assigneeName.toLowerCase().includes(q))
+      (t.assigneeName && t.assigneeName.toLowerCase().includes(q)) ||
+      (t.branchName && t.branchName.toLowerCase().includes(q))
     );
   });
 
@@ -199,23 +281,31 @@ export default function TasksPage() {
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Task Management & Staff Assignments</h1>
           <p className="text-xs text-slate-500 mt-1">
-            Assign shop duties, track priority workflows, log activity comments, and review task completion (BR-15)
+            Assign shop duties across branches, track priority workflows, log activity comments, and review task completion
           </p>
         </div>
 
-        <button
-          onClick={openCreateModal}
-          className="flex items-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-sm shadow-indigo-200 active:scale-[0.98] transition-all self-start sm:self-auto"
-        >
-          <Plus className="h-4 w-4" /> Create New Task
-        </button>
+        {isOwnerOrManager && (
+          <button
+            onClick={openCreateModal}
+            className="flex items-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-sm shadow-indigo-200 active:scale-[0.98] transition-all self-start sm:self-auto"
+          >
+            <Plus className="h-4 w-4" /> Create New Task
+          </button>
+        )}
       </div>
 
       {/* KPI Stats Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
         <div className="p-3.5 bg-white rounded-2xl border border-slate-200 shadow-xs">
           <span className="text-[10px] font-bold uppercase text-slate-400">Total Tasks</span>
           <p className="text-xl font-extrabold text-slate-900 mt-0.5">{tasks.length}</p>
+        </div>
+        <div className="p-3.5 bg-white rounded-2xl border border-slate-200 shadow-xs">
+          <span className="text-[10px] font-bold uppercase text-slate-400">To Do</span>
+          <p className="text-xl font-extrabold text-indigo-600 mt-0.5">
+            {tasks.filter(t => t.status === 'todo').length}
+          </p>
         </div>
         <div className="p-3.5 bg-white rounded-2xl border border-slate-200 shadow-xs">
           <span className="text-[10px] font-bold uppercase text-slate-400">In Progress</span>
@@ -229,7 +319,7 @@ export default function TasksPage() {
             {tasks.filter(t => t.status === 'pending_review').length}
           </p>
         </div>
-        <div className="p-3.5 bg-white rounded-2xl border border-slate-200 shadow-xs">
+        <div className="p-3.5 bg-white rounded-2xl border border-slate-200 shadow-xs col-span-2 sm:col-span-1">
           <span className="text-[10px] font-bold uppercase text-slate-400">Completed</span>
           <p className="text-xl font-extrabold text-emerald-600 mt-0.5">
             {tasks.filter(t => t.status === 'completed').length}
@@ -238,19 +328,36 @@ export default function TasksPage() {
       </div>
 
       {/* Search and Filters Bar */}
-      <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm shadow-slate-200/50 flex flex-col sm:flex-row gap-3 items-center justify-between">
-        <div className="relative w-full sm:w-72">
+      <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm shadow-slate-200/50 flex flex-col lg:flex-row gap-3 items-stretch lg:items-center justify-between">
+        <div className="relative w-full lg:w-72">
           <Search className="absolute left-3.5 top-2.5 h-4 w-4 text-slate-400" />
           <input
             type="text"
-            placeholder="Search tasks by title, worker..."
+            placeholder="Search tasks by title, worker, branch..."
             value={search}
             onChange={e => setSearch(e.target.value)}
             className="w-full pl-10 pr-4 py-2 text-xs bg-slate-50 border border-slate-200/90 rounded-xl text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:border-indigo-500 shadow-2xs"
           />
         </div>
 
-        <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto">
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Branch Filter */}
+          <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1">
+            <Building2 className="h-3.5 w-3.5 text-slate-400" />
+            <select
+              value={selectedBranchFilter}
+              onChange={e => setSelectedBranchFilter(e.target.value)}
+              className="bg-transparent text-xs font-semibold text-slate-700 focus:outline-none cursor-pointer py-1"
+            >
+              <option value="all">All Branches ({branches.length})</option>
+              {branches.map(b => (
+                <option key={b.id} value={b.id}>
+                  {b.name} {b.isDefault ? '(Main)' : ''}
+                </option>
+              ))}
+            </select>
+          </div>
+
           {user && (
             <button
               onClick={() => setAssigneeFilter(assigneeFilter === user.id ? 'all' : user.id)}
@@ -260,7 +367,7 @@ export default function TasksPage() {
                   : 'bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100'
               }`}
             >
-              {assigneeFilter === user.id ? '✓ Showing My Tasks' : 'Filter: Assigned To Me'}
+              {assigneeFilter === user.id ? '✓ Showing My Tasks' : 'Assigned To Me'}
             </button>
           )}
 
@@ -297,9 +404,11 @@ export default function TasksPage() {
             onChange={e => setAssigneeFilter(e.target.value)}
             className="px-3 py-2 rounded-xl text-xs font-semibold bg-slate-50 text-slate-700 border border-slate-200 focus:bg-white focus:outline-none focus:border-indigo-500"
           >
-            <option value="all">All Workers ({staff.length})</option>
+            <option value="all">All Staff ({staff.length})</option>
             {staff.map(u => (
-              <option key={u.id} value={u.id}>{u.name} {u.id === user?.id ? '(Me)' : ''}</option>
+              <option key={u.id} value={u.id}>
+                {u.name} {u.id === user?.id ? '(Me)' : ''}
+              </option>
             ))}
           </select>
         </div>
@@ -312,6 +421,7 @@ export default function TasksPage() {
             <thead className="bg-slate-50/80 text-[11px] uppercase tracking-wider text-slate-500 font-semibold border-b border-slate-200/80">
               <tr>
                 <th className="py-3.5 px-6">Task Details</th>
+                <th className="py-3.5 px-6">Branch</th>
                 <th className="py-3.5 px-6">Assigned Worker</th>
                 <th className="py-3.5 px-6">Priority</th>
                 <th className="py-3.5 px-6">Due Date</th>
@@ -322,9 +432,24 @@ export default function TasksPage() {
             </thead>
             <tbody className="divide-y divide-slate-100 font-medium">
               {isLoading ? (
-                <tr><td colSpan={7} className="py-12 text-center text-slate-400">Loading assigned tasks...</td></tr>
+                <tr>
+                  <td colSpan={8} className="py-12 text-center text-slate-400">
+                    <div className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent mb-2" />
+                    <p>Loading assigned tasks...</p>
+                  </td>
+                </tr>
               ) : filteredTasks.length === 0 ? (
-                <tr><td colSpan={7} className="py-12 text-center text-slate-400">No tasks found matching criteria.</td></tr>
+                <tr>
+                  <td colSpan={8} className="py-12 text-center text-slate-400">
+                    <CheckSquare className="h-8 w-8 text-slate-300 mx-auto mb-2" />
+                    <p className="font-semibold text-slate-600">No tasks found matching criteria.</p>
+                    <p className="text-[11px] text-slate-400 mt-1">
+                      {isOwnerOrManager
+                        ? 'Click "Create New Task" above to assign duties to your team.'
+                        : 'No tasks currently assigned to you.'}
+                    </p>
+                  </td>
+                </tr>
               ) : (
                 filteredTasks.map(t => (
                   <tr
@@ -335,6 +460,12 @@ export default function TasksPage() {
                     <td className="py-4 px-6">
                       <p className="font-bold text-slate-900 text-sm">{t.title}</p>
                       <p className="text-[11px] text-slate-400 line-clamp-1 max-w-[240px]">{t.description}</p>
+                    </td>
+                    <td className="py-4 px-6">
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-100 text-slate-700 border border-slate-200/80">
+                        <Building2 className="h-3 w-3 text-slate-400" />
+                        {t.branchName || branches.find(b => b.id === t.branchId)?.name || 'Main Branch'}
+                      </span>
                     </td>
                     <td className="py-4 px-6">
                       <div className="flex items-center gap-2">
@@ -373,10 +504,10 @@ export default function TasksPage() {
                             ? 'bg-amber-50 text-amber-700 border-amber-200'
                             : t.status === 'cancelled'
                             ? 'bg-rose-50 text-rose-700 border-rose-200'
-                            : 'bg-slate-100 text-slate-700 border-slate-200'
+                            : 'bg-indigo-50 text-indigo-700 border-indigo-200'
                         }`}
                       >
-                        {t.status.replace('_', ' ')}
+                        {t.status === 'todo' ? 'To Do' : (t.status || 'todo').replace('_', ' ')}
                       </span>
                     </td>
                     <td className="py-4 px-6">
@@ -389,16 +520,20 @@ export default function TasksPage() {
                       <div className="flex items-center justify-end gap-1.5">
                         <button
                           onClick={() => setSelectedTaskDetails(t)}
+                          title="View task details"
                           className="p-1.5 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg border border-slate-200"
                         >
                           <Eye className="h-3.5 w-3.5" />
                         </button>
-                        <button
-                          onClick={() => handleDeleteTask(t)}
-                          className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg border border-slate-200"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
+                        {isOwnerOrManager && (
+                          <button
+                            onClick={() => handleDeleteTask(t)}
+                            title="Delete task"
+                            className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg border border-slate-200"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -422,15 +557,25 @@ export default function TasksPage() {
                     className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase border ${
                       selectedTaskDetails.priority === 'urgent'
                         ? 'bg-rose-50 text-rose-700 border-rose-200'
+                        : selectedTaskDetails.priority === 'high'
+                        ? 'bg-amber-50 text-amber-700 border-amber-200'
                         : 'bg-indigo-50 text-indigo-700 border-indigo-200'
                     }`}
                   >
                     {selectedTaskDetails.priority}
                   </span>
                 </div>
-                <p className="text-xs text-slate-400 mt-0.5">
-                  Assigned to <b className="text-slate-800">{selectedTaskDetails.assigneeName}</b> &bull; Created by {selectedTaskDetails.createdByName || 'Owner'}
-                </p>
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-400 mt-1">
+                  <span>
+                    Assigned to <b className="text-slate-800">{selectedTaskDetails.assigneeName}</b>
+                  </span>
+                  <span>&bull;</span>
+                  <span>
+                    Branch: <b className="text-slate-800">{selectedTaskDetails.branchName || branches.find(b => b.id === selectedTaskDetails.branchId)?.name || 'Main Branch'}</b>
+                  </span>
+                  <span>&bull;</span>
+                  <span>Created by {selectedTaskDetails.createdByName || 'Owner'}</span>
+                </div>
               </div>
               <button onClick={() => setSelectedTaskDetails(null)} className="p-1 text-slate-400 hover:text-slate-600">
                 <X className="h-5 w-5" />
@@ -438,18 +583,18 @@ export default function TasksPage() {
             </div>
 
             {/* Description */}
-            <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs">
+            <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 text-xs">
               <span className="text-[10px] font-bold uppercase text-slate-400 block mb-1">Task Instructions</span>
-              <p className="text-slate-800 whitespace-pre-wrap">{selectedTaskDetails.description}</p>
+              <p className="text-slate-800 whitespace-pre-wrap">{selectedTaskDetails.description || 'No detailed instructions provided.'}</p>
               {selectedTaskDetails.dueDate && (
-                <p className="text-[11px] text-indigo-600 font-semibold mt-2 flex items-center gap-1">
-                  <Calendar className="h-3 w-3" /> Due Date: {formatDate(selectedTaskDetails.dueDate)}
+                <p className="text-[11px] text-indigo-600 font-semibold mt-2.5 flex items-center gap-1">
+                  <Calendar className="h-3.5 w-3.5" /> Due Date: {formatDate(selectedTaskDetails.dueDate)}
                 </p>
               )}
             </div>
 
             {/* Status Workflow Action Bar */}
-            <div className="p-3 bg-indigo-50/70 rounded-xl border border-indigo-100 space-y-2 text-xs">
+            <div className="p-3.5 bg-indigo-50/70 rounded-xl border border-indigo-100 space-y-2 text-xs">
               <span className="font-bold text-slate-800">Update Task Progress / Status:</span>
               <div className="flex flex-wrap gap-1.5 pt-1">
                 {(['todo', 'in_progress', 'pending_review', 'completed', 'cancelled'] as TaskStatus[]).map(st => (
@@ -462,7 +607,7 @@ export default function TasksPage() {
                         : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'
                     }`}
                   >
-                    {st.replace('_', ' ')}
+                    {st === 'todo' ? 'To Do' : st.replace('_', ' ')}
                   </button>
                 ))}
               </div>
@@ -475,7 +620,7 @@ export default function TasksPage() {
               </span>
 
               <div className="max-h-48 overflow-y-auto space-y-2 pr-1 text-xs">
-                {(!selectedTaskDetails.comments || selectedTaskDetails.comments.length === 0) ? (
+                {!selectedTaskDetails.comments || selectedTaskDetails.comments.length === 0 ? (
                   <p className="text-slate-400 text-center py-4">No comments posted yet. Start the conversation below.</p>
                 ) : (
                   selectedTaskDetails.comments.map(c => (
@@ -524,7 +669,7 @@ export default function TasksPage() {
       {/* ===================== CREATE TASK MODAL ===================== */}
       {showCreateModal && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 border border-slate-200 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 space-y-4 border border-slate-200 shadow-2xl animate-in fade-in zoom-in-95 duration-200 max-h-[95vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <h3 className="font-bold text-slate-900 text-base">Assign New Employee Task</h3>
               <button onClick={() => setShowCreateModal(false)} className="p-1 text-slate-400 hover:text-slate-600">
@@ -532,7 +677,7 @@ export default function TasksPage() {
               </button>
             </div>
 
-            <form onSubmit={handleCreateTask} className="space-y-3 text-xs">
+            <form onSubmit={handleCreateTask} className="space-y-3.5 text-xs">
               <div>
                 <label className="block font-bold text-slate-800 mb-1">Task Title *</label>
                 <input
@@ -545,20 +690,66 @@ export default function TasksPage() {
                 />
               </div>
 
-              <div>
-                <label className="block font-bold text-slate-800 mb-1">Assign Staff Member *</label>
-                <select
-                  value={formData.assigneeId}
-                  onChange={e => setFormData({ ...formData, assigneeId: e.target.value })}
-                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800 focus:bg-white focus:outline-none"
-                >
-                  {staff.map(u => (
-                    <option key={u.id} value={u.id}>{u.name} ({u.role.replace('_', ' ')})</option>
-                  ))}
-                </select>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <div>
+                  <label className="block font-bold text-slate-800 mb-1">Target Branch *</label>
+                  <select
+                    value={formData.branchId}
+                    onChange={e => setFormData({ ...formData, branchId: e.target.value })}
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800 focus:bg-white focus:outline-none"
+                  >
+                    {branches.length === 0 ? (
+                      <option value="">No branches configured</option>
+                    ) : (
+                      branches.map(b => (
+                        <option key={b.id} value={b.id}>
+                          {b.name} {b.isDefault ? '(Main)' : ''}
+                        </option>
+                      ))
+                    )}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-800 mb-1">Assign Staff Member *</label>
+                  <select
+                    value={formData.assigneeId}
+                    onChange={e => handleAssigneeChange(e.target.value)}
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800 focus:bg-white focus:outline-none"
+                  >
+                    {staff.length === 0 ? (
+                      <option value="">No active staff found</option>
+                    ) : (
+                      staff.map(u => (
+                        <option key={u.id} value={u.id}>
+                          {u.name} ({u.role.replace('_', ' ')})
+                        </option>
+                      ))
+                    )}
+                  </select>
+                </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
+              {staff.length === 0 && (
+                <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 text-[11px] flex items-start gap-2">
+                  <AlertCircle className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-semibold">No Staff Members Registered</p>
+                    <p className="mt-0.5 text-slate-600">
+                      You must add employee profiles in the system before tasks can be assigned.
+                    </p>
+                    <Link
+                      href="/shop-owner/staff"
+                      onClick={() => setShowCreateModal(false)}
+                      className="inline-flex items-center gap-1 mt-1.5 font-bold text-indigo-600 hover:text-indigo-800"
+                    >
+                      Go to Employees & Staff <ArrowRight className="h-3 w-3" />
+                    </Link>
+                  </div>
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-2.5">
                 <div>
                   <label className="block font-bold text-slate-800 mb-1">Priority</label>
                   <select
@@ -589,7 +780,7 @@ export default function TasksPage() {
                 <textarea
                   rows={3}
                   required
-                  placeholder="Specific details, checklists, standard operating procedures..."
+                  placeholder="Provide clear task instructions, checklists, standard operating procedures..."
                   value={formData.description}
                   onChange={e => setFormData({ ...formData, description: e.target.value })}
                   className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none"
@@ -606,7 +797,7 @@ export default function TasksPage() {
                 </button>
                 <button
                   type="submit"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || staff.length === 0}
                   className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold shadow-2xs disabled:opacity-50"
                 >
                   {isSubmitting ? 'Assigning...' : 'Assign Task'}

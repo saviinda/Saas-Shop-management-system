@@ -33,7 +33,7 @@ exports.registerShopOwnerSchema = zod_1.z.object({
     businessName: zod_1.z.string().min(2),
     businessAddress: zod_1.z.string().min(3),
     businessCategory: zod_1.z.string().min(2),
-    packageId: zod_1.z.string().min(1),
+    packageId: zod_1.z.string().optional(),
 });
 exports.createShopSchema = zod_1.z.object({
     name: zod_1.z.string().min(2),
@@ -265,10 +265,10 @@ exports.createGRNSchema = zod_1.z.object({
     documentUrl: zod_1.z.string().optional(),
 });
 exports.createTaskSchema = zod_1.z.object({
-    branchId: zod_1.z.string().min(1),
-    title: zod_1.z.string().min(2),
-    description: zod_1.z.string().min(5),
-    assigneeId: zod_1.z.string().min(1),
+    branchId: zod_1.z.string().optional(),
+    title: zod_1.z.string().min(1, 'Task title is required'),
+    description: zod_1.z.string().min(1, 'Description is required'),
+    assigneeId: zod_1.z.string().min(1, 'Assignee is required'),
     priority: zod_1.z.enum(['low', 'medium', 'high', 'urgent']).default('medium'),
     dueDate: zod_1.z.string().optional(),
     attachments: zod_1.z.array(zod_1.z.string()).optional(),
