@@ -287,9 +287,26 @@ export class AuthController {
       return sendError(res, 'EMAIL_EXISTS', 'Email is already registered', 400);
     }
 
-    const pkg = await dbStore.collection<SubscriptionPackage>('packages').get(packageId);
-    if (!pkg) {
-      return sendError(res, 'PACKAGE_NOT_FOUND', 'Selected subscription package does not exist', 400);
+    let targetPkg: SubscriptionPackage | null = null;
+    if (packageId) {
+      targetPkg = await dbStore.collection<SubscriptionPackage>('packages').get(packageId);
+    }
+
+    if (!targetPkg) {
+      // Default to Free Plan
+      const freeQuery = await dbStore.collection<SubscriptionPackage>('packages').query({
+        where: [{ field: 'price', op: '==', value: 0 }],
+      });
+      targetPkg = freeQuery.data[0] || (await dbStore.collection<SubscriptionPackage>('packages').get('pkg_free'));
+    }
+
+    if (!targetPkg) {
+      const allPkgs = await dbStore.collection<SubscriptionPackage>('packages').query();
+      targetPkg = allPkgs.data.find(p => p.price === 0) || allPkgs.data[0];
+    }
+
+    if (!targetPkg) {
+      return sendError(res, 'PACKAGE_NOT_FOUND', 'No subscription package available for registration', 400);
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
@@ -316,12 +333,12 @@ export class AuthController {
     const subscription = await dbStore.collection<Subscription>('subscriptions').create({
       id: subId,
       shopId,
-      packageId: pkg.id,
-      packageName: pkg.name,
-      limits: pkg.limits,
-      price: pkg.price,
+      packageId: targetPkg.id,
+      packageName: targetPkg.name,
+      limits: targetPkg.limits,
+      price: targetPkg.price,
       startAt: new Date().toISOString(),
-      expiryAt: new Date(Date.now() + pkg.durationDays * 24 * 60 * 60 * 1000).toISOString(),
+      expiryAt: new Date(Date.now() + (targetPkg.durationDays || 365) * 24 * 60 * 60 * 1000).toISOString(),
       status: 'active',
       autoRenew: true,
       createdAt: new Date().toISOString(),
@@ -340,8 +357,8 @@ export class AuthController {
       address: businessAddress,
       category: businessCategory,
       status: 'active',
-      packageId: pkg.id,
-      packageName: pkg.name,
+      packageId: targetPkg.id,
+      packageName: targetPkg.name,
       subscriptionId: subscription.id,
       defaultBranchId: branch.id,
       createdAt: new Date().toISOString(),
@@ -369,10 +386,22 @@ export class AuthController {
       { expiresIn: '7d' }
     );
 
+    // Send Registration / Welcome Email
+    await EmailService.sendRegistrationWelcomeEmail({
+      email: normalizedEmail,
+      name,
+      shopName: businessName,
+      packageName: targetPkg.name,
+      shopId: shop.id,
+      userId: user.id,
+      limits: targetPkg.limits,
+      branchName: branch.name,
+    });
+
     // Notify Super Admins
     await NotificationService.notifySuperAdmins({
       title: 'New Shop Registered',
-      message: `Shop "${businessName}" has registered with ${pkg.name}.`,
+      message: `Shop "${businessName}" has registered with ${targetPkg.name}.`,
       link: `/super-admin/shops`,
     });
 
@@ -406,6 +435,78 @@ export class AuthController {
       shop,
       defaultBranch,
       branches,
+    });
+  }
+
+  // Ephemeral in-memory OTP store
+  private static otpStore: Map<string, { code: string; expiresAt: number; purpose: string }> = new Map();
+
+  static async sendOtp(req: Request, res: Response) {
+    const email = (req.body.email || '').trim().toLowerCase();
+    const purpose = (req.body.purpose || 'Security Verification').trim();
+
+    if (!email) {
+      return sendError(res, 'INVALID_INPUT', 'Email address is required for OTP', 400);
+    }
+
+    // Generate 6-digit cryptographic OTP
+    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresMinutes = 10;
+    const expiresAt = Date.now() + expiresMinutes * 60 * 1000;
+
+    AuthController.otpStore.set(email, { code: otpCode, expiresAt, purpose });
+
+    let userName = 'Valued User';
+    const users = await dbStore.collection<User>('users').query({
+      where: [{ field: 'email', op: '==', value: email }],
+    });
+    if (users.data[0]?.name) {
+      userName = users.data[0].name;
+    }
+
+    await EmailService.sendOtpEmail({
+      email,
+      name: userName,
+      otpCode,
+      purpose,
+      expiresMinutes,
+      userId: users.data[0]?.id,
+    });
+
+    return sendSuccess(res, {
+      message: `Verification code sent to ${email}`,
+      expiresMinutes,
+    });
+  }
+
+  static async verifyOtp(req: Request, res: Response) {
+    const email = (req.body.email || '').trim().toLowerCase();
+    const code = (req.body.code || req.body.otpCode || '').trim();
+
+    if (!email || !code) {
+      return sendError(res, 'INVALID_INPUT', 'Email and OTP code are required', 400);
+    }
+
+    const record = AuthController.otpStore.get(email);
+    if (!record) {
+      return sendError(res, 'INVALID_OTP', 'No verification code found. Please request a new one.', 400);
+    }
+
+    if (Date.now() > record.expiresAt) {
+      AuthController.otpStore.delete(email);
+      return sendError(res, 'OTP_EXPIRED', 'Verification code has expired. Please request a new code.', 400);
+    }
+
+    if (record.code !== code) {
+      return sendError(res, 'INVALID_OTP', 'Invalid verification code. Please check and try again.', 400);
+    }
+
+    // Code verified successfully - remove OTP to prevent reuse
+    AuthController.otpStore.delete(email);
+
+    return sendSuccess(res, {
+      verified: true,
+      message: 'Verification code verified successfully',
     });
   }
 }

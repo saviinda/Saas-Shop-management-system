@@ -3,6 +3,7 @@ import { dbStore } from '../../db/store';
 import { AppNotification } from '@saas/types';
 import { AuthenticatedRequest } from '../../middleware/auth';
 import { sendSuccess } from '../../utils/response';
+import { NotificationHub } from '../../services/notificationHub.service';
 
 export class NotificationController {
   static async listNotifications(req: AuthenticatedRequest, res: Response) {
@@ -47,6 +48,33 @@ export class NotificationController {
     });
   }
 
+  static async streamNotifications(req: AuthenticatedRequest, res: Response) {
+    const userId = req.user!.id;
+    const role = req.user!.role;
+    const shopId = req.user!.shopId;
+
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache, no-transform');
+    res.setHeader('Connection', 'keep-alive');
+    res.setHeader('X-Accel-Buffering', 'no');
+    if (res.flushHeaders) {
+      res.flushHeaders();
+    }
+
+    const connectionId = `${userId}_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+    NotificationHub.addClient({
+      id: connectionId,
+      userId,
+      role,
+      shopId,
+      res,
+    });
+
+    req.on('close', () => {
+      NotificationHub.removeClient(connectionId);
+    });
+  }
+
   static async markAsRead(req: AuthenticatedRequest, res: Response) {
     const { id } = req.params;
     const userId = req.user!.id;
@@ -61,12 +89,14 @@ export class NotificationController {
           }
         }
       }
+      NotificationHub.broadcastAllRead(userId);
       return sendSuccess(res, { success: true });
     }
 
     const notif = await dbStore.collection<AppNotification>('notifications').get(id);
     if (notif) {
       const updated = await dbStore.collection<AppNotification>('notifications').update(id, { isRead: true });
+      NotificationHub.broadcastRead(userId, id);
       return sendSuccess(res, updated);
     }
 

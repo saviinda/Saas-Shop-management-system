@@ -1,11 +1,13 @@
 'use client';
 
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api-client';
 import { useAuth } from '@/lib/auth-context';
 import { AppNotification } from '@saas/types';
 import { formatDate } from '@/lib/utils';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Bell,
   CheckCircle2,
@@ -14,18 +16,25 @@ import {
   ShieldAlert,
   Check,
   ExternalLink,
+  Wifi,
+  WifiOff,
 } from 'lucide-react';
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
 
 export const NotificationDropdown: React.FC = () => {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [unreadCount, setUnreadCount] = useState<number>(0);
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isConnected, setIsConnected] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const eventSourceRef = useRef<EventSource | null>(null);
 
-  const fetchNotifications = async () => {
+  // Fetch initial notification list from backend API
+  const fetchNotifications = useCallback(async () => {
     try {
       const res = await api.get<{ notifications: AppNotification[]; unreadCount: number }>('/notifications');
       if (res.data) {
@@ -33,15 +42,81 @@ export const NotificationDropdown: React.FC = () => {
         setUnreadCount(res.data.unreadCount || 0);
       }
     } catch (err) {
-      console.warn('Failed to fetch notifications:', err);
+      console.warn('[Notifications] Failed to fetch notifications:', err);
     }
-  };
+  }, []);
 
+  // Connect to real-time Server-Sent Events (SSE) notification stream
   useEffect(() => {
     fetchNotifications();
-    const interval = setInterval(fetchNotifications, 12000); // 12s live poll
-    return () => clearInterval(interval);
-  }, []);
+
+    const authToken = token || (typeof window !== 'undefined' ? localStorage.getItem('saas_token') : null);
+    if (!authToken) return;
+
+    let retryTimeout: NodeJS.Timeout;
+
+    const connectSSE = () => {
+      try {
+        const streamUrl = `${API_BASE_URL}/notifications/stream?token=${encodeURIComponent(authToken)}`;
+        const es = new EventSource(streamUrl);
+        eventSourceRef.current = es;
+
+        es.onopen = () => {
+          setIsConnected(true);
+        };
+
+        es.onmessage = (event) => {
+          try {
+            const data = JSON.parse(event.data);
+            if (data.type === 'connected') {
+              setIsConnected(true);
+            } else if (data.type === 'new_notification' && data.notification) {
+              const newNotif = data.notification as AppNotification;
+              setNotifications(prev => {
+                // Prevent duplicate addition
+                if (prev.some(n => n.id === newNotif.id)) return prev;
+                return [newNotif, ...prev];
+              });
+              setUnreadCount(prev => prev + 1);
+            } else if (data.type === 'notification_read') {
+              setNotifications(prev =>
+                prev.map(n => (n.id === data.id ? { ...n, isRead: true } : n))
+              );
+              setUnreadCount(prev => Math.max(0, prev - 1));
+            } else if (data.type === 'all_notifications_read') {
+              setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+              setUnreadCount(0);
+            }
+          } catch (err) {
+            console.error('[Notifications] SSE payload parse error:', err);
+          }
+        };
+
+        es.onerror = () => {
+          setIsConnected(false);
+          es.close();
+          // Auto-reconnect after 6 seconds
+          retryTimeout = setTimeout(connectSSE, 6000);
+        };
+      } catch (err) {
+        console.warn('[Notifications] SSE connection error:', err);
+        retryTimeout = setTimeout(connectSSE, 10000);
+      }
+    };
+
+    connectSSE();
+
+    // Fallback sync polling every 45s in case network interrupted SSE
+    const syncInterval = setInterval(fetchNotifications, 45000);
+
+    return () => {
+      clearTimeout(retryTimeout);
+      clearInterval(syncInterval);
+      if (eventSourceRef.current) {
+        eventSourceRef.current.close();
+      }
+    };
+  }, [fetchNotifications, token]);
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -58,7 +133,6 @@ export const NotificationDropdown: React.FC = () => {
 
   /**
    * Intelligently resolves notification links based on current user role
-   * Prevents 404 errors by mapping short routes like '/communication' to '/super-admin/communication'
    */
   const resolveNotificationLink = (rawLink?: string): string => {
     const isSuperAdmin = user?.role === 'super_admin';
@@ -82,6 +156,9 @@ export const NotificationDropdown: React.FC = () => {
     if (rawLink.startsWith('/orders')) return '/shop-owner/orders';
     if (rawLink.startsWith('/inventory')) return '/shop-owner/inventory';
     if (rawLink.startsWith('/procurement')) return '/shop-owner/procurement';
+    if (rawLink.startsWith('/batches')) return '/shop-owner/batches';
+    if (rawLink.startsWith('/categories') || rawLink.startsWith('/products/categories')) return '/shop-owner/products/categories';
+    if (rawLink.startsWith('/products')) return '/shop-owner/products';
 
     return `${prefix}${rawLink.startsWith('/') ? rawLink : '/' + rawLink}`;
   };
@@ -131,13 +208,13 @@ export const NotificationDropdown: React.FC = () => {
   const getBgForType = (type?: string) => {
     switch (type) {
       case 'alert':
-        return 'bg-rose-50 border-rose-100';
+        return 'bg-rose-50 border-rose-200/80';
       case 'warning':
-        return 'bg-amber-50 border-amber-100';
+        return 'bg-amber-50 border-amber-200/80';
       case 'success':
-        return 'bg-emerald-50 border-emerald-100';
+        return 'bg-emerald-50 border-emerald-200/80';
       default:
-        return 'bg-indigo-50 border-indigo-100';
+        return 'bg-indigo-50 border-indigo-200/80';
     }
   };
 
@@ -145,12 +222,13 @@ export const NotificationDropdown: React.FC = () => {
     <div className="relative" ref={dropdownRef}>
       {/* Bell Trigger Button */}
       <button
+        type="button"
         onClick={() => {
           setIsOpen(!isOpen);
           if (!isOpen) fetchNotifications();
         }}
-        title="Notifications"
-        className="relative p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 active:scale-95 transition-all duration-200"
+        title="Real-Time System Notifications"
+        className="relative p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 active:scale-95 transition-all duration-200 cursor-pointer"
       >
         <Bell className="h-5 w-5" />
         {unreadCount > 0 && (
@@ -168,22 +246,38 @@ export const NotificationDropdown: React.FC = () => {
           <div className="p-4 bg-slate-50/90 border-b border-slate-100 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <h3 className="text-sm font-bold text-slate-900">Notifications</h3>
-              {unreadCount > 0 && (
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-100">
+              {unreadCount > 0 ? (
+                <Badge variant="info" className="text-[10px] px-2 py-0">
                   {unreadCount} new
-                </span>
-              )}
+                </Badge>
+              ) : null}
             </div>
 
-            {unreadCount > 0 && (
-              <button
-                onClick={handleMarkAllAsRead}
-                disabled={isLoading}
-                className="text-[11px] font-semibold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 transition-colors"
+            <div className="flex items-center gap-2">
+              <span
+                title={isConnected ? 'Real-time connected' : 'Reconnecting...'}
+                className="flex items-center gap-1 text-[10px] font-medium text-slate-400"
               >
-                <Check className="h-3.5 w-3.5" /> Mark all as read
-              </button>
-            )}
+                {isConnected ? (
+                  <Wifi className="h-3 w-3 text-emerald-500" />
+                ) : (
+                  <WifiOff className="h-3 w-3 text-amber-500" />
+                )}
+                <span className="hidden sm:inline">{isConnected ? 'Live' : 'Connecting'}</span>
+              </span>
+
+              {unreadCount > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleMarkAllAsRead}
+                  disabled={isLoading}
+                  className="text-[11px] h-7 px-2 font-semibold text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50"
+                >
+                  <Check className="h-3.5 w-3.5 mr-1" /> Mark read
+                </Button>
+              )}
+            </div>
           </div>
 
           {/* Notifications Scroll List */}
@@ -194,7 +288,9 @@ export const NotificationDropdown: React.FC = () => {
                   <Bell className="h-5 w-5" />
                 </div>
                 <p className="text-xs font-semibold text-slate-700">All caught up!</p>
-                <p className="text-[11px] text-slate-400 mt-0.5">You have no new notifications right now.</p>
+                <p className="text-[11px] text-slate-400 mt-0.5">
+                  No active system alerts. Live events will appear here in real time.
+                </p>
               </div>
             ) : (
               notifications.map(notif => (
@@ -238,9 +334,12 @@ export const NotificationDropdown: React.FC = () => {
           </div>
 
           {/* Footer */}
-          <div className="p-2.5 bg-slate-50 border-t border-slate-100 text-center">
+          <div className="p-2.5 bg-slate-50/80 border-t border-slate-100 flex items-center justify-between px-4">
             <span className="text-[10px] text-slate-400 font-medium">
-              Live Real-Time Alerts & System Dispatches
+              Live Real-Time SSE Stream
+            </span>
+            <span className="text-[10px] text-slate-400 font-medium">
+              Role: <span className="capitalize text-slate-600 font-semibold">{user?.role?.replace('_', ' ')}</span>
             </span>
           </div>
         </div>

@@ -28,6 +28,8 @@ import {
   Eye,
   X,
 } from 'lucide-react';
+import { CategorizedFilterBar, FilterCategory } from '@/components/CategorizedFilterBar';
+import { TablePagination } from '@/components/TablePagination';
 
 interface EnrichedSubscription extends Subscription {
   shop?: any;
@@ -43,6 +45,11 @@ export default function SubscriptionsListPage() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [isLoading, setIsLoading] = useState(true);
+
+  // Pagination & Filters State
+  const [subPage, setSubPage] = useState(1);
+  const [subPageSize, setSubPageSize] = useState(10);
+  const [subActiveFilters, setSubActiveFilters] = useState<Record<string, any>>({});
 
   // Edit Subscription Modal State
   const [showEditModal, setShowEditModal] = useState(false);
@@ -62,6 +69,30 @@ export default function SubscriptionsListPage() {
     expiryAt: '',
     autoRenew: true,
   });
+
+  const subscriptionFilterCategories: FilterCategory[] = [
+    {
+      id: 'status',
+      label: 'Subscription Status',
+      type: 'select',
+      options: [
+        { label: 'All Statuses', value: 'all' },
+        { label: 'Active', value: 'active' },
+        { label: 'Pending', value: 'pending' },
+        { label: 'Expired', value: 'expired' },
+        { label: 'Cancelled', value: 'cancelled' },
+      ],
+    },
+    {
+      id: 'package',
+      label: 'Plan Tier',
+      type: 'select',
+      options: [
+        { label: 'All Packages', value: 'all' },
+        ...packages.map(p => ({ label: p.name, value: p.id })),
+      ],
+    },
+  ];
 
   const loadData = async () => {
     try {
@@ -215,6 +246,22 @@ export default function SubscriptionsListPage() {
     );
   };
 
+  const filteredSubscriptions = subscriptions.filter(sub => {
+    const status = subActiveFilters.status || statusFilter;
+    if (status !== 'all' && sub.status !== status) return false;
+    const pkg = subActiveFilters.package;
+    if (pkg && pkg !== 'all' && sub.packageId !== pkg) return false;
+    if (!search) return true;
+    const q = search.toLowerCase();
+    return (
+      sub.shopName?.toLowerCase().includes(q) ||
+      sub.ownerName?.toLowerCase().includes(q) ||
+      sub.packageName?.toLowerCase().includes(q)
+    );
+  });
+
+  const paginatedSubscriptions = filteredSubscriptions.slice((subPage - 1) * subPageSize, subPage * subPageSize);
+
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       {/* Header */}
@@ -237,42 +284,41 @@ export default function SubscriptionsListPage() {
           <button
             onClick={loadData}
             title="Refresh subscriptions"
-            className="p-2 text-slate-600 hover:text-indigo-600 bg-white border border-slate-200/90 rounded-xl hover:bg-slate-50 shadow-xs transition-colors"
+            className="p-2 text-slate-600 hover:text-indigo-600 bg-white border border-slate-200/90 rounded-xl hover:bg-slate-50 shadow-xs transition-colors cursor-pointer"
           >
             <RefreshCw className="h-4 w-4" />
           </button>
         </div>
       </div>
 
-      {/* Filters */}
-      <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm shadow-slate-200/50 flex flex-col sm:flex-row gap-3 items-center justify-between">
-        <div className="relative w-full sm:w-80">
-          <Search className="absolute left-3.5 top-2.5 h-4 w-4 text-slate-400" />
-          <input
-            type="text"
-            placeholder="Search by shop, owner, plan..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && loadData()}
-            className="w-full pl-10 pr-4 py-2 text-xs bg-slate-50 border border-slate-200/90 rounded-xl text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 shadow-sm shadow-slate-100 transition-all duration-200"
-          />
-        </div>
-
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          <Filter className="h-4 w-4 text-slate-400" />
-          <select
-            value={statusFilter}
-            onChange={e => setStatusFilter(e.target.value)}
-            className="text-xs py-2 px-3 border border-slate-200/90 rounded-xl bg-slate-50 text-slate-700 font-medium focus:bg-white focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 shadow-sm shadow-slate-100 transition-all duration-200"
-          >
-            <option value="all">All Statuses</option>
-            <option value="active">Active</option>
-            <option value="pending">Pending</option>
-            <option value="expired">Expired</option>
-            <option value="cancelled">Cancelled</option>
-          </select>
-        </div>
-      </div>
+      {/* Categorized Filter Bar */}
+      <CategorizedFilterBar
+        categories={subscriptionFilterCategories}
+        activeFilters={subActiveFilters}
+        onFilterChange={(categoryId, value) => {
+          setSubActiveFilters(prev => {
+            if (value === undefined || value === null || value === '' || value === 'all') {
+              const next = { ...prev };
+              delete next[categoryId];
+              return next;
+            }
+            return { ...prev, [categoryId]: value };
+          });
+          setSubPage(1);
+        }}
+        onClearFilters={() => {
+          setSubActiveFilters({});
+          setStatusFilter('all');
+          setSearch('');
+          setSubPage(1);
+        }}
+        search={search}
+        onSearchChange={val => {
+          setSearch(val);
+          setSubPage(1);
+        }}
+        searchPlaceholder="Search by shop, owner, plan..."
+      />
 
       {/* Subscriptions Table */}
       <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm shadow-slate-200/50 overflow-hidden">
@@ -292,10 +338,10 @@ export default function SubscriptionsListPage() {
             <tbody className="divide-y divide-slate-100 font-medium">
               {isLoading ? (
                 <tr><td colSpan={7} className="py-12 text-center text-slate-400 font-medium">Loading subscriptions...</td></tr>
-              ) : subscriptions.length === 0 ? (
+              ) : filteredSubscriptions.length === 0 ? (
                 <tr><td colSpan={7} className="py-12 text-center text-slate-400 font-medium">No subscriptions found matching filter</td></tr>
               ) : (
-                subscriptions.map(s => (
+                paginatedSubscriptions.map(s => (
                   <tr key={s.id} className="hover:bg-slate-50/80 transition-colors">
                     {/* Tenant Shop Column - Clickable to View Shop Profile */}
                     <td className="py-4 px-6">
@@ -386,6 +432,20 @@ export default function SubscriptionsListPage() {
             </tbody>
           </table>
         </div>
+
+        {filteredSubscriptions.length > 0 && (
+          <TablePagination
+            currentPage={subPage}
+            totalPages={Math.max(1, Math.ceil(filteredSubscriptions.length / subPageSize))}
+            totalItems={filteredSubscriptions.length}
+            pageSize={subPageSize}
+            onPageChange={setSubPage}
+            onPageSizeChange={size => {
+              setSubPageSize(size);
+              setSubPage(1);
+            }}
+          />
+        )}
       </div>
 
       {/* MODAL 1: VIEW SHOP DETAILS MODAL */}

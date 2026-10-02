@@ -4,12 +4,12 @@
     "shopId": "shp_urban_cafe",
     "name": "David Miller",
     "email": "david.miller@gmail.com",
-    "phone": "+1 555 776 2211",
+    "phone": "+94 724567897",
     "address": "18 Hudson Square, Apt 4B",
-    "totalOrdersCount": 3,
-    "totalSpent": 122.95,
+    "totalOrdersCount": 4,
+    "totalSpent": 147.95,
     "createdAt": "2026-09-11T10:16:53.360Z",
-    "updatedAt": "2026-09-11T10:16:53.360Z"
+    "updatedAt": "2026-09-30T14:44:55.669Z"
   },
   {
     "shopId": "shp_1787930675212",
@@ -36,11 +36,11 @@
   {
     "shopId": "shp_urban_cafe",
     "name": "Walk-in Customer",
-    "phone": "+1 555 000 0000",
+    "phone": "+94784661237",
     "totalOrdersCount": 1,
     "totalSpent": 58,
     "createdAt": "2026-09-12T14:18:21.039Z",
-    "updatedAt": "2026-09-12T14:18:27.525Z",
+    "updatedAt": "2026-09-30T14:43:28.822Z",
     "id": "b33117ca-446a-4aa9-91cc-8ef61f004dd9"
   }
 ]

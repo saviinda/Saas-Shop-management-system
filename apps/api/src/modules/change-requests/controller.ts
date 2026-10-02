@@ -9,7 +9,7 @@ import { EmailService } from '../../services/email.service';
 
 export class ChangeRequestController {
   static async listRequests(req: AuthenticatedRequest, res: Response) {
-    const { status } = req.query;
+    const { status, search, page, limit } = req.query;
 
     let where: Array<{ field: string; op: any; value: any }> = [];
     if (req.user?.role !== 'super_admin') {
@@ -26,7 +26,31 @@ export class ChangeRequestController {
       orderBy: { field: 'createdAt', direction: 'desc' },
     });
 
-    return sendSuccess(res, requests.data);
+    let data = requests.data;
+    if (search) {
+      const q = (search as string).toLowerCase();
+      data = data.filter(r =>
+        r.field?.toLowerCase().includes(q) ||
+        r.shopName?.toLowerCase().includes(q) ||
+        r.requesterName?.toLowerCase().includes(q)
+      );
+    }
+
+    if (page !== undefined || limit !== undefined) {
+      const pageNum = Math.max(1, parseInt(page as string, 10) || 1);
+      const limitNum = Math.max(1, parseInt(limit as string, 10) || 10);
+      const offset = (pageNum - 1) * limitNum;
+      const paginated = data.slice(offset, offset + limitNum);
+
+      return sendSuccess(res, paginated, {
+        total: data.length,
+        page: pageNum,
+        limit: limitNum,
+        totalPages: Math.ceil(data.length / limitNum),
+      });
+    }
+
+    return sendSuccess(res, data, { total: data.length });
   }
 
   static async getRequest(req: AuthenticatedRequest, res: Response) {

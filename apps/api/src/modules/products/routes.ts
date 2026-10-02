@@ -15,7 +15,13 @@ router.post('/', isShopStaff, validateBody(createProductSchema), ProductControll
 router.patch('/:id', isShopStaff, validateBody(updateProductSchema), ProductController.updateProduct);
 router.delete('/:id', isShopStaff, ProductController.deleteProduct);
 
-// Batch endpoints
+// Standalone Batches module endpoints
+router.get('/batches/all', isShopStaff, ProductController.listAllBatches);
+router.post('/batches/standalone', isShopStaff, ProductController.createBatchDirect);
+router.patch('/batches/standalone/:batchId', isShopStaff, validateBody(updateProductBatchSchema), ProductController.updateBatchDirect);
+router.delete('/batches/standalone/:batchId', isShopStaff, ProductController.deleteBatchDirect);
+
+// Product Batch endpoints
 router.get('/:id/batches', isShopStaff, ProductController.listBatches);
 router.post('/:id/batches', isShopStaff, validateBody(createProductBatchSchema), ProductController.createBatch);
 router.patch('/:id/batches/:batchId', isShopStaff, validateBody(updateProductBatchSchema), ProductController.updateBatch);

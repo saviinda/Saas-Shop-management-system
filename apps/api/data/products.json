@@ -35,5 +35,21 @@
     "isFeatured": false,
     "tags": [],
     "variants": []
+  },
+  {
+    "shopId": "shp_urban_cafe",
+    "sku": "SKU-5797",
+    "name": "100 Pages CR Book",
+    "description": "",
+    "category": "CR Books",
+    "costPrice": 10,
+    "sellingPrice": 20,
+    "minimumStockLevel": 5,
+    "isPublic": true,
+    "isFeatured": false,
+    "status": "active",
+    "createdAt": "2026-09-30T14:35:35.036Z",
+    "updatedAt": "2026-09-30T14:36:01.992Z",
+    "id": "686d657c-684b-4a96-bfc2-ca1482cecb2b"
   }
 ]

@@ -128,5 +128,44 @@
     "sellingPrice": 4.95,
     "updatedAt": "2026-09-11T13:31:25.133Z",
     "id": "049422df-f8d8-481f-b7a7-49a2d8948bd4"
+  },
+  {
+    "shopId": "shp_urban_cafe",
+    "branchId": "br_urban_downtown",
+    "productId": "686d657c-684b-4a96-bfc2-ca1482cecb2b",
+    "productName": "100 Pages CR Book",
+    "sku": "SKU-5797",
+    "quantity": 74,
+    "minimumStockLevel": 5,
+    "costPrice": 10,
+    "sellingPrice": 20,
+    "updatedAt": "2026-09-30T14:44:55.661Z",
+    "id": "b2d7b9ed-1e9a-473c-8203-7110b50377df"
+  },
+  {
+    "shopId": "shp_urban_cafe",
+    "branchId": "br_urban_westside",
+    "productId": "686d657c-684b-4a96-bfc2-ca1482cecb2b",
+    "productName": "100 Pages CR Book",
+    "sku": "SKU-5797",
+    "quantity": 0,
+    "minimumStockLevel": 5,
+    "costPrice": 0,
+    "sellingPrice": 0,
+    "updatedAt": "2026-09-30T14:35:35.036Z",
+    "id": "2319b094-7c23-466d-aa6d-dff5ed48024d"
+  },
+  {
+    "shopId": "shp_urban_cafe",
+    "branchId": "fabcdd53-c378-41a1-a965-6f089a7cd66c",
+    "productId": "686d657c-684b-4a96-bfc2-ca1482cecb2b",
+    "productName": "100 Pages CR Book",
+    "sku": "SKU-5797",
+    "quantity": 0,
+    "minimumStockLevel": 5,
+    "costPrice": 0,
+    "sellingPrice": 0,
+    "updatedAt": "2026-09-30T14:35:35.036Z",
+    "id": "689d4817-105e-4312-95ed-1ee96cb86c15"
   }
 ]

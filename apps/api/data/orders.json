@@ -152,5 +152,82 @@
     "createdAt": "2026-09-12T14:18:21.041Z",
     "updatedAt": "2026-09-12T14:18:37.389Z",
     "id": "5288a95d-4c89-481c-af05-ae1c12f8acb4"
+  },
+  {
+    "id": "9c971e07-25cf-4b54-8269-fe872a107d23",
+    "branchId": "fabcdd53-c378-41a1-a965-6f089a7cd66c",
+    "orderNumber": "JOB-807474",
+    "jobTitle": "Parked Job For Alpha",
+    "branchName": "Kandy",
+    "discount": 0,
+    "tax": 0,
+    "customerName": "Test Customer Alpha",
+    "isJob": false,
+    "createdAt": "2026-09-29T07:43:27.476Z",
+    "totalAmount": 48,
+    "customerPhone": "+1 555 999 1234",
+    "createdBy": "Marcus Vance",
+    "subtotal": 48,
+    "customerId": "baf09a74-c17a-4fea-8b5c-5270d003e6ef",
+    "paymentMethod": "cash",
+    "shopId": "shp_urban_cafe",
+    "items": [
+      {
+        "type": "product",
+        "itemId": "prod_almond_croissant",
+        "name": "A4 pack",
+        "sku": "UCH-BAK-001",
+        "quantity": 2,
+        "unitPrice": 24,
+        "totalPrice": 48
+      }
+    ],
+    "paymentStatus": "paid",
+    "status": "completed",
+    "updatedAt": "2026-09-29T07:43:27.628Z"
+  },
+  {
+    "orderNumber": "JOB-487489",
+    "shopId": "shp_urban_cafe",
+    "branchId": "br_urban_downtown",
+    "branchName": "Colombo Main Branch",
+    "customerId": "cust_david_miller",
+    "customerName": "David Miller",
+    "customerPhone": "+94 724567897",
+    "items": [
+      {
+        "type": "product",
+        "itemId": "686d657c-684b-4a96-bfc2-ca1482cecb2b",
+        "name": "100 Pages CR Book",
+        "sku": "SKU-5797",
+        "quantity": 1,
+        "unitPrice": 20,
+        "totalPrice": 20,
+        "batchId": "48e7a36c-1e29-4115-bffe-61bb392d9038",
+        "batchNumber": "BTH-2609-411"
+      },
+      {
+        "type": "service",
+        "itemId": "1e3c2356-a5aa-46f8-b67d-a7c718f781e7",
+        "name": "Color printings",
+        "quantity": 1,
+        "unitPrice": 10,
+        "totalPrice": 10,
+        "assignedStaffId": "usr_worker_1"
+      }
+    ],
+    "subtotal": 30,
+    "tax": 0,
+    "discount": 5,
+    "totalAmount": 25,
+    "status": "completed",
+    "paymentStatus": "paid",
+    "paymentMethod": "cash",
+    "isJob": false,
+    "jobTitle": "Job - David Miller (2 items)",
+    "createdBy": "Marcus Vance",
+    "createdAt": "2026-09-30T14:44:47.489Z",
+    "updatedAt": "2026-09-30T14:44:55.657Z",
+    "id": "e8bef59a-eac3-476a-842b-ef2f6aecb308"
   }
 ]

@@ -5,7 +5,6 @@
     "description": "Print Business card with their own design",
     "category": "Printing",
     "price": 20,
-    "durationMinutes": 30,
     "assignedStaffIds": [],
     "status": "active",
     "createdAt": "2026-08-31T06:18:27.815Z",
@@ -18,7 +17,6 @@
     "description": "Color printouts",
     "category": "printouts",
     "price": 10,
-    "durationMinutes": 15,
     "assignedStaffIds": [
       "usr_worker_1",
       "usr_manager_1",
@@ -36,5 +34,19 @@
     ],
     "isPublic": true,
     "isFeatured": false
+  },
+  {
+    "shopId": "shp_urban_cafe",
+    "name": "Photocopy",
+    "description": "",
+    "category": "Photocopy",
+    "price": 10,
+    "assignedStaffIds": [
+      "usr_worker_1"
+    ],
+    "status": "active",
+    "createdAt": "2026-09-30T14:41:44.746Z",
+    "updatedAt": "2026-09-30T14:41:44.746Z",
+    "id": "b0483da0-b135-4d1e-8955-647e40cbe934"
   }
 ]

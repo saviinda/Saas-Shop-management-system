@@ -19,7 +19,7 @@ const DEFAULT_ROLE_PERMISSIONS: Record<string, string[]> = {
 
 export class UserController {
   static async listUsers(req: AuthenticatedRequest, res: Response) {
-    const { role, status, branchId, shopId: queryShopId, search, groupBy } = req.query;
+    const { role, status, branchId, shopId: queryShopId, search, groupBy, page, limit } = req.query;
 
     let where: Array<{ field: string; op: any; value: any }> = [];
 
@@ -142,7 +142,21 @@ export class UserController {
       });
     }
 
-    return sendSuccess(res, enrichedUsers);
+    if (page !== undefined || limit !== undefined) {
+      const pageNum = Math.max(1, parseInt(page as string, 10) || 1);
+      const limitNum = Math.max(1, parseInt(limit as string, 10) || 10);
+      const offset = (pageNum - 1) * limitNum;
+      const paginated = enrichedUsers.slice(offset, offset + limitNum);
+
+      return sendSuccess(res, paginated, {
+        total: enrichedUsers.length,
+        page: pageNum,
+        limit: limitNum,
+        totalPages: Math.ceil(enrichedUsers.length / limitNum),
+      });
+    }
+
+    return sendSuccess(res, enrichedUsers, { total: enrichedUsers.length });
   }
 
   static async listShopOwners(req: AuthenticatedRequest, res: Response) {

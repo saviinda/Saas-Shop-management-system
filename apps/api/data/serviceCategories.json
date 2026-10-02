@@ -1,0 +1,20 @@
+[
+  {
+    "id": "4651cb07-c73d-4405-ae53-27d1ded3d339",
+    "createdAt": "2026-09-29T07:43:27.359Z",
+    "shopId": "shp_urban_cafe",
+    "status": "active",
+    "name": "Color printouts",
+    "description": "color print",
+    "updatedAt": "2026-09-30T14:40:33.330Z"
+  },
+  {
+    "shopId": "shp_urban_cafe",
+    "name": "Photocopy",
+    "description": "Photocopy B&W",
+    "status": "active",
+    "createdAt": "2026-09-30T14:41:07.681Z",
+    "updatedAt": "2026-09-30T14:41:07.681Z",
+    "id": "033dcae0-15c0-4606-8eb2-3b080b3b266d"
+  }
+]

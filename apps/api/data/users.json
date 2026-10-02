@@ -21,10 +21,10 @@
       "br_urban_downtown",
       "br_urban_westside"
     ],
-    "phone": "+1 555 456 7890",
+    "phone": "+1 555 234 5678",
     "passwordHash": "$2a$10$8RmBFlsUR89Rr5jFquyagOrrXL0dLTntZ6TkSyH1KOqmVSeVkm/yG",
     "createdAt": "2026-09-11T10:16:53.176Z",
-    "updatedAt": "2026-09-11T10:16:53.176Z"
+    "updatedAt": "2026-09-30T05:21:23.915Z"
   },
   {
     "id": "usr_manager_1",
@@ -217,5 +217,20 @@
     "status": "active",
     "passwordHash": "$2a$10$C5KSNbFT7L04Y7YQE4x.O.bnP8wQNZGpJr1oZyuVpsFkQmnWmLVvK",
     "updatedAt": "2026-09-18T11:42:21.484Z"
+  },
+  {
+    "id": "usr_1790779823800",
+    "email": "savindad365@gmail.com",
+    "name": "Dilshan Savinda",
+    "role": "shop_owner",
+    "status": "active",
+    "shopId": "shp_1790779823800",
+    "branchIds": [
+      "br_1790779823800"
+    ],
+    "phone": "+94 72 977 5412",
+    "passwordHash": "$2a$10$NaY1v/PjrB/Z70bYPbu2t.61zqs0oi2vdRxANC4vLI9acIsXlP3A.",
+    "createdAt": "2026-09-30T14:50:25.582Z",
+    "updatedAt": "2026-09-30T14:55:02.109Z"
   }
 ]

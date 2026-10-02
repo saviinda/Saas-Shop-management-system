@@ -18,6 +18,8 @@ router.post('/logout', authenticate, AuthController.logout);
 router.post('/forgot-password', validateBody(forgotPasswordSchema), AuthController.forgotPassword);
 router.post('/reset-password', validateBody(resetPasswordSchema), AuthController.resetPassword);
 router.post('/change-password', authenticate, validateBody(changePasswordSchema), AuthController.changePassword);
+router.post('/send-otp', AuthController.sendOtp);
+router.post('/verify-otp', AuthController.verifyOtp);
 router.get('/me', authenticate, AuthController.getMe);
 
 export default router;

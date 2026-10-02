@@ -1,5 +1,29 @@
 [
   {
+    "id": "pkg_free",
+    "name": "Free Starter",
+    "description": "Complimentary free plan for new print shops with essential starter features",
+    "price": 0,
+    "durationDays": 365,
+    "limits": {
+      "shops": 1,
+      "branches": 1,
+      "users": 2,
+      "products": 50,
+      "services": 15,
+      "storageMb": 200
+    },
+    "features": [
+      "basic_inventory",
+      "order_management",
+      "single_branch",
+      "free_tier"
+    ],
+    "status": "active",
+    "createdAt": "2026-09-01T00:00:00.000Z",
+    "updatedAt": "2026-09-01T00:00:00.000Z"
+  },
+  {
     "id": "pkg_basic",
     "name": "Basic Tier",
     "description": "Essential toolkit for single shop and small boutique operations",
@@ -96,28 +120,5 @@
     "createdAt": "2026-09-04T06:07:13.173Z",
     "updatedAt": "2026-09-04T06:07:13.173Z",
     "id": "a505f3ca-c4ad-4d90-bc2d-d8af7afa911e"
-  },
-  {
-    "name": "Enterprise Pro",
-    "description": "For large multi-chain operations with franchise management",
-    "price": 599,
-    "durationDays": 30,
-    "limits": {
-      "shops": 20,
-      "branches": 50,
-      "users": 200,
-      "products": 10000,
-      "services": 1000,
-      "storageMb": 50000
-    },
-    "features": [
-      "dedicated_account_manager",
-      "custom_reports",
-      "unlimited_branches"
-    ],
-    "status": "active",
-    "createdAt": "2026-09-04T06:10:17.193Z",
-    "updatedAt": "2026-09-04T06:10:17.193Z",
-    "id": "2461f90d-215f-4f9e-8214-a05bc8c25bc8"
   }
 ]

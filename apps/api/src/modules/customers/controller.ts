@@ -10,7 +10,7 @@ export class CustomerController {
     const shopId = req.user?.role === 'super_admin' ? (req.query.shopId as string) || req.shopId : req.shopId;
     if (!shopId) return sendSuccess(res, []);
 
-    const { search } = req.query;
+    const { search, page, limit } = req.query;
     const customers = await dbStore.collection<Customer>('customers').query({
       where: [{ field: 'shopId', op: '==', value: shopId }],
       orderBy: { field: 'createdAt', direction: 'desc' },
@@ -22,7 +22,21 @@ export class CustomerController {
       data = data.filter(c => c.name.toLowerCase().includes(q) || c.phone.includes(q) || c.email?.toLowerCase().includes(q));
     }
 
-    return sendSuccess(res, data);
+    if (page !== undefined || limit !== undefined) {
+      const pageNum = Math.max(1, parseInt(page as string, 10) || 1);
+      const limitNum = Math.max(1, parseInt(limit as string, 10) || 10);
+      const offset = (pageNum - 1) * limitNum;
+      const paginated = data.slice(offset, offset + limitNum);
+
+      return sendSuccess(res, paginated, {
+        total: data.length,
+        page: pageNum,
+        limit: limitNum,
+        totalPages: Math.ceil(data.length / limitNum),
+      });
+    }
+
+    return sendSuccess(res, data, { total: data.length });
   }
 
   static async getCustomer(req: AuthenticatedRequest, res: Response) {
@@ -44,14 +58,12 @@ export class CustomerController {
     const shopId = req.shopId;
     if (!shopId) return sendError(res, 'BAD_REQUEST', 'Shop ID required', 400);
 
-    const { name, email, phone, address, notes } = req.body;
+    const { name, email, phone } = req.body;
     const customer = await dbStore.collection<Customer>('customers').create({
       shopId,
       name,
       email: email || undefined,
       phone,
-      address,
-      notes,
       totalOrdersCount: 0,
       totalSpent: 0,
       createdAt: new Date().toISOString(),

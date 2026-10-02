@@ -30,5 +30,21 @@
     "createdAt": "2026-09-11T13:32:31.469Z",
     "updatedAt": "2026-09-11T13:32:31.469Z",
     "id": "86222558-2cab-451f-9edb-5fdf326b17c0"
+  },
+  {
+    "shopId": "shp_urban_cafe",
+    "productId": "686d657c-684b-4a96-bfc2-ca1482cecb2b",
+    "branchId": "br_urban_downtown",
+    "branchName": "Colombo Main Branch",
+    "batchNumber": "BTH-2609-411",
+    "costPrice": 10,
+    "sellingPrice": 20,
+    "quantity": 49,
+    "initialQuantity": 50,
+    "manufacturingDate": "2026-09-30",
+    "status": "active",
+    "createdAt": "2026-09-30T14:36:01.880Z",
+    "updatedAt": "2026-09-30T14:44:55.659Z",
+    "id": "48e7a36c-1e29-4115-bffe-61bb392d9038"
   }
 ]

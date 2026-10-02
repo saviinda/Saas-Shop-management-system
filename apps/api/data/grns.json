@@ -44,5 +44,28 @@
     "status": "completed",
     "createdAt": "2026-09-11T13:36:20.395Z",
     "id": "940b3da4-6f94-45b8-9e3b-4842fd160ce5"
+  },
+  {
+    "grnNumber": "GRN-090649",
+    "shopId": "shp_urban_cafe",
+    "branchId": "br_urban_downtown",
+    "purchaseOrderId": "d0cfa78a-500f-4dcb-9447-3a01c4abec87",
+    "supplierId": "sup_colombia_beans",
+    "supplierName": "Atlas",
+    "receivedItems": [
+      {
+        "productId": "686d657c-684b-4a96-bfc2-ca1482cecb2b",
+        "productName": "100 Pages CR Book",
+        "receivedQty": 25,
+        "damagedQty": 0,
+        "unitCost": 10
+      }
+    ],
+    "totalValue": 250,
+    "notes": "Goods received against PO #PO-082307",
+    "receivedBy": "Marcus Vance",
+    "status": "completed",
+    "createdAt": "2026-09-30T14:38:10.649Z",
+    "id": "85181744-e290-4a42-bf77-76b0569759fb"
   }
 ]

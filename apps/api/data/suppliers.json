@@ -28,5 +28,20 @@
     "createdAt": "2026-09-02T12:06:20.658Z",
     "updatedAt": "2026-09-02T12:06:20.658Z",
     "id": "0b72762d-829a-4766-a66a-d25c44cc4fcb"
+  },
+  {
+    "shopId": "shp_urban_cafe",
+    "name": "Rathna",
+    "contactPerson": "Kamilo",
+    "email": "rathna@gmail.com",
+    "phone": "+94 75124566",
+    "address": "",
+    "taxId": "",
+    "paymentTerms": "Net 30",
+    "productsSupplied": [],
+    "status": "active",
+    "createdAt": "2026-09-30T14:39:15.404Z",
+    "updatedAt": "2026-09-30T14:39:15.404Z",
+    "id": "78500698-254c-4162-92fc-678dd5a6a467"
   }
 ]

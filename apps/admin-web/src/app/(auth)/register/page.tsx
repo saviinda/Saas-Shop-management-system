@@ -29,9 +29,14 @@ export default function RegisterPage() {
 
   useEffect(() => {
     api.get<SubscriptionPackage[]>('/packages').then(res => {
-      setPackages(res.data);
-      if (res.data.length > 0) {
-        setSelectedPackageId(res.data[0].id);
+      const pkgs = res.data || [];
+      setPackages(pkgs);
+      // Auto-assign Free Plan by default
+      const freePkg = pkgs.find(p => p.price === 0 || p.id === 'pkg_free');
+      if (freePkg) {
+        setSelectedPackageId(freePkg.id);
+      } else if (pkgs.length > 0) {
+        setSelectedPackageId(pkgs[0].id);
       }
     }).catch(err => console.error('Failed to load packages:', err));
   }, []);
@@ -86,10 +91,15 @@ export default function RegisterPage() {
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Plan Selection */}
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2.5">
-              1. Choose Subscription Package
-            </label>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="flex items-center justify-between mb-2.5">
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
+                1. Subscription Plan (Default Free Starter)
+              </label>
+              <span className="text-[11px] text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">
+                Auto-assigned to Free Plan by Default
+              </span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
               {packages.map(pkg => (
                 <div
                   key={pkg.id}
@@ -102,13 +112,20 @@ export default function RegisterPage() {
                 >
                   <div className="flex items-center justify-between">
                     <p className="font-bold text-slate-900 text-xs">{pkg.name}</p>
+                    {pkg.price === 0 && (
+                      <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 bg-emerald-100 text-emerald-800 rounded">
+                        Free
+                      </span>
+                    )}
                     {selectedPackageId === pkg.id && (
                       <div className="h-4 w-4 rounded-full bg-indigo-600 text-white flex items-center justify-center shadow-xs">
                         <Check className="h-2.5 w-2.5 stroke-[3]" />
                       </div>
                     )}
                   </div>
-                  <p className="text-xl font-extrabold text-indigo-700 mt-2">${pkg.price}<span className="text-[11px] text-slate-500 font-normal">/mo</span></p>
+                  <p className="text-xl font-extrabold text-indigo-700 mt-2">
+                    ${pkg.price}<span className="text-[11px] text-slate-500 font-normal">/mo</span>
+                  </p>
                   <div className="mt-2.5 text-[11px] text-slate-600 space-y-1 pt-2 border-t border-slate-200/60 font-medium">
                     <p>• {pkg.limits.branches} Branch{pkg.limits.branches > 1 ? 'es' : ''}</p>
                     <p>• {pkg.limits.users} Staff Users</p>

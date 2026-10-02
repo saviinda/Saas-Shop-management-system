@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.replyTicketSchema = exports.createTicketSchema = exports.addTaskCommentSchema = exports.updateTaskStatusSchema = exports.createTaskSchema = exports.createGRNSchema = exports.updatePOSchema = exports.createPOSchema = exports.updateSupplierSchema = exports.createSupplierSchema = exports.stockTransferSchema = exports.stockAdjustmentSchema = exports.updateOrderStatusSchema = exports.updateOrderSchema = exports.createOrderSchema = exports.updateCustomerSchema = exports.createCustomerSchema = exports.updateServiceSchema = exports.createServiceSchema = exports.updateProductBatchSchema = exports.createProductBatchSchema = exports.updateProductSchema = exports.createProductSchema = exports.reviewChangeRequestSchema = exports.createChangeRequestSchema = exports.createPaymentRequestSchema = exports.createPackageSchema = exports.createStaffUserSchema = exports.updateBranchSchema = exports.createBranchSchema = exports.updateShopSchema = exports.createShopSchema = exports.registerShopOwnerSchema = exports.restrictShopPaymentSchema = exports.reviewPaymentSchema = exports.resetPasswordSchema = exports.forgotPasswordSchema = exports.changePasswordSchema = exports.loginSchema = void 0;
+exports.replyTicketSchema = exports.createTicketSchema = exports.addTaskCommentSchema = exports.updateTaskStatusSchema = exports.createTaskSchema = exports.createGRNSchema = exports.updatePOSchema = exports.createPOSchema = exports.updateSupplierSchema = exports.createSupplierSchema = exports.stockTransferSchema = exports.stockAdjustmentSchema = exports.updateOrderStatusSchema = exports.updateOrderSchema = exports.createOrderSchema = exports.updateCustomerSchema = exports.createCustomerSchema = exports.updateServiceSchema = exports.createServiceSchema = exports.updateServiceCategorySchema = exports.createServiceCategorySchema = exports.updateProductBatchSchema = exports.createProductBatchSchema = exports.updateProductSchema = exports.createProductSchema = exports.updateCategorySchema = exports.createCategorySchema = exports.reviewChangeRequestSchema = exports.createChangeRequestSchema = exports.createPaymentRequestSchema = exports.createPackageSchema = exports.createStaffUserSchema = exports.updateBranchSchema = exports.createBranchSchema = exports.updateShopSchema = exports.createShopSchema = exports.registerShopOwnerSchema = exports.restrictShopPaymentSchema = exports.reviewPaymentSchema = exports.resetPasswordSchema = exports.forgotPasswordSchema = exports.changePasswordSchema = exports.loginSchema = void 0;
 const zod_1 = require("zod");
 exports.loginSchema = zod_1.z.object({
     email: zod_1.z.string().email(),
@@ -107,21 +107,23 @@ exports.reviewChangeRequestSchema = zod_1.z.object({
     status: zod_1.z.enum(['approved', 'rejected']),
     reviewNotes: zod_1.z.string().optional(),
 });
-exports.createProductSchema = zod_1.z.object({
-    sku: zod_1.z.string().min(1),
-    name: zod_1.z.string().min(2),
+exports.createCategorySchema = zod_1.z.object({
+    name: zod_1.z.string().min(2, 'Category name must be at least 2 characters'),
     description: zod_1.z.string().optional(),
-    category: zod_1.z.string().min(2),
-    imageUrl: zod_1.z.string().optional(),
+    status: zod_1.z.enum(['active', 'inactive']).default('active'),
+});
+exports.updateCategorySchema = exports.createCategorySchema.partial();
+exports.createProductSchema = zod_1.z.object({
+    sku: zod_1.z.string().min(1, 'SKU is required'),
+    name: zod_1.z.string().min(2, 'Product name must be at least 2 characters'),
+    description: zod_1.z.string().optional(),
+    category: zod_1.z.string().min(2, 'Category is required'),
     costPrice: zod_1.z.number().min(0).default(0),
     sellingPrice: zod_1.z.number().min(0).default(0),
     minimumStockLevel: zod_1.z.number().int().min(0).default(5),
-    supplierId: zod_1.z.string().optional(),
-    supplierName: zod_1.z.string().optional(),
     initialStock: zod_1.z.number().int().min(0).default(0),
     isPublic: zod_1.z.boolean().optional(),
     isFeatured: zod_1.z.boolean().optional(),
-    tags: zod_1.z.array(zod_1.z.string()).optional(),
     variants: zod_1.z.array(zod_1.z.object({
         name: zod_1.z.string(),
         options: zod_1.z.array(zod_1.z.string()),
@@ -148,13 +150,17 @@ exports.createProductBatchSchema = zod_1.z.object({
     notes: zod_1.z.string().optional(),
 });
 exports.updateProductBatchSchema = exports.createProductBatchSchema.partial();
+exports.createServiceCategorySchema = zod_1.z.object({
+    name: zod_1.z.string().min(2, 'Category name must be at least 2 characters'),
+    description: zod_1.z.string().optional(),
+    status: zod_1.z.enum(['active', 'inactive']).default('active'),
+});
+exports.updateServiceCategorySchema = exports.createServiceCategorySchema.partial();
 exports.createServiceSchema = zod_1.z.object({
     name: zod_1.z.string().min(2),
     description: zod_1.z.string().optional(),
     category: zod_1.z.string().min(2),
-    imageUrl: zod_1.z.string().optional(),
     price: zod_1.z.number().min(0),
-    durationMinutes: zod_1.z.number().int().min(5),
     availability: zod_1.z.string().optional(),
     assignedStaffIds: zod_1.z.array(zod_1.z.string()).optional(),
     assignedStaffNames: zod_1.z.array(zod_1.z.string()).optional(),
@@ -167,9 +173,6 @@ exports.createCustomerSchema = zod_1.z.object({
     name: zod_1.z.string().min(2),
     email: zod_1.z.string().email().optional().or(zod_1.z.literal('')),
     phone: zod_1.z.string().min(3),
-    address: zod_1.z.string().optional(),
-    notes: zod_1.z.string().optional(),
-    tags: zod_1.z.array(zod_1.z.string()).optional(),
 });
 exports.updateCustomerSchema = exports.createCustomerSchema.partial();
 exports.createOrderSchema = zod_1.z.object({

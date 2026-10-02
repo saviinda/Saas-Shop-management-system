@@ -85,7 +85,22 @@ export class PaymentController {
       );
     }
 
-    return sendSuccess(res, finalPayments);
+    const { page, limit } = req.query;
+    if (page !== undefined || limit !== undefined) {
+      const pageNum = Math.max(1, parseInt(page as string, 10) || 1);
+      const limitNum = Math.max(1, parseInt(limit as string, 10) || 10);
+      const offset = (pageNum - 1) * limitNum;
+      const paginated = finalPayments.slice(offset, offset + limitNum);
+
+      return sendSuccess(res, paginated, {
+        total: finalPayments.length,
+        page: pageNum,
+        limit: limitNum,
+        totalPages: Math.ceil(finalPayments.length / limitNum),
+      });
+    }
+
+    return sendSuccess(res, finalPayments, { total: finalPayments.length });
   }
 
   static async getPayment(req: AuthenticatedRequest, res: Response) {

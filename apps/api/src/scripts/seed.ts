@@ -26,6 +26,26 @@ export async function seedDatabase() {
   console.log('--- Initializing SaaS Platform Data Seeder ---');
 
   // 1. Create Packages
+  const freePkg = await dbStore.collection<SubscriptionPackage>('packages').create({
+    id: 'pkg_free',
+    name: 'Free Starter',
+    description: 'Complimentary free plan for new print shops with essential starter features',
+    price: 0,
+    durationDays: 365,
+    limits: {
+      shops: 1,
+      branches: 1,
+      users: 2,
+      products: 50,
+      services: 15,
+      storageMb: 200,
+    },
+    features: ['basic_inventory', 'order_management', 'single_branch', 'free_tier'],
+    status: 'active',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  });
+
   const basicPkg = await dbStore.collection<SubscriptionPackage>('packages').create({
     id: 'pkg_basic',
     name: 'Basic Tier',
@@ -277,7 +297,6 @@ export async function seedDatabase() {
     costPrice: 18.00,
     sellingPrice: 34.00,
     minimumStockLevel: 10,
-    supplierId: supplier1.id,
     status: 'active',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -361,7 +380,6 @@ export async function seedDatabase() {
     description: '2-hour hands-on barista calibration with sensory tasting.',
     category: 'Workshops & Training',
     price: 85.00,
-    durationMinutes: 120,
     assignedStaffIds: [worker.id],
     status: 'active',
     createdAt: new Date().toISOString(),
@@ -375,7 +393,6 @@ export async function seedDatabase() {
     name: 'David Miller',
     email: 'david.miller@gmail.com',
     phone: '+1 555 776 2211',
-    address: '18 Hudson Square, Apt 4B',
     totalOrdersCount: 3,
     totalSpent: 122.95,
     createdAt: new Date().toISOString(),

@@ -40,9 +40,10 @@
     "message": "Shop \"Pothhala\" submitted a request to change \"Business / Shop Name\".",
     "type": "alert",
     "link": "/super-admin/change-requests",
-    "isRead": false,
+    "isRead": true,
     "createdAt": "2026-09-02T08:12:59.090Z",
-    "id": "c4695032-7970-4b16-85cd-c5e303daa51f"
+    "id": "c4695032-7970-4b16-85cd-c5e303daa51f",
+    "updatedAt": "2026-09-30T14:33:02.600Z"
   },
   {
     "recipientId": "usr_1787930675212",
@@ -96,9 +97,10 @@
     "message": "Shop \"Artisan Bakery & Sweets\" has registered with Standard Tier.",
     "type": "alert",
     "link": "/super-admin/shops",
-    "isRead": false,
+    "isRead": true,
     "createdAt": "2026-09-03T11:17:33.165Z",
-    "id": "a6b0e227-ce78-4148-8ba5-da5ead8d6b5a"
+    "id": "a6b0e227-ce78-4148-8ba5-da5ead8d6b5a",
+    "updatedAt": "2026-09-30T14:33:02.603Z"
   },
   {
     "recipientId": "usr_shop_owner_1",
@@ -117,9 +119,10 @@
     "message": "Shop \"Urban Cafe Hub & Roastery\" submitted a bank transfer payment of $299 for review.",
     "type": "alert",
     "link": "/super-admin/payments",
-    "isRead": false,
+    "isRead": true,
     "createdAt": "2026-09-04T06:13:29.795Z",
-    "id": "8c151ccb-f31f-4723-a5c7-e5f3596015c3"
+    "id": "8c151ccb-f31f-4723-a5c7-e5f3596015c3",
+    "updatedAt": "2026-09-30T14:33:02.606Z"
   },
   {
     "recipientId": "usr_shop_owner_1",
@@ -139,9 +142,10 @@
     "message": "Shop \"Urban Cafe Hub & Roastery\" submitted a request to change \"email\".",
     "type": "alert",
     "link": "/super-admin/change-requests",
-    "isRead": false,
+    "isRead": true,
     "createdAt": "2026-09-04T06:15:34.693Z",
-    "id": "807c6d8c-4bcf-4c8b-9b8e-46690b5e2b3a"
+    "id": "807c6d8c-4bcf-4c8b-9b8e-46690b5e2b3a",
+    "updatedAt": "2026-09-30T14:33:02.615Z"
   },
   {
     "recipientId": "usr_shop_owner_1",
@@ -207,9 +211,10 @@
     "message": "Job #JOB-701041 has been finalized and converted to completed order.",
     "type": "success",
     "link": "/shop-owner/orders",
-    "isRead": false,
+    "isRead": true,
     "createdAt": "2026-09-12T14:18:27.527Z",
-    "id": "67e32dc1-875d-453c-8bda-9dedce3b6401"
+    "id": "67e32dc1-875d-453c-8bda-9dedce3b6401",
+    "updatedAt": "2026-09-30T14:33:36.407Z"
   },
   {
     "recipientId": "usr_manager_1",
@@ -251,9 +256,10 @@
     "message": "Order #JOB-701041 is now marked as \"COMPLETED\".",
     "type": "info",
     "link": "/shop-owner/orders",
-    "isRead": false,
+    "isRead": true,
     "createdAt": "2026-09-12T14:18:37.392Z",
-    "id": "71b17adc-884f-4773-bdd6-3f191dae01a3"
+    "id": "71b17adc-884f-4773-bdd6-3f191dae01a3",
+    "updatedAt": "2026-09-30T14:33:36.409Z"
   },
   {
     "recipientId": "usr_manager_1",
@@ -301,12 +307,13 @@
   {
     "id": "568259ae-fef4-4fa3-bfcb-be78c21ffbf2",
     "createdAt": "2026-09-18T11:17:06.768Z",
-    "isRead": false,
+    "isRead": true,
     "link": "/login",
     "recipientId": "usr_super_admin",
     "message": "Your account access credentials have been reset by the platform administrator.",
     "title": "Account Access & Credentials Update - Apex Electronics",
-    "type": "warning"
+    "type": "warning",
+    "updatedAt": "2026-09-30T14:33:02.616Z"
   },
   {
     "id": "5e4e31fd-2770-4e4c-b0f6-3113eca632a9",
@@ -327,5 +334,196 @@
     "isRead": false,
     "createdAt": "2026-09-18T11:42:21.490Z",
     "id": "e86de2ec-7210-4a28-9c9d-4da898b26059"
+  },
+  {
+    "recipientId": "usr_super_admin",
+    "title": "New Account Change Request",
+    "message": "Shop \"Urban Cafe Hub\" submitted a request to change \"Business / Shop Name\".",
+    "type": "alert",
+    "link": "/super-admin/change-requests",
+    "isRead": true,
+    "createdAt": "2026-09-29T06:13:30.911Z",
+    "id": "54ce47b1-eca9-422c-bdee-213b6c7095ee",
+    "updatedAt": "2026-09-30T14:33:02.617Z"
+  },
+  {
+    "recipientId": "usr_shop_owner_1",
+    "shopId": "shp_urban_cafe",
+    "title": "Job Completed",
+    "message": "Job #JOB-807474 has been finalized and converted to completed order.",
+    "type": "success",
+    "link": "/shop-owner/orders",
+    "isRead": true,
+    "createdAt": "2026-09-29T07:43:27.636Z",
+    "id": "3e2486b8-7ffa-460d-83cc-3bdbbf29c9eb",
+    "updatedAt": "2026-09-30T14:33:36.417Z"
+  },
+  {
+    "recipientId": "usr_manager_1",
+    "shopId": "shp_urban_cafe",
+    "title": "Job Completed",
+    "message": "Job #JOB-807474 has been finalized and converted to completed order.",
+    "type": "success",
+    "link": "/shop-owner/orders",
+    "isRead": false,
+    "createdAt": "2026-09-29T07:43:27.640Z",
+    "id": "80e44f4e-805f-4441-ba52-7944c90dfa15"
+  },
+  {
+    "recipientId": "usr_worker_1",
+    "shopId": "shp_urban_cafe",
+    "title": "Job Completed",
+    "message": "Job #JOB-807474 has been finalized and converted to completed order.",
+    "type": "success",
+    "link": "/shop-owner/orders",
+    "isRead": false,
+    "createdAt": "2026-09-29T07:43:27.643Z",
+    "id": "356a5fea-b6f5-4251-9339-239526629188"
+  },
+  {
+    "recipientId": "c810d135-4b2d-4dcd-a363-55950330e3a0",
+    "shopId": "shp_urban_cafe",
+    "title": "Job Completed",
+    "message": "Job #JOB-807474 has been finalized and converted to completed order.",
+    "type": "success",
+    "link": "/shop-owner/orders",
+    "isRead": false,
+    "createdAt": "2026-09-29T07:43:27.645Z",
+    "id": "16418b76-cc03-44ab-9b5a-72768adf0780"
+  },
+  {
+    "recipientId": "usr_shop_owner_1",
+    "shopId": "shp_urban_cafe",
+    "title": "Account Change Request Approved",
+    "message": "Your change request for Business / Shop Name was approved and updated.",
+    "type": "success",
+    "link": "/shop-owner/change-requests",
+    "isRead": true,
+    "createdAt": "2026-09-30T05:16:54.508Z",
+    "id": "1809c6ca-ccd3-4fe4-aeba-7421708937f0",
+    "updatedAt": "2026-09-30T14:33:36.420Z"
+  },
+  {
+    "recipientId": "usr_shop_owner_1",
+    "shopId": "shp_urban_cafe",
+    "title": "Change Request Approved - Business / Shop Name updated for Urban Cafe Hub",
+    "message": "Your change request for Business / Shop Name has been approved and applied.",
+    "type": "success",
+    "link": "/shop-owner/change-requests",
+    "isRead": true,
+    "createdAt": "2026-09-30T05:16:54.520Z",
+    "id": "daf586de-4b91-4dad-ba5b-50f4c6bd01e2",
+    "updatedAt": "2026-09-30T14:33:36.422Z"
+  },
+  {
+    "recipientId": "usr_shop_owner_1",
+    "shopId": "shp_urban_cafe",
+    "title": "Payment Status Update: Under Review / Pending for 4U Print House",
+    "message": "Payment of USD 299 is now Under Review / Pending.",
+    "type": "info",
+    "link": "/shop-owner/subscription",
+    "isRead": true,
+    "createdAt": "2026-09-30T09:25:38.619Z",
+    "id": "a2c2a158-4c6e-4861-ae2e-fac9951ea64e",
+    "updatedAt": "2026-09-30T14:33:36.429Z"
+  },
+  {
+    "recipientId": "usr_shop_owner_1",
+    "shopId": "shp_urban_cafe",
+    "title": "Job Completed",
+    "message": "Job #JOB-487489 has been finalized and converted to completed order.",
+    "type": "success",
+    "link": "/shop-owner/orders",
+    "isRead": true,
+    "createdAt": "2026-09-30T14:44:55.672Z",
+    "id": "2b11cb6b-fbab-45e3-86d3-f39331c4acda",
+    "updatedAt": "2026-09-30T14:45:10.157Z"
+  },
+  {
+    "recipientId": "usr_manager_1",
+    "shopId": "shp_urban_cafe",
+    "title": "Job Completed",
+    "message": "Job #JOB-487489 has been finalized and converted to completed order.",
+    "type": "success",
+    "link": "/shop-owner/orders",
+    "isRead": false,
+    "createdAt": "2026-09-30T14:44:55.676Z",
+    "id": "d9e22797-69d7-4e9e-a310-6164bdfda359"
+  },
+  {
+    "recipientId": "usr_worker_1",
+    "shopId": "shp_urban_cafe",
+    "title": "Job Completed",
+    "message": "Job #JOB-487489 has been finalized and converted to completed order.",
+    "type": "success",
+    "link": "/shop-owner/orders",
+    "isRead": false,
+    "createdAt": "2026-09-30T14:44:55.678Z",
+    "id": "33b9b012-8b30-4c85-8722-1689668cb583"
+  },
+  {
+    "recipientId": "c810d135-4b2d-4dcd-a363-55950330e3a0",
+    "shopId": "shp_urban_cafe",
+    "title": "Job Completed",
+    "message": "Job #JOB-487489 has been finalized and converted to completed order.",
+    "type": "success",
+    "link": "/shop-owner/orders",
+    "isRead": false,
+    "createdAt": "2026-09-30T14:44:55.681Z",
+    "id": "331a2c2e-6226-4fe7-8353-6ce3ebf07f96"
+  },
+  {
+    "recipientId": "usr_1790779823800",
+    "shopId": "shp_1790779823800",
+    "title": "Welcome to SaaS Print Shop Platform, Dilshan Savinda!",
+    "message": "Welcome! Your print shop \"Dilshan Com\" has been registered with the Free Starter plan.",
+    "type": "success",
+    "link": "/shop-owner/dashboard",
+    "isRead": false,
+    "createdAt": "2026-09-30T14:50:25.590Z",
+    "id": "c65f0e09-0a05-4758-821f-e75f70a85c00"
+  },
+  {
+    "recipientId": "usr_super_admin",
+    "title": "New Shop Registered",
+    "message": "Shop \"Dilshan Com\" has registered with Free Starter.",
+    "type": "alert",
+    "link": "/super-admin/shops",
+    "isRead": true,
+    "createdAt": "2026-09-30T14:50:26.803Z",
+    "id": "ac17bfef-7f2f-43ca-b2ef-e1af53e99fbe",
+    "updatedAt": "2026-09-30T14:53:54.588Z"
+  },
+  {
+    "recipientId": "usr_super_admin",
+    "title": "New Bank Slip Payment Request",
+    "message": "Shop \"Dilshan Com\" submitted a bank transfer payment of $129 for review.",
+    "type": "alert",
+    "link": "/super-admin/payments",
+    "isRead": true,
+    "createdAt": "2026-09-30T14:51:45.745Z",
+    "id": "e573dd79-6084-4bf8-a9c5-8f99c5b948be",
+    "updatedAt": "2026-09-30T14:53:05.543Z"
+  },
+  {
+    "recipientId": "usr_1790779823800",
+    "shopId": "shp_1790779823800",
+    "title": "Payment Status Update: Under Review / Pending for Dilshan Com",
+    "message": "Payment of USD 129 is now Under Review / Pending.",
+    "type": "info",
+    "link": "/shop-owner/subscription",
+    "isRead": false,
+    "createdAt": "2026-09-30T14:53:22.976Z",
+    "id": "fc49d2b4-1ece-43a5-a816-502090938d38"
+  },
+  {
+    "recipientId": "usr_1790779823800",
+    "title": "Security Notice: Your Password Has Been Changed",
+    "message": "Your account password has been updated successfully.",
+    "type": "info",
+    "link": "/login",
+    "isRead": false,
+    "createdAt": "2026-09-30T14:55:02.113Z",
+    "id": "a849bddf-2382-40af-99e5-a2307efc0de9"
   }
 ]

@@ -8,14 +8,20 @@ export interface EmailOptions {
   recipientName?: string;
   subject: string;
   template:
-    | 'payment_status'
+    | 'registration_welcome'
     | 'account_approved'
     | 'account_status'
     | 'reset_access'
     | 'forgot_password'
     | 'password_changed'
+    | 'otp_verification'
+    | 'plan_expiry_reminder'
+    | 'low_stock_reminder'
+    | 'downgrade_confirmation'
+    | 'payment_status'
     | 'payment_restricted'
     | 'change_request'
+    | 'test_email'
     | 'general';
   data: Record<string, any>;
 }
@@ -83,6 +89,38 @@ async function getTransporter(): Promise<{ transporter: Transporter; isEthereal:
 }
 
 export class EmailService {
+  /**
+   * Returns current email service provider configuration status
+   */
+  static getProviderStatus() {
+    let provider = 'ethereal_sandbox';
+    let host = 'smtp.ethereal.email';
+    let configured = false;
+
+    if (config.brevo.apiKey) {
+      provider = 'brevo_api';
+      configured = true;
+      host = 'https://api.brevo.com/v3/smtp/email';
+    } else if (config.email.host && config.email.user && config.email.pass) {
+      provider = config.email.host.includes('brevo') ? 'brevo_smtp' : 'custom_smtp';
+      configured = true;
+      host = config.email.host;
+    } else if (config.email.user && config.email.pass) {
+      provider = 'gmail_smtp';
+      configured = true;
+      host = 'smtp.gmail.com';
+    }
+
+    return {
+      provider,
+      configured,
+      host,
+      port: config.email.port || 587,
+      senderEmail: config.brevo.senderEmail || config.email.user || 'noreply@saasplatform.com',
+      senderName: config.brevo.senderName || 'SaaS Platform Admin',
+    };
+  }
+
   /**
    * Dispatches a structured transactional email to the shop owner or user.
    * Prioritizes Brevo Transactional Email API (https://api.brevo.com/v3/smtp/email),
@@ -207,6 +245,254 @@ export class EmailService {
     }
 
     return { success: true, messageId, previewUrl };
+  }
+
+  /**
+   * Helper to send registration / welcome email to newly registered shop owner
+   */
+  static async sendRegistrationWelcomeEmail(params: {
+    email: string;
+    name: string;
+    shopName: string;
+    packageName: string;
+    shopId: string;
+    userId: string;
+    limits?: any;
+    branchName?: string;
+  }) {
+    const subject = `Welcome to SaaS Print Shop Platform, ${params.name}!`;
+
+    return this.sendEmail({
+      to: params.email,
+      recipientName: params.name,
+      subject,
+      template: 'registration_welcome',
+      data: {
+        recipientId: params.userId,
+        userId: params.userId,
+        shopId: params.shopId,
+        name: params.name,
+        email: params.email,
+        shopName: params.shopName,
+        packageName: params.packageName,
+        branchName: params.branchName || 'Main Branch',
+        limits: params.limits,
+        notificationType: 'success',
+        summaryMessage: `Welcome! Your print shop "${params.shopName}" has been registered with the ${params.packageName} plan.`,
+        link: '/shop-owner/dashboard',
+      },
+    });
+  }
+
+  /**
+   * Helper to send account approval email
+   */
+  static async sendAccountApprovalEmail(params: {
+    email: string;
+    name: string;
+    shopName: string;
+    shopId: string;
+    userId?: string;
+  }) {
+    const subject = `Account Approved! Your Print Shop "${params.shopName}" is now Active`;
+
+    return this.sendEmail({
+      to: params.email,
+      recipientName: params.name,
+      subject,
+      template: 'account_approved',
+      data: {
+        recipientId: params.userId,
+        userId: params.userId,
+        shopId: params.shopId,
+        name: params.name,
+        shopName: params.shopName,
+        approvedAt: new Date().toLocaleDateString(),
+        notificationType: 'success',
+        summaryMessage: `Your shop "${params.shopName}" has been reviewed and officially approved by Super Admin.`,
+        link: '/shop-owner/dashboard',
+      },
+    });
+  }
+
+  /**
+   * Helper to send subscription plan expiry reminder email
+   */
+  static async sendPlanExpiryReminderEmail(params: {
+    email: string;
+    name: string;
+    shopName: string;
+    packageName: string;
+    daysRemaining: number;
+    expiryDate: string;
+    isExpired?: boolean;
+    shopId: string;
+    userId?: string;
+  }) {
+    const isExpired = params.isExpired || params.daysRemaining <= 0;
+    const subject = isExpired
+      ? `Subscription Expired: Action Required for "${params.shopName}"`
+      : `Subscription Expiry Notice: ${params.daysRemaining} Day(s) Remaining for "${params.shopName}"`;
+
+    return this.sendEmail({
+      to: params.email,
+      recipientName: params.name,
+      subject,
+      template: 'plan_expiry_reminder',
+      data: {
+        recipientId: params.userId,
+        userId: params.userId,
+        shopId: params.shopId,
+        name: params.name,
+        shopName: params.shopName,
+        packageName: params.packageName,
+        daysRemaining: params.daysRemaining,
+        expiryDate: params.expiryDate,
+        isExpired,
+        notificationType: isExpired ? 'alert' : 'warning',
+        summaryMessage: isExpired
+          ? `Your subscription plan (${params.packageName}) has expired. Renew to prevent disruption.`
+          : `Your subscription plan (${params.packageName}) expires in ${params.daysRemaining} days (${params.expiryDate}).`,
+        link: '/shop-owner/subscription',
+      },
+    });
+  }
+
+  /**
+   * Helper to send low stock reminder email
+   */
+  static async sendLowStockReminderEmail(params: {
+    email: string;
+    name: string;
+    shopName: string;
+    productName: string;
+    sku: string;
+    currentStock: number;
+    minimumStockLevel: number;
+    branchName: string;
+    shopId: string;
+    userId?: string;
+  }) {
+    const subject = `⚠️ Low Stock Alert: "${params.productName}" (${params.currentStock} remaining)`;
+
+    return this.sendEmail({
+      to: params.email,
+      recipientName: params.name,
+      subject,
+      template: 'low_stock_reminder',
+      data: {
+        recipientId: params.userId,
+        userId: params.userId,
+        shopId: params.shopId,
+        name: params.name,
+        shopName: params.shopName,
+        productName: params.productName,
+        sku: params.sku,
+        currentStock: params.currentStock,
+        minimumStockLevel: params.minimumStockLevel,
+        branchName: params.branchName,
+        notificationType: 'warning',
+        summaryMessage: `Low stock alert: "${params.productName}" has only ${params.currentStock} units left in ${params.branchName}.`,
+        link: '/shop-owner/inventory',
+      },
+    });
+  }
+
+  /**
+   * Helper to send OTP verification code email
+   */
+  static async sendOtpEmail(params: {
+    email: string;
+    name?: string;
+    otpCode: string;
+    purpose?: string;
+    expiresMinutes?: number;
+    userId?: string;
+  }) {
+    const subject = `Your Verification Code: ${params.otpCode}`;
+
+    return this.sendEmail({
+      to: params.email,
+      recipientName: params.name || 'Valued User',
+      subject,
+      template: 'otp_verification',
+      data: {
+        recipientId: params.userId,
+        userId: params.userId,
+        name: params.name || 'Valued User',
+        otpCode: params.otpCode,
+        purpose: params.purpose || 'Security Verification',
+        expiresMinutes: params.expiresMinutes || 10,
+        notificationType: 'info',
+        summaryMessage: `Your verification code is ${params.otpCode} (expires in ${params.expiresMinutes || 10} minutes).`,
+        link: '/login',
+      },
+    });
+  }
+
+  /**
+   * Helper to send plan downgrade confirmation email
+   */
+  static async sendDowngradeConfirmationEmail(params: {
+    email: string;
+    name: string;
+    shopName: string;
+    oldPackageName: string;
+    newPackageName: string;
+    expiryDate: string;
+    shopId: string;
+    userId?: string;
+  }) {
+    const subject = `Plan Downgraded to ${params.newPackageName} - Active Expiry Date Unchanged`;
+
+    return this.sendEmail({
+      to: params.email,
+      recipientName: params.name,
+      subject,
+      template: 'downgrade_confirmation',
+      data: {
+        recipientId: params.userId,
+        userId: params.userId,
+        shopId: params.shopId,
+        name: params.name,
+        shopName: params.shopName,
+        oldPackageName: params.oldPackageName,
+        newPackageName: params.newPackageName,
+        expiryDate: params.expiryDate,
+        notificationType: 'info',
+        summaryMessage: `Subscription changed to ${params.newPackageName}. Your billing cycle remains valid until ${params.expiryDate}.`,
+        link: '/shop-owner/subscription',
+      },
+    });
+  }
+
+  /**
+   * Helper to send test email to verify email provider integration
+   */
+  static async sendTestEmail(params: {
+    to: string;
+    templateType?: string;
+    recipientName?: string;
+  }) {
+    const providerInfo = this.getProviderStatus();
+    const subject = `Test Email Dispatch - SaaS Platform Email Service`;
+
+    return this.sendEmail({
+      to: params.to,
+      recipientName: params.recipientName || 'Administrator',
+      subject,
+      template: 'test_email',
+      data: {
+        timestamp: new Date().toISOString(),
+        provider: providerInfo.provider,
+        host: providerInfo.host,
+        senderEmail: providerInfo.senderEmail,
+        configured: providerInfo.configured,
+        templateType: params.templateType || 'general_test',
+        summaryMessage: `Test email successfully sent via ${providerInfo.provider}.`,
+        link: '/super-admin/dashboard',
+      },
+    });
   }
 
   /**
@@ -485,6 +771,128 @@ export class EmailService {
     const greeting = recipientName ? `Dear ${recipientName},` : `Dear Store Owner,`;
 
     switch (template) {
+      case 'registration_welcome':
+        return `
+${greeting}
+
+Welcome to the SaaS Print Shop & Store Management System!
+
+Your store account "${data.shopName}" has been successfully created.
+- Assigned Plan: ${data.packageName} (Default Starter Tier)
+- Registered Email: ${data.email}
+- Initial Branch: ${data.branchName || 'Main Branch'}
+
+You can log in to your Print Shop Portal anytime to start setting up products, managing orders, and configuring staff accounts.
+
+Best regards,
+SaaS Platform Onboarding Team
+        `.trim();
+
+      case 'account_approved':
+        return `
+${greeting}
+
+Congratulations! Your print shop account "${data.shopName}" has been officially APPROVED and ACTIVATED by our platform administrators.
+
+- Shop Name: ${data.shopName}
+- Status: Fully Active
+- Approval Date: ${data.approvedAt}
+
+All platform features, multi-branch operations, and customer order management are now fully unlocked for your shop.
+
+Best regards,
+SaaS Platform Administration Team
+        `.trim();
+
+      case 'plan_expiry_reminder':
+        return `
+${greeting}
+
+This is a reminder regarding your subscription plan for "${data.shopName}".
+
+- Current Plan: ${data.packageName}
+- Expiration Status: ${data.isExpired ? 'EXPIRED' : `Expires in ${data.daysRemaining} day(s)`}
+- Expiry Date: ${data.expiryDate}
+
+${
+  data.isExpired
+    ? 'Your subscription has expired. Please log in and renew or upgrade your package to ensure uninterrupted operations.'
+    : 'To avoid any interruption to your store management or branch operations, please log in and renew your plan.'
+}
+
+Best regards,
+Platform Billing & Subscription Team
+        `.trim();
+
+      case 'low_stock_reminder':
+        return `
+${greeting}
+
+Inventory Alert: The stock for product "${data.productName}" has dropped below its minimum threshold.
+
+Product Details:
+- Name: ${data.productName}
+- SKU: ${data.sku}
+- Current Stock: ${data.currentStock} units
+- Minimum Safety Threshold: ${data.minimumStockLevel} units
+- Branch: ${data.branchName}
+
+Please reorder from your supplier or adjust inventory levels to avoid stock depletion.
+
+Best regards,
+Platform Inventory Automation System
+        `.trim();
+
+      case 'otp_verification':
+        return `
+${greeting}
+
+Your security verification one-time passcode (OTP) is:
+
+    ${data.otpCode}
+
+Purpose: ${data.purpose || 'Security Verification'}
+Valid for: ${data.expiresMinutes || 10} minutes
+
+Do not share this code with anyone. If you did not request this verification code, please ignore this email or contact support.
+
+Best regards,
+Platform Security Team
+        `.trim();
+
+      case 'downgrade_confirmation':
+        return `
+${greeting}
+
+This confirms that your subscription plan for "${data.shopName}" has been changed from ${data.oldPackageName} to ${data.newPackageName}.
+
+Important Subscription Details:
+- New Plan: ${data.newPackageName}
+- Active Expiry Date: ${data.expiryDate} (UNCHANGED)
+- Billing Note: No payment was required for this downgrade. Your existing subscription period remains valid through ${data.expiryDate}.
+
+Best regards,
+Platform Subscription Operations
+        `.trim();
+
+      case 'test_email':
+        return `
+${greeting}
+
+This is a test notification verifying your email service integration.
+
+Integration Status:
+- Provider: ${data.provider}
+- Host / Gateway: ${data.host}
+- Sender: ${data.senderEmail}
+- Dispatch Timestamp: ${data.timestamp}
+
+Your transactional email dispatcher is working properly.
+
+Best regards,
+Platform Engineering Team
+        `.trim();
+
       case 'change_request':
         return `
 ${greeting}
@@ -630,6 +1038,389 @@ Platform Support
   private static renderHtmlEmail(template: string, subject: string, data: Record<string, any>, recipientName?: string): string {
     const greeting = recipientName ? `Dear ${recipientName},` : `Dear Store Owner,`;
     const appUrl = config.corsOrigin || 'http://localhost:3000';
+
+    // Common HTML Header & Styling
+    const baseHeader = (title: string, badge?: string) => `
+      <div class="header">
+        ${badge ? `<div class="badge">${badge}</div>` : ''}
+        <h1>${title}</h1>
+      </div>
+    `;
+
+    if (template === 'registration_welcome') {
+      return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>${subject}</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f1f5f9; margin: 0; padding: 24px; color: #1e293b; }
+    .card { max-width: 580px; margin: 0 auto; background: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+    .header { background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%); padding: 32px 24px; text-align: center; color: #ffffff; }
+    .badge { display: inline-block; background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 9999px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+    .header h1 { margin: 0; font-size: 20px; font-weight: 800; letter-spacing: -0.02em; }
+    .content { padding: 32px 28px; font-size: 14px; line-height: 1.6; }
+    .box { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 12px; padding: 20px; margin: 20px 0; }
+    .row { margin-bottom: 8px; font-size: 13px; display: flex; justify-content: space-between; }
+    .label { font-weight: 600; color: #475569; }
+    .val { font-weight: 700; color: #0f172a; }
+    .btn { display: inline-block; background: #4f46e5; color: #ffffff !important; text-decoration: none; padding: 12px 28px; border-radius: 10px; font-weight: 600; font-size: 14px; margin-top: 16px; text-align: center; }
+    .footer { padding: 20px 28px; background: #f8fafc; border-top: 1px solid #e2e8f0; font-size: 12px; color: #64748b; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    ${baseHeader('Welcome to SaaS Print Shop Platform', 'Instant Onboarding')}
+    <div class="content">
+      <p style="font-size: 15px; font-weight: 600; margin-top: 0;">${greeting}</p>
+      <p>Congratulations! Your business <b>${data.shopName}</b> has been successfully registered. You are automatically enrolled in the <b>${data.packageName}</b> tier by default.</p>
+      
+      <div class="box">
+        <div class="row"><span class="label">Print Shop:</span><span class="val">${data.shopName}</span></div>
+        <div class="row"><span class="label">Assigned Plan:</span><span class="val" style="color: #4f46e5;">${data.packageName} ($0 Starter)</span></div>
+        <div class="row"><span class="label">Initial Branch:</span><span class="val">${data.branchName || 'Main Branch'}</span></div>
+        <div class="row"><span class="label">Login Email:</span><span class="val">${data.email}</span></div>
+      </div>
+
+      <p style="color: #475569; font-size: 13px;">
+        You can upgrade your subscription package, add multi-branch operations, or invite staff members at any time from your portal settings.
+      </p>
+
+      <div style="text-align: center; margin: 24px 0;">
+        <a href="${appUrl}/shop-owner/dashboard" class="btn">Access Store Dashboard</a>
+      </div>
+
+      <p style="margin-top: 28px; color: #64748b; font-size: 13px;">
+        Best regards,<br>
+        <b>SaaS Platform Onboarding Team</b>
+      </p>
+    </div>
+    <div class="footer">
+      Automated welcome notice sent to ${data.email}.
+    </div>
+  </div>
+</body>
+</html>
+      `.trim();
+    }
+
+    if (template === 'account_approved') {
+      return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>${subject}</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f1f5f9; margin: 0; padding: 24px; color: #1e293b; }
+    .card { max-width: 580px; margin: 0 auto; background: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+    .header { background: linear-gradient(135deg, #059669 0%, #047857 100%); padding: 32px 24px; text-align: center; color: #ffffff; }
+    .header h1 { margin: 0; font-size: 20px; font-weight: 800; letter-spacing: -0.02em; }
+    .badge { display: inline-block; background: rgba(255,255,255,0.25); padding: 4px 12px; border-radius: 9999px; font-size: 11px; font-weight: 700; text-transform: uppercase; margin-bottom: 8px; }
+    .content { padding: 32px 28px; font-size: 14px; line-height: 1.6; }
+    .box { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 20px; margin: 20px 0; }
+    .row { margin-bottom: 8px; font-size: 13px; display: flex; justify-content: space-between; }
+    .btn { display: inline-block; background: #059669; color: #ffffff !important; text-decoration: none; padding: 12px 28px; border-radius: 10px; font-weight: 600; font-size: 14px; margin-top: 16px; text-align: center; }
+    .footer { padding: 20px 28px; background: #f8fafc; border-top: 1px solid #e2e8f0; font-size: 12px; color: #64748b; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    ${baseHeader('Account Officially Approved!', 'Verification Complete')}
+    <div class="content">
+      <p style="font-size: 15px; font-weight: 600; margin-top: 0;">${greeting}</p>
+      <p>We are pleased to inform you that your shop registration for <b>${data.shopName}</b> has been reviewed and officially approved by our platform administrator.</p>
+
+      <div class="box">
+        <div class="row"><span style="color: #166534; font-weight: 600;">Account Status:</span><span style="color: #15803d; font-weight: 700;">ACTIVE & VERIFIED</span></div>
+        <div class="row"><span style="color: #166534; font-weight: 600;">Shop Name:</span><span style="color: #0f172a; font-weight: 700;">${data.shopName}</span></div>
+        <div class="row" style="margin-bottom: 0;"><span style="color: #166534; font-weight: 600;">Approval Date:</span><span style="color: #0f172a; font-weight: 700;">${data.approvedAt}</span></div>
+      </div>
+
+      <p>Your shop portal is now completely ready for daily point of sales, catalog inventory, and staff collaboration.</p>
+
+      <div style="text-align: center; margin: 24px 0;">
+        <a href="${appUrl}/login" class="btn">Log In to Your Store</a>
+      </div>
+
+      <p style="margin-top: 28px; color: #64748b; font-size: 13px;">
+        Best regards,<br>
+        <b>SaaS Platform Administration Team</b>
+      </p>
+    </div>
+    <div class="footer">
+      Official verification notification sent from SaaS Platform Admin.
+    </div>
+  </div>
+</body>
+</html>
+      `.trim();
+    }
+
+    if (template === 'plan_expiry_reminder') {
+      return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>${subject}</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f1f5f9; margin: 0; padding: 24px; color: #1e293b; }
+    .card { max-width: 580px; margin: 0 auto; background: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+    .header { background: linear-gradient(135deg, #d97706 0%, #b45309 100%); padding: 32px 24px; text-align: center; color: #ffffff; }
+    .header h1 { margin: 0; font-size: 20px; font-weight: 800; letter-spacing: -0.02em; }
+    .badge { display: inline-block; background: rgba(255,255,255,0.25); padding: 4px 12px; border-radius: 9999px; font-size: 11px; font-weight: 700; text-transform: uppercase; margin-bottom: 8px; }
+    .content { padding: 32px 28px; font-size: 14px; line-height: 1.6; }
+    .box { background: #fffbeb; border: 1px solid #fde68a; border-radius: 12px; padding: 20px; margin: 20px 0; }
+    .row { margin-bottom: 8px; font-size: 13px; display: flex; justify-content: space-between; }
+    .btn { display: inline-block; background: #d97706; color: #ffffff !important; text-decoration: none; padding: 12px 28px; border-radius: 10px; font-weight: 600; font-size: 14px; margin-top: 16px; text-align: center; }
+    .footer { padding: 20px 28px; background: #f8fafc; border-top: 1px solid #e2e8f0; font-size: 12px; color: #64748b; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    ${baseHeader('Subscription Expiry Notice', data.isExpired ? 'Action Required' : 'Reminder')}
+    <div class="content">
+      <p style="font-size: 15px; font-weight: 600; margin-top: 0;">${greeting}</p>
+      <p>
+        ${
+          data.isExpired
+            ? `Your subscription for <b>${data.shopName}</b> has expired. Please renew your plan to prevent service restriction.`
+            : `Your active subscription plan for <b>${data.shopName}</b> is scheduled to expire in <b>${data.daysRemaining} day(s)</b>.`
+        }
+      </p>
+
+      <div class="box">
+        <div class="row"><span style="color: #92400e; font-weight: 600;">Current Plan:</span><span style="color: #0f172a; font-weight: 700;">${data.packageName}</span></div>
+        <div class="row"><span style="color: #92400e; font-weight: 600;">Expiration Date:</span><span style="color: #b45309; font-weight: 700;">${data.expiryDate}</span></div>
+        <div class="row" style="margin-bottom: 0;"><span style="color: #92400e; font-weight: 600;">Status:</span><span style="color: #b45309; font-weight: 700;">${data.isExpired ? 'Expired' : `${data.daysRemaining} Days Left`}</span></div>
+      </div>
+
+      <div style="text-align: center; margin: 24px 0;">
+        <a href="${appUrl}/shop-owner/subscription" class="btn">Renew or Upgrade Subscription</a>
+      </div>
+
+      <p style="margin-top: 28px; color: #64748b; font-size: 13px;">
+        Best regards,<br>
+        <b>Platform Billing Operations</b>
+      </p>
+    </div>
+    <div class="footer">
+      Automated subscription reminder for ${data.shopName}.
+    </div>
+  </div>
+</body>
+</html>
+      `.trim();
+    }
+
+    if (template === 'low_stock_reminder') {
+      return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>${subject}</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f1f5f9; margin: 0; padding: 24px; color: #1e293b; }
+    .card { max-width: 580px; margin: 0 auto; background: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+    .header { background: linear-gradient(135deg, #e11d48 0%, #be123c 100%); padding: 32px 24px; text-align: center; color: #ffffff; }
+    .header h1 { margin: 0; font-size: 20px; font-weight: 800; letter-spacing: -0.02em; }
+    .badge { display: inline-block; background: rgba(255,255,255,0.25); padding: 4px 12px; border-radius: 9999px; font-size: 11px; font-weight: 700; text-transform: uppercase; margin-bottom: 8px; }
+    .content { padding: 32px 28px; font-size: 14px; line-height: 1.6; }
+    .box { background: #fff1f2; border: 1px solid #fecdd3; border-radius: 12px; padding: 20px; margin: 20px 0; }
+    .row { margin-bottom: 8px; font-size: 13px; display: flex; justify-content: space-between; }
+    .btn { display: inline-block; background: #e11d48; color: #ffffff !important; text-decoration: none; padding: 12px 28px; border-radius: 10px; font-weight: 600; font-size: 14px; margin-top: 16px; text-align: center; }
+    .footer { padding: 20px 28px; background: #f8fafc; border-top: 1px solid #e2e8f0; font-size: 12px; color: #64748b; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    ${baseHeader('Inventory Low Stock Alert', 'Stock Warning')}
+    <div class="content">
+      <p style="font-size: 15px; font-weight: 600; margin-top: 0;">${greeting}</p>
+      <p>This alert was triggered because inventory for <b>${data.productName}</b> is currently at or below the minimum stock safety limit.</p>
+
+      <div class="box">
+        <div class="row"><span style="color: #9f1239; font-weight: 600;">Product:</span><span style="color: #0f172a; font-weight: 700;">${data.productName}</span></div>
+        <div class="row"><span style="color: #9f1239; font-weight: 600;">SKU:</span><span style="color: #0f172a; font-mono; font-weight: 700;">${data.sku}</span></div>
+        <div class="row"><span style="color: #9f1239; font-weight: 600;">Current Quantity:</span><span style="color: #e11d48; font-weight: 800; font-size: 15px;">${data.currentStock} units</span></div>
+        <div class="row"><span style="color: #9f1239; font-weight: 600;">Minimum Threshold:</span><span style="color: #0f172a; font-weight: 700;">${data.minimumStockLevel} units</span></div>
+        <div class="row" style="margin-bottom: 0;"><span style="color: #9f1239; font-weight: 600;">Location / Branch:</span><span style="color: #0f172a; font-weight: 700;">${data.branchName}</span></div>
+      </div>
+
+      <div style="text-align: center; margin: 24px 0;">
+        <a href="${appUrl}/shop-owner/inventory" class="btn">View & Replenish Stock</a>
+      </div>
+
+      <p style="margin-top: 28px; color: #64748b; font-size: 13px;">
+        Best regards,<br>
+        <b>Automated Inventory Dispatch System</b>
+      </p>
+    </div>
+    <div class="footer">
+      Automated inventory reminder for ${data.shopName}.
+    </div>
+  </div>
+</body>
+</html>
+      `.trim();
+    }
+
+    if (template === 'otp_verification') {
+      return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>${subject}</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f1f5f9; margin: 0; padding: 24px; color: #1e293b; }
+    .card { max-width: 580px; margin: 0 auto; background: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+    .header { background: #4f46e5; padding: 28px 24px; text-align: center; color: #ffffff; }
+    .header h1 { margin: 0; font-size: 20px; font-weight: 800; }
+    .content { padding: 32px 28px; font-size: 14px; line-height: 1.6; text-align: center; }
+    .otp-code { display: inline-block; font-family: ui-monospace, Menlo, Monaco, Consolas, monospace; font-size: 32px; font-weight: 800; letter-spacing: 8px; color: #3730a3; background: #e0e7ff; padding: 14px 28px; border-radius: 12px; border: 2px dashed #818cf8; margin: 24px 0; }
+    .footer { padding: 20px 28px; background: #f8fafc; border-top: 1px solid #e2e8f0; font-size: 12px; color: #64748b; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="header">
+      <h1>Security Verification Code</h1>
+    </div>
+    <div class="content">
+      <p style="font-size: 15px; font-weight: 600; margin-top: 0;">${greeting}</p>
+      <p>Use the one-time security code below to complete: <b>${data.purpose || 'Verification'}</b></p>
+      
+      <div>
+        <span class="otp-code">${data.otpCode}</span>
+      </div>
+
+      <p style="font-size: 12px; color: #64748b;">
+        This code is valid for <b>${data.expiresMinutes || 10} minutes</b>. Never share this code with anyone.
+      </p>
+
+      <p style="margin-top: 32px; color: #64748b; font-size: 13px;">
+        Best regards,<br>
+        <b>Platform Security Team</b>
+      </p>
+    </div>
+    <div class="footer">
+      Automated security OTP code sent to your email.
+    </div>
+  </div>
+</body>
+</html>
+      `.trim();
+    }
+
+    if (template === 'downgrade_confirmation') {
+      return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>${subject}</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f1f5f9; margin: 0; padding: 24px; color: #1e293b; }
+    .card { max-width: 580px; margin: 0 auto; background: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+    .header { background: #3b82f6; padding: 32px 24px; text-align: center; color: #ffffff; }
+    .header h1 { margin: 0; font-size: 20px; font-weight: 800; }
+    .content { padding: 32px 28px; font-size: 14px; line-height: 1.6; }
+    .box { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px; padding: 20px; margin: 20px 0; }
+    .row { margin-bottom: 8px; font-size: 13px; display: flex; justify-content: space-between; }
+    .btn { display: inline-block; background: #3b82f6; color: #ffffff !important; text-decoration: none; padding: 12px 28px; border-radius: 10px; font-weight: 600; font-size: 14px; margin-top: 16px; text-align: center; }
+    .footer { padding: 20px 28px; background: #f8fafc; border-top: 1px solid #e2e8f0; font-size: 12px; color: #64748b; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="header">
+      <h1>Subscription Plan Downgraded</h1>
+    </div>
+    <div class="content">
+      <p style="font-size: 15px; font-weight: 600; margin-top: 0;">${greeting}</p>
+      <p>This confirms that your subscription plan for <b>${data.shopName}</b> has been changed from <b>${data.oldPackageName}</b> to <b>${data.newPackageName}</b>.</p>
+
+      <div class="box">
+        <div class="row"><span style="color: #1e40af; font-weight: 600;">Previous Plan:</span><span style="color: #0f172a; font-weight: 700;">${data.oldPackageName}</span></div>
+        <div class="row"><span style="color: #1e40af; font-weight: 600;">New Plan:</span><span style="color: #2563eb; font-weight: 700;">${data.newPackageName}</span></div>
+        <div class="row" style="margin-bottom: 0;"><span style="color: #1e40af; font-weight: 600;">Expiry Date (Unchanged):</span><span style="color: #0f172a; font-weight: 700;">${data.expiryDate}</span></div>
+      </div>
+
+      <p style="background: #f0fdf4; border: 1px solid #bbf7d0; padding: 12px; border-radius: 8px; color: #166534; font-size: 13px;">
+        <b>Important Policy:</b> No payment was required for this downgrade. In accordance with system policy, your existing subscription expiry date remains unchanged and active through <b>${data.expiryDate}</b>.
+      </p>
+
+      <div style="text-align: center; margin: 24px 0;">
+        <a href="${appUrl}/shop-owner/subscription" class="btn">View Subscription Details</a>
+      </div>
+
+      <p style="margin-top: 28px; color: #64748b; font-size: 13px;">
+        Best regards,<br>
+        <b>Platform Subscription Operations</b>
+      </p>
+    </div>
+    <div class="footer">
+      Automated subscription confirmation for ${data.shopName}.
+    </div>
+  </div>
+</body>
+</html>
+      `.trim();
+    }
+
+    if (template === 'test_email') {
+      return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>${subject}</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f1f5f9; margin: 0; padding: 24px; color: #1e293b; }
+    .card { max-width: 580px; margin: 0 auto; background: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+    .header { background: #4f46e5; padding: 24px; text-align: center; color: #ffffff; }
+    .header h1 { margin: 0; font-size: 18px; font-weight: 700; }
+    .content { padding: 32px 28px; font-size: 14px; line-height: 1.6; }
+    .box { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 12px; padding: 20px; margin: 20px 0; }
+    .row { margin-bottom: 8px; font-size: 13px; display: flex; justify-content: space-between; }
+    .footer { padding: 20px 28px; background: #f8fafc; border-top: 1px solid #e2e8f0; font-size: 12px; color: #64748b; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="header">
+      <h1>Test Email Dispatch Verification</h1>
+    </div>
+    <div class="content">
+      <p style="font-size: 15px; font-weight: 600; margin-top: 0;">${greeting}</p>
+      <p>This test email confirms that your email service provider integration is successfully connected and operational!</p>
+
+      <div class="box">
+        <div class="row"><span style="color: #475569; font-weight: 600;">Provider:</span><span style="font-weight: 700;">${data.provider}</span></div>
+        <div class="row"><span style="color: #475569; font-weight: 600;">Host:</span><span style="font-weight: 700;">${data.host}</span></div>
+        <div class="row"><span style="color: #475569; font-weight: 600;">Sender:</span><span style="font-weight: 700;">${data.senderEmail}</span></div>
+        <div class="row" style="margin-bottom: 0;"><span style="color: #475569; font-weight: 600;">Timestamp:</span><span style="font-weight: 700;">${data.timestamp}</span></div>
+      </div>
+
+      <p style="color: #15803d; font-weight: 600;">All transactional notifications and customer emails will be sent properly.</p>
+
+      <p style="margin-top: 28px; color: #64748b; font-size: 13px;">
+        Best regards,<br>
+        <b>Platform Engineering & System Notifications</b>
+      </p>
+    </div>
+    <div class="footer">
+      Diagnostic email test dispatched from SaaS Platform.
+    </div>
+  </div>
+</body>
+</html>
+      `.trim();
+    }
 
     if (template === 'reset_access') {
       return `

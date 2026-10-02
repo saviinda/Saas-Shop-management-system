@@ -35,6 +35,9 @@ import {
   AlertTriangle,
   AlertCircle,
 } from 'lucide-react';
+import { CategorizedFilterBar, FilterCategory } from '@/components/CategorizedFilterBar';
+import { TablePagination } from '@/components/TablePagination';
+import { EmailServiceModal } from '@/components/EmailServiceModal';
 
 const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
 
@@ -47,6 +50,12 @@ export default function ShopsManagementPage() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [isLoading, setIsLoading] = useState(true);
+
+  // Shop Pagination & Category Filters
+  const [shopPage, setShopPage] = useState(1);
+  const [shopPageSize, setShopPageSize] = useState(10);
+  const [shopActiveFilters, setShopActiveFilters] = useState<Record<string, any>>({});
+  const [showEmailModal, setShowEmailModal] = useState(false);
 
   // Shop Details Modal State
   const [selectedShopDetails, setSelectedShopDetails] = useState<any | null>(null);
@@ -315,7 +324,36 @@ export default function ShopsManagementPage() {
     );
   };
 
+  const shopsFilterCategories: FilterCategory[] = [
+    {
+      id: 'shop_status',
+      label: 'Shop Status',
+      type: 'select',
+      options: [
+        { label: 'All Statuses', value: 'all' },
+        { label: 'Active', value: 'active' },
+        { label: 'Pending Approval', value: 'pending' },
+        { label: 'Restricted', value: 'restricted' },
+        { label: 'Suspended', value: 'suspended' },
+        { label: 'Inactive', value: 'inactive' },
+      ],
+    },
+    {
+      id: 'plan_tier',
+      label: 'Subscription Package',
+      type: 'select',
+      options: [
+        { label: 'All Packages', value: 'all' },
+        ...packages.map(p => ({ label: p.name, value: p.id })),
+      ],
+    },
+  ];
+
   const filteredShops = shops.filter(s => {
+    const status = shopActiveFilters.shop_status || statusFilter;
+    if (status !== 'all' && s.status !== status) return false;
+    const pkg = shopActiveFilters.plan_tier;
+    if (pkg && pkg !== 'all' && s.packageId !== pkg) return false;
     if (search) {
       const q = search.toLowerCase();
       return (
@@ -327,6 +365,8 @@ export default function ShopsManagementPage() {
     }
     return true;
   });
+
+  const paginatedShops = filteredShops.slice((shopPage - 1) * shopPageSize, shopPage * shopPageSize);
 
   const filteredOwners = owners.filter(o => {
     if (statusFilter !== 'all' && o.status !== statusFilter) return false;
@@ -353,10 +393,18 @@ export default function ShopsManagementPage() {
         </div>
 
         <div className="flex items-center gap-3">
+          <button
+            onClick={() => setShowEmailModal(true)}
+            className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 rounded-xl border border-slate-200 shadow-2xs transition-all cursor-pointer"
+          >
+            <Mail className="h-4 w-4 text-indigo-600" />
+            <span>Email Service</span>
+          </button>
+
           <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200">
             <button
               onClick={() => setActiveTab('shops')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                 activeTab === 'shops'
                   ? 'bg-white text-indigo-700 shadow-xs'
                   : 'text-slate-600 hover:text-slate-900'
@@ -366,7 +414,7 @@ export default function ShopsManagementPage() {
             </button>
             <button
               onClick={() => setActiveTab('owners')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                 activeTab === 'owners'
                   ? 'bg-white text-indigo-700 shadow-xs'
                   : 'text-slate-600 hover:text-slate-900'
@@ -378,42 +426,41 @@ export default function ShopsManagementPage() {
 
           <button
             onClick={openCreateModal}
-            className="flex items-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-sm shadow-indigo-200 hover:shadow-md transition-all active:scale-[0.98]"
+            className="flex items-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-sm shadow-indigo-200 hover:shadow-md transition-all active:scale-[0.98] cursor-pointer"
           >
             <Plus className="h-4 w-4" /> Create Shop & Owner
           </button>
         </div>
       </div>
 
-      {/* Filters Bar */}
-      <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm shadow-slate-200/50 flex flex-col sm:flex-row gap-3 items-center justify-between">
-        <div className="relative w-full sm:w-80">
-          <Search className="absolute left-3.5 top-2.5 h-4 w-4 text-slate-400" />
-          <input
-            type="text"
-            placeholder={activeTab === 'shops' ? 'Search shops, categories, owners...' : 'Search shop owners by name, email, shop...'}
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 text-xs bg-slate-50 border border-slate-200/90 rounded-xl text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 shadow-2xs transition-all"
-          />
-        </div>
-
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          <Filter className="h-4 w-4 text-slate-400" />
-          <select
-            value={statusFilter}
-            onChange={e => setStatusFilter(e.target.value)}
-            className="text-xs py-2 px-3 border border-slate-200/90 rounded-xl bg-slate-50 text-slate-700 font-medium focus:bg-white focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 shadow-2xs"
-          >
-            <option value="all">All Statuses</option>
-            <option value="active">Active</option>
-            <option value="pending">Pending Approval</option>
-            <option value="restricted">Restricted</option>
-            <option value="suspended">Suspended</option>
-            <option value="inactive">Inactive</option>
-          </select>
-        </div>
-      </div>
+      {/* Categorized Filters Bar */}
+      <CategorizedFilterBar
+        categories={shopsFilterCategories}
+        activeFilters={shopActiveFilters}
+        onFilterChange={(categoryId, value) => {
+          setShopActiveFilters(prev => {
+            if (value === undefined || value === null || value === '' || value === 'all') {
+              const next = { ...prev };
+              delete next[categoryId];
+              return next;
+            }
+            return { ...prev, [categoryId]: value };
+          });
+          setShopPage(1);
+        }}
+        onClearFilters={() => {
+          setShopActiveFilters({});
+          setStatusFilter('all');
+          setSearch('');
+          setShopPage(1);
+        }}
+        search={search}
+        onSearchChange={val => {
+          setSearch(val);
+          setShopPage(1);
+        }}
+        searchPlaceholder={activeTab === 'shops' ? 'Search shops, categories, owners...' : 'Search shop owners by name, email, shop...'}
+      />
 
       {/* TAB 1: SHOPS TABLE */}
       {activeTab === 'shops' && (
@@ -441,7 +488,7 @@ export default function ShopsManagementPage() {
                     <td colSpan={7} className="py-12 text-center text-slate-400">No shops found matching your search or filters.</td>
                   </tr>
                 ) : (
-                  filteredShops.map(shop => (
+                  paginatedShops.map(shop => (
                     <tr
                       key={shop.id}
                       onClick={() => handleOpenShopDetails(shop)}
@@ -535,6 +582,20 @@ export default function ShopsManagementPage() {
               </tbody>
             </table>
           </div>
+
+          {filteredShops.length > 0 && (
+            <TablePagination
+              currentPage={shopPage}
+              totalPages={Math.max(1, Math.ceil(filteredShops.length / shopPageSize))}
+              totalItems={filteredShops.length}
+              pageSize={shopPageSize}
+              onPageChange={setShopPage}
+              onPageSizeChange={size => {
+                setShopPageSize(size);
+                setShopPage(1);
+              }}
+            />
+          )}
         </div>
       )}
 
@@ -1312,6 +1373,12 @@ export default function ShopsManagementPage() {
           </div>
         </div>
       )}
+
+      {/* Email Integration Diagnostic & Test Modal */}
+      <EmailServiceModal
+        isOpen={showEmailModal}
+        onClose={() => setShowEmailModal(false)}
+      />
     </div>
   );
 }

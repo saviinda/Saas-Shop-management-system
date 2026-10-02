@@ -410,20 +410,12 @@ export class ShopController {
     // Send email to owner
     const ownerEmail = shop.ownerEmail || shop.email;
     if (ownerEmail) {
-      await EmailService.sendEmail({
-        to: ownerEmail,
-        recipientName: shop.ownerName,
-        subject: `Registration Approved - ${shop.name} is now Active!`,
-        template: 'account_status',
-        data: {
-          recipientId: shop.ownerId,
-          name: shop.ownerName,
-          shopName: shop.name,
-          status: 'ACTIVATED',
-          statusRaw: 'active',
-          reason: 'Your shop registration has been approved by our platform administrator. You can now log in and start using your store.',
-          link: '/login',
-        },
+      await EmailService.sendAccountApprovalEmail({
+        email: ownerEmail,
+        name: shop.ownerName || 'Shop Owner',
+        shopName: shop.name,
+        shopId: shop.id,
+        userId: shop.ownerId,
       });
     }
 

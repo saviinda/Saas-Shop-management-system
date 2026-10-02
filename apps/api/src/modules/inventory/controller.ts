@@ -1,16 +1,17 @@
 import { Response } from 'express';
 import { dbStore } from '../../db/store';
-import { InventoryItem, StockMovement, Branch } from '@saas/types';
+import { InventoryItem, StockMovement, Branch, User } from '@saas/types';
 import { AuthenticatedRequest } from '../../middleware/auth';
 import { sendSuccess, sendError } from '../../utils/response';
 import { AuditLogService } from '../../services/auditLog.service';
+import { EmailService } from '../../services/email.service';
 
 export class InventoryController {
   static async listInventory(req: AuthenticatedRequest, res: Response) {
     const shopId = req.user?.role === 'super_admin' ? (req.query.shopId as string) || req.shopId : req.shopId;
     if (!shopId) return sendSuccess(res, []);
 
-    const { branchId, lowStock, search } = req.query;
+    const { branchId, lowStock, search, page, limit } = req.query;
 
     const where: Array<{ field: string; op: any; value: any }> = [
       { field: 'shopId', op: '==', value: shopId },
@@ -47,7 +48,21 @@ export class InventoryController {
       })
     );
 
-    return sendSuccess(res, enriched);
+    if (page !== undefined || limit !== undefined) {
+      const pageNum = Math.max(1, parseInt(page as string, 10) || 1);
+      const limitNum = Math.max(1, parseInt(limit as string, 10) || 10);
+      const offset = (pageNum - 1) * limitNum;
+      const paginated = enriched.slice(offset, offset + limitNum);
+
+      return sendSuccess(res, paginated, {
+        total: enriched.length,
+        page: pageNum,
+        limit: limitNum,
+        totalPages: Math.ceil(enriched.length / limitNum),
+      });
+    }
+
+    return sendSuccess(res, enriched, { total: enriched.length });
   }
 
   static async adjustStock(req: AuthenticatedRequest, res: Response) {
@@ -97,6 +112,32 @@ export class InventoryController {
       before: { quantity: inv.quantity },
       after: { quantity: newQty, reason, delta: quantityDelta },
     });
+
+    if (newQty <= inv.minimumStockLevel) {
+      const branch = await dbStore.collection<Branch>('branches').get(branchId);
+      const owners = await dbStore.collection<User>('users').query({
+        where: [
+          { field: 'shopId', op: '==', value: shopId },
+          { field: 'role', op: '==', value: 'shop_owner' },
+        ],
+      });
+      for (const owner of owners.data) {
+        if (owner.email) {
+          await EmailService.sendLowStockReminderEmail({
+            email: owner.email,
+            name: owner.name,
+            shopName: branch?.name || 'Store Branch',
+            productName: inv.productName,
+            sku: inv.sku || 'N/A',
+            currentStock: newQty,
+            minimumStockLevel: inv.minimumStockLevel,
+            branchName: branch?.name || 'Main Branch',
+            shopId,
+            userId: owner.id,
+          });
+        }
+      }
+    }
 
     return sendSuccess(res, { inventory: updated, movement });
   }

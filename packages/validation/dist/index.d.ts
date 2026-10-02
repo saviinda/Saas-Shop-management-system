@@ -296,21 +296,43 @@ export declare const reviewChangeRequestSchema: z.ZodObject<{
     status: "approved" | "rejected";
     reviewNotes?: string | undefined;
 }>;
+export declare const createCategorySchema: z.ZodObject<{
+    name: z.ZodString;
+    description: z.ZodOptional<z.ZodString>;
+    status: z.ZodDefault<z.ZodEnum<["active", "inactive"]>>;
+}, "strip", z.ZodTypeAny, {
+    status: "active" | "inactive";
+    name: string;
+    description?: string | undefined;
+}, {
+    name: string;
+    status?: "active" | "inactive" | undefined;
+    description?: string | undefined;
+}>;
+export declare const updateCategorySchema: z.ZodObject<{
+    name: z.ZodOptional<z.ZodString>;
+    description: z.ZodOptional<z.ZodOptional<z.ZodString>>;
+    status: z.ZodOptional<z.ZodDefault<z.ZodEnum<["active", "inactive"]>>>;
+}, "strip", z.ZodTypeAny, {
+    status?: "active" | "inactive" | undefined;
+    name?: string | undefined;
+    description?: string | undefined;
+}, {
+    status?: "active" | "inactive" | undefined;
+    name?: string | undefined;
+    description?: string | undefined;
+}>;
 export declare const createProductSchema: z.ZodObject<{
     sku: z.ZodString;
     name: z.ZodString;
     description: z.ZodOptional<z.ZodString>;
     category: z.ZodString;
-    imageUrl: z.ZodOptional<z.ZodString>;
     costPrice: z.ZodDefault<z.ZodNumber>;
     sellingPrice: z.ZodDefault<z.ZodNumber>;
     minimumStockLevel: z.ZodDefault<z.ZodNumber>;
-    supplierId: z.ZodOptional<z.ZodString>;
-    supplierName: z.ZodOptional<z.ZodString>;
     initialStock: z.ZodDefault<z.ZodNumber>;
     isPublic: z.ZodOptional<z.ZodBoolean>;
     isFeatured: z.ZodOptional<z.ZodBoolean>;
-    tags: z.ZodOptional<z.ZodArray<z.ZodString, "many">>;
     variants: z.ZodOptional<z.ZodArray<z.ZodObject<{
         name: z.ZodString;
         options: z.ZodArray<z.ZodString, "many">;
@@ -339,12 +361,8 @@ export declare const createProductSchema: z.ZodObject<{
     minimumStockLevel: number;
     initialStock: number;
     description?: string | undefined;
-    imageUrl?: string | undefined;
-    supplierId?: string | undefined;
-    supplierName?: string | undefined;
     isPublic?: boolean | undefined;
     isFeatured?: boolean | undefined;
-    tags?: string[] | undefined;
     variants?: {
         options: string[];
         name: string;
@@ -357,16 +375,12 @@ export declare const createProductSchema: z.ZodObject<{
     category: string;
     sku: string;
     description?: string | undefined;
-    imageUrl?: string | undefined;
     costPrice?: number | undefined;
     sellingPrice?: number | undefined;
     minimumStockLevel?: number | undefined;
-    supplierId?: string | undefined;
-    supplierName?: string | undefined;
     initialStock?: number | undefined;
     isPublic?: boolean | undefined;
     isFeatured?: boolean | undefined;
-    tags?: string[] | undefined;
     variants?: {
         options: string[];
         name: string;
@@ -380,16 +394,12 @@ export declare const updateProductSchema: z.ZodObject<{
     name: z.ZodOptional<z.ZodString>;
     description: z.ZodOptional<z.ZodOptional<z.ZodString>>;
     category: z.ZodOptional<z.ZodString>;
-    imageUrl: z.ZodOptional<z.ZodOptional<z.ZodString>>;
     costPrice: z.ZodOptional<z.ZodDefault<z.ZodNumber>>;
     sellingPrice: z.ZodOptional<z.ZodDefault<z.ZodNumber>>;
     minimumStockLevel: z.ZodOptional<z.ZodDefault<z.ZodNumber>>;
-    supplierId: z.ZodOptional<z.ZodOptional<z.ZodString>>;
-    supplierName: z.ZodOptional<z.ZodOptional<z.ZodString>>;
     initialStock: z.ZodOptional<z.ZodDefault<z.ZodNumber>>;
     isPublic: z.ZodOptional<z.ZodOptional<z.ZodBoolean>>;
     isFeatured: z.ZodOptional<z.ZodOptional<z.ZodBoolean>>;
-    tags: z.ZodOptional<z.ZodOptional<z.ZodArray<z.ZodString, "many">>>;
     variants: z.ZodOptional<z.ZodOptional<z.ZodArray<z.ZodObject<{
         name: z.ZodString;
         options: z.ZodArray<z.ZodString, "many">;
@@ -417,16 +427,12 @@ export declare const updateProductSchema: z.ZodObject<{
     category?: string | undefined;
     description?: string | undefined;
     sku?: string | undefined;
-    imageUrl?: string | undefined;
     costPrice?: number | undefined;
     sellingPrice?: number | undefined;
     minimumStockLevel?: number | undefined;
-    supplierId?: string | undefined;
-    supplierName?: string | undefined;
     initialStock?: number | undefined;
     isPublic?: boolean | undefined;
     isFeatured?: boolean | undefined;
-    tags?: string[] | undefined;
     variants?: {
         options: string[];
         name: string;
@@ -440,16 +446,12 @@ export declare const updateProductSchema: z.ZodObject<{
     category?: string | undefined;
     description?: string | undefined;
     sku?: string | undefined;
-    imageUrl?: string | undefined;
     costPrice?: number | undefined;
     sellingPrice?: number | undefined;
     minimumStockLevel?: number | undefined;
-    supplierId?: string | undefined;
-    supplierName?: string | undefined;
     initialStock?: number | undefined;
     isPublic?: boolean | undefined;
     isFeatured?: boolean | undefined;
-    tags?: string[] | undefined;
     variants?: {
         options: string[];
         name: string;
@@ -479,11 +481,11 @@ export declare const createProductBatchSchema: z.ZodObject<{
     quantity: number;
     notes?: string | undefined;
     branchId?: string | undefined;
-    supplierId?: string | undefined;
-    supplierName?: string | undefined;
     branchName?: string | undefined;
     manufacturingDate?: string | undefined;
     expiryDate?: string | undefined;
+    supplierId?: string | undefined;
+    supplierName?: string | undefined;
 }, {
     costPrice: number;
     sellingPrice: number;
@@ -492,11 +494,11 @@ export declare const createProductBatchSchema: z.ZodObject<{
     status?: "active" | "depleted" | "expired" | "quarantine" | undefined;
     notes?: string | undefined;
     branchId?: string | undefined;
-    supplierId?: string | undefined;
-    supplierName?: string | undefined;
     branchName?: string | undefined;
     manufacturingDate?: string | undefined;
     expiryDate?: string | undefined;
+    supplierId?: string | undefined;
+    supplierName?: string | undefined;
 }>;
 export declare const updateProductBatchSchema: z.ZodObject<{
     batchNumber: z.ZodOptional<z.ZodString>;
@@ -517,34 +519,58 @@ export declare const updateProductBatchSchema: z.ZodObject<{
     branchId?: string | undefined;
     costPrice?: number | undefined;
     sellingPrice?: number | undefined;
-    supplierId?: string | undefined;
-    supplierName?: string | undefined;
     batchNumber?: string | undefined;
     branchName?: string | undefined;
     quantity?: number | undefined;
     manufacturingDate?: string | undefined;
     expiryDate?: string | undefined;
+    supplierId?: string | undefined;
+    supplierName?: string | undefined;
 }, {
     status?: "active" | "depleted" | "expired" | "quarantine" | undefined;
     notes?: string | undefined;
     branchId?: string | undefined;
     costPrice?: number | undefined;
     sellingPrice?: number | undefined;
-    supplierId?: string | undefined;
-    supplierName?: string | undefined;
     batchNumber?: string | undefined;
     branchName?: string | undefined;
     quantity?: number | undefined;
     manufacturingDate?: string | undefined;
     expiryDate?: string | undefined;
+    supplierId?: string | undefined;
+    supplierName?: string | undefined;
+}>;
+export declare const createServiceCategorySchema: z.ZodObject<{
+    name: z.ZodString;
+    description: z.ZodOptional<z.ZodString>;
+    status: z.ZodDefault<z.ZodEnum<["active", "inactive"]>>;
+}, "strip", z.ZodTypeAny, {
+    status: "active" | "inactive";
+    name: string;
+    description?: string | undefined;
+}, {
+    name: string;
+    status?: "active" | "inactive" | undefined;
+    description?: string | undefined;
+}>;
+export declare const updateServiceCategorySchema: z.ZodObject<{
+    name: z.ZodOptional<z.ZodString>;
+    description: z.ZodOptional<z.ZodOptional<z.ZodString>>;
+    status: z.ZodOptional<z.ZodDefault<z.ZodEnum<["active", "inactive"]>>>;
+}, "strip", z.ZodTypeAny, {
+    status?: "active" | "inactive" | undefined;
+    name?: string | undefined;
+    description?: string | undefined;
+}, {
+    status?: "active" | "inactive" | undefined;
+    name?: string | undefined;
+    description?: string | undefined;
 }>;
 export declare const createServiceSchema: z.ZodObject<{
     name: z.ZodString;
     description: z.ZodOptional<z.ZodString>;
     category: z.ZodString;
-    imageUrl: z.ZodOptional<z.ZodString>;
     price: z.ZodNumber;
-    durationMinutes: z.ZodNumber;
     availability: z.ZodOptional<z.ZodString>;
     assignedStaffIds: z.ZodOptional<z.ZodArray<z.ZodString, "many">>;
     assignedStaffNames: z.ZodOptional<z.ZodArray<z.ZodString, "many">>;
@@ -556,9 +582,7 @@ export declare const createServiceSchema: z.ZodObject<{
     name: string;
     category: string;
     price: number;
-    durationMinutes: number;
     description?: string | undefined;
-    imageUrl?: string | undefined;
     isPublic?: boolean | undefined;
     isFeatured?: boolean | undefined;
     availability?: string | undefined;
@@ -568,10 +592,8 @@ export declare const createServiceSchema: z.ZodObject<{
     name: string;
     category: string;
     price: number;
-    durationMinutes: number;
     status?: "active" | "inactive" | undefined;
     description?: string | undefined;
-    imageUrl?: string | undefined;
     isPublic?: boolean | undefined;
     isFeatured?: boolean | undefined;
     availability?: string | undefined;
@@ -582,9 +604,7 @@ export declare const updateServiceSchema: z.ZodObject<{
     name: z.ZodOptional<z.ZodString>;
     description: z.ZodOptional<z.ZodOptional<z.ZodString>>;
     category: z.ZodOptional<z.ZodString>;
-    imageUrl: z.ZodOptional<z.ZodOptional<z.ZodString>>;
     price: z.ZodOptional<z.ZodNumber>;
-    durationMinutes: z.ZodOptional<z.ZodNumber>;
     availability: z.ZodOptional<z.ZodOptional<z.ZodString>>;
     assignedStaffIds: z.ZodOptional<z.ZodOptional<z.ZodArray<z.ZodString, "many">>>;
     assignedStaffNames: z.ZodOptional<z.ZodOptional<z.ZodArray<z.ZodString, "many">>>;
@@ -597,10 +617,8 @@ export declare const updateServiceSchema: z.ZodObject<{
     category?: string | undefined;
     description?: string | undefined;
     price?: number | undefined;
-    imageUrl?: string | undefined;
     isPublic?: boolean | undefined;
     isFeatured?: boolean | undefined;
-    durationMinutes?: number | undefined;
     availability?: string | undefined;
     assignedStaffIds?: string[] | undefined;
     assignedStaffNames?: string[] | undefined;
@@ -610,10 +628,8 @@ export declare const updateServiceSchema: z.ZodObject<{
     category?: string | undefined;
     description?: string | undefined;
     price?: number | undefined;
-    imageUrl?: string | undefined;
     isPublic?: boolean | undefined;
     isFeatured?: boolean | undefined;
-    durationMinutes?: number | undefined;
     availability?: string | undefined;
     assignedStaffIds?: string[] | undefined;
     assignedStaffNames?: string[] | undefined;
@@ -622,45 +638,27 @@ export declare const createCustomerSchema: z.ZodObject<{
     name: z.ZodString;
     email: z.ZodUnion<[z.ZodOptional<z.ZodString>, z.ZodLiteral<"">]>;
     phone: z.ZodString;
-    address: z.ZodOptional<z.ZodString>;
-    notes: z.ZodOptional<z.ZodString>;
-    tags: z.ZodOptional<z.ZodArray<z.ZodString, "many">>;
 }, "strip", z.ZodTypeAny, {
     name: string;
     phone: string;
     email?: string | undefined;
-    notes?: string | undefined;
-    address?: string | undefined;
-    tags?: string[] | undefined;
 }, {
     name: string;
     phone: string;
     email?: string | undefined;
-    notes?: string | undefined;
-    address?: string | undefined;
-    tags?: string[] | undefined;
 }>;
 export declare const updateCustomerSchema: z.ZodObject<{
     name: z.ZodOptional<z.ZodString>;
     email: z.ZodOptional<z.ZodUnion<[z.ZodOptional<z.ZodString>, z.ZodLiteral<"">]>>;
     phone: z.ZodOptional<z.ZodString>;
-    address: z.ZodOptional<z.ZodOptional<z.ZodString>>;
-    notes: z.ZodOptional<z.ZodOptional<z.ZodString>>;
-    tags: z.ZodOptional<z.ZodOptional<z.ZodArray<z.ZodString, "many">>>;
 }, "strip", z.ZodTypeAny, {
     email?: string | undefined;
-    notes?: string | undefined;
     name?: string | undefined;
     phone?: string | undefined;
-    address?: string | undefined;
-    tags?: string[] | undefined;
 }, {
     email?: string | undefined;
-    notes?: string | undefined;
     name?: string | undefined;
     phone?: string | undefined;
-    address?: string | undefined;
-    tags?: string[] | undefined;
 }>;
 export declare const createOrderSchema: z.ZodObject<{
     branchId: z.ZodString;

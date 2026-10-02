@@ -12,12 +12,17 @@ export interface AuthenticatedRequest extends Request {
 }
 
 export const authenticate = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  let token: string | undefined;
   const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return sendError(res, 'UNAUTHORIZED', 'Missing or invalid authorization token', 401);
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    token = authHeader.split(' ')[1];
+  } else if (req.query?.token && typeof req.query.token === 'string') {
+    token = req.query.token;
   }
 
-  const token = authHeader.split(' ')[1];
+  if (!token) {
+    return sendError(res, 'UNAUTHORIZED', 'Missing or invalid authorization token', 401);
+  }
   try {
     const decoded = jwt.verify(token, config.jwtSecret) as { id: string; email: string };
     let user: User | null = null;

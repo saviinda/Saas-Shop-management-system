@@ -2,26 +2,26 @@
   {
     "id": "br_urban_downtown",
     "shopId": "shp_urban_cafe",
-    "name": "Downtown Main Branch",
+    "name": "Colombo Main Branch",
     "code": "UCH-DT01",
     "address": "104 Main Street, Downtown Financial District",
-    "phone": "+1 555 234 5678",
+    "phone": "+94 75124689",
     "isDefault": true,
     "status": "active",
     "createdAt": "2026-09-11T10:16:53.087Z",
-    "updatedAt": "2026-09-11T10:16:53.087Z"
+    "updatedAt": "2026-09-29T06:10:31.663Z"
   },
   {
     "id": "br_urban_westside",
     "shopId": "shp_urban_cafe",
-    "name": "Westside Mall Branch",
+    "name": "Matara",
     "code": "UCH-WS02",
-    "address": "420 West Boulevard, Bay Plaza",
-    "phone": "+1 555 987 6543",
+    "address": "Galle road",
+    "phone": "+94 784561234",
     "isDefault": false,
     "status": "active",
     "createdAt": "2026-09-11T10:16:53.088Z",
-    "updatedAt": "2026-09-11T10:16:53.088Z"
+    "updatedAt": "2026-09-29T06:11:00.526Z"
   },
   {
     "id": "3236e87c-a946-4717-8201-8a560a244801",
@@ -83,14 +83,26 @@
   },
   {
     "shopId": "shp_urban_cafe",
-    "name": "Airport Terminal 2 Kiosk",
-    "address": "Terminal 2 Departures Hall, Gate 14",
-    "phone": "+1 555 333 4455",
+    "name": "Kandy",
+    "address": "Kandy road",
+    "phone": "+94 72548795",
     "code": "UCH-AP03",
     "isDefault": false,
     "status": "active",
     "createdAt": "2026-09-04T06:18:30.529Z",
-    "updatedAt": "2026-09-04T06:18:30.529Z",
+    "updatedAt": "2026-09-29T06:10:00.399Z",
     "id": "fabcdd53-c378-41a1-a965-6f089a7cd66c"
+  },
+  {
+    "id": "br_1790779823800",
+    "shopId": "shp_1790779823800",
+    "name": "Dilshan Com - Main Branch",
+    "code": "MAIN-01",
+    "address": "Main street, Waskaduwa, Modara",
+    "phone": "+94 72 977 5412",
+    "isDefault": true,
+    "status": "active",
+    "createdAt": "2026-09-30T14:50:23.800Z",
+    "updatedAt": "2026-09-30T14:50:23.800Z"
   }
 ]

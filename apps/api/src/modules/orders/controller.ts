@@ -1,17 +1,18 @@
 import { Response } from 'express';
 import { dbStore } from '../../db/store';
-import { Order, OrderItem, Product, ProductBatch, ServiceItem, Customer, Branch, InventoryItem, StockMovement } from '@saas/types';
+import { Order, OrderItem, Product, ProductBatch, ServiceItem, Customer, Branch, InventoryItem, StockMovement, User } from '@saas/types';
 import { AuthenticatedRequest } from '../../middleware/auth';
 import { sendSuccess, sendError } from '../../utils/response';
 import { AuditLogService } from '../../services/auditLog.service';
 import { NotificationService } from '../../services/notification.service';
+import { EmailService } from '../../services/email.service';
 
 export class OrderController {
   static async listOrders(req: AuthenticatedRequest, res: Response) {
     const shopId = req.user?.role === 'super_admin' ? (req.query.shopId as string) || req.shopId : req.shopId;
     if (!shopId) return sendSuccess(res, []);
 
-    const { branchId, status, paymentStatus, isJob } = req.query;
+    const { branchId, status, paymentStatus, isJob, search, dateFrom, dateTo, customerId, page = '1', limit = '10' } = req.query;
 
     const where: Array<{ field: string; op: any; value: any }> = [
       { field: 'shopId', op: '==', value: shopId },
@@ -20,11 +21,14 @@ export class OrderController {
     if (branchId && branchId !== 'all') {
       where.push({ field: 'branchId', op: '==', value: branchId });
     }
-    if (status && status !== 'all') {
+    if (status && status !== 'all' && status !== 'jobs') {
       where.push({ field: 'status', op: '==', value: status });
     }
     if (paymentStatus && paymentStatus !== 'all') {
       where.push({ field: 'paymentStatus', op: '==', value: paymentStatus });
+    }
+    if (customerId && customerId !== 'all') {
+      where.push({ field: 'customerId', op: '==', value: customerId });
     }
 
     const orders = await dbStore.collection<Order>('orders').query({
@@ -33,11 +37,47 @@ export class OrderController {
     });
 
     let results = orders.data;
-    if (isJob === 'true') {
-      results = results.filter(o => o.isJob || o.status === 'draft');
+    if (branchId && branchId !== 'all') {
+      // Keep orders matching branchId, and always include parked/draft jobs so they are not hidden across branches
+      results = results.filter(o => o.branchId === branchId || o.status === 'draft');
+    }
+    if (isJob === 'true' || status === 'jobs') {
+      results = results.filter(o => o.status === 'draft' || o.isJob);
     }
 
-    return sendSuccess(res, results);
+    // Filter by Date Range if provided
+    if (dateFrom) {
+      const fromTimestamp = new Date(dateFrom as string).getTime();
+      results = results.filter(o => new Date(o.createdAt).getTime() >= fromTimestamp);
+    }
+    if (dateTo) {
+      const toTimestamp = new Date(dateTo as string).getTime() + 24 * 60 * 60 * 1000 - 1;
+      results = results.filter(o => new Date(o.createdAt).getTime() <= toTimestamp);
+    }
+
+    // Search filter across orderNumber, customerName, customerPhone, items
+    if (search) {
+      const q = (search as string).toLowerCase();
+      results = results.filter(o =>
+        o.orderNumber.toLowerCase().includes(q) ||
+        o.customerName.toLowerCase().includes(q) ||
+        (o.customerPhone && o.customerPhone.includes(q)) ||
+        (o.jobTitle && o.jobTitle.toLowerCase().includes(q)) ||
+        o.items.some(i => i.name.toLowerCase().includes(q))
+      );
+    }
+
+    const pageNum = Math.max(1, parseInt(page as string, 10) || 1);
+    const limitNum = Math.max(1, parseInt(limit as string, 10) || 10);
+    const offset = (pageNum - 1) * limitNum;
+    const paginated = results.slice(offset, offset + limitNum);
+
+    return sendSuccess(res, paginated, {
+      total: results.length,
+      page: pageNum,
+      limit: limitNum,
+      totalPages: Math.ceil(results.length / limitNum),
+    });
   }
 
   static async getOrder(req: AuthenticatedRequest, res: Response) {
@@ -106,6 +146,30 @@ export class OrderController {
               type: 'warning',
               link: '/shop-owner/inventory',
             });
+
+            // Dispatch Low Stock Reminder Email to shop owners
+            const owners = await dbStore.collection<User>('users').query({
+              where: [
+                { field: 'shopId', op: '==', value: shopId },
+                { field: 'role', op: '==', value: 'shop_owner' },
+              ],
+            });
+            for (const owner of owners.data) {
+              if (owner.email) {
+                await EmailService.sendLowStockReminderEmail({
+                  email: owner.email,
+                  name: owner.name,
+                  shopName: branchName || 'Print Shop',
+                  productName: item.name,
+                  sku: item.sku || 'N/A',
+                  currentStock: newQty,
+                  minimumStockLevel: inv.minimumStockLevel,
+                  branchName,
+                  shopId,
+                  userId: owner.id,
+                });
+              }
+            }
           }
         }
       }
@@ -286,11 +350,11 @@ export class OrderController {
 
   static async updateOrder(req: AuthenticatedRequest, res: Response) {
     const { id } = req.params;
-    const shopId = req.shopId;
     const existingOrder = await dbStore.collection<Order>('orders').get(id);
-    if (!existingOrder || (req.user?.role !== 'super_admin' && existingOrder.shopId !== shopId)) {
+    if (!existingOrder || (req.user?.role !== 'super_admin' && existingOrder.shopId !== req.shopId)) {
       return sendError(res, 'NOT_FOUND', 'Order not found', 404);
     }
+    const shopId = req.user?.role === 'super_admin' ? (req.query.shopId as string) || existingOrder.shopId : req.shopId || existingOrder.shopId;
 
     const {
       branchId,
@@ -304,7 +368,7 @@ export class OrderController {
       paymentStatus = existingOrder.paymentStatus,
       paymentMethod = existingOrder.paymentMethod,
       notes = existingOrder.notes,
-      isJob = existingOrder.isJob,
+      isJob,
       jobTitle = existingOrder.jobTitle,
     } = req.body;
 
@@ -369,12 +433,13 @@ export class OrderController {
     }
 
     const totalAmount = Math.max(0, subtotal + tax - discount);
+    const finalIsJob = status === 'draft' ? true : (typeof isJob === 'boolean' ? isJob : false);
 
     const updated = await dbStore.collection<Order>('orders').update(id, {
       ...(branchId && { branchId }),
-      ...(customerId && { customerId }),
-      ...(customerName && { customerName }),
-      ...(customerPhone && { customerPhone }),
+      customerId: customerId !== undefined ? customerId : existingOrder.customerId,
+      customerName: customerName !== undefined ? customerName : existingOrder.customerName,
+      customerPhone: customerPhone !== undefined ? customerPhone : existingOrder.customerPhone,
       items: resolvedItems,
       subtotal,
       tax,
@@ -384,7 +449,7 @@ export class OrderController {
       paymentStatus,
       paymentMethod,
       notes,
-      isJob: Boolean(isJob || status === 'draft'),
+      isJob: finalIsJob,
       jobTitle,
       updatedAt: new Date().toISOString(),
     });
@@ -395,7 +460,7 @@ export class OrderController {
 
     // If order was a draft/job and is now finalized to confirmed or completed, deduct inventory!
     if (existingOrder.status === 'draft' && (status === 'confirmed' || status === 'completed')) {
-      await OrderController.deductOrderInventory(updated, req.user!.name);
+      await OrderController.deductOrderInventory(updated, req.user?.name || 'Staff');
 
       if (updated.customerId) {
         const cust = await dbStore.collection<Customer>('customers').get(updated.customerId);
@@ -441,6 +506,7 @@ export class OrderController {
     const updated = await dbStore.collection<Order>('orders').update(id, {
       ...(status && { status }),
       ...(paymentStatus && { paymentStatus }),
+      ...(status && { isJob: status === 'draft' }),
       updatedAt: new Date().toISOString(),
     });
 
@@ -450,7 +516,7 @@ export class OrderController {
 
     // If transitioning from draft to confirmed/completed, deduct inventory
     if (order.status === 'draft' && (status === 'confirmed' || status === 'completed')) {
-      await OrderController.deductOrderInventory(updated, req.user!.name);
+      await OrderController.deductOrderInventory(updated, req.user?.name || 'Staff');
 
       if (updated.customerId) {
         const cust = await dbStore.collection<Customer>('customers').get(updated.customerId);

@@ -8,7 +8,9 @@ import subscriptionRoutes from '../modules/subscriptions/routes';
 import paymentRoutes from '../modules/payments/routes';
 import changeRequestRoutes from '../modules/change-requests/routes';
 import productRoutes from '../modules/products/routes';
+import categoryRoutes from '../modules/categories/routes';
 import serviceRoutes from '../modules/services/routes';
+import serviceCategoryRoutes from '../modules/service-categories/routes';
 import customerRoutes from '../modules/customers/routes';
 import orderRoutes from '../modules/orders/routes';
 import inventoryRoutes from '../modules/inventory/routes';
@@ -21,6 +23,7 @@ import notificationRoutes from '../modules/notifications/routes';
 import reportRoutes from '../modules/reports/routes';
 import auditLogRoutes from '../modules/audit-logs/routes';
 import roleRoutes from '../modules/roles/routes';
+import emailRoutes from '../modules/email/routes';
 
 const router = Router();
 
@@ -34,7 +37,9 @@ router.use('/subscriptions', subscriptionRoutes);
 router.use('/payments', paymentRoutes);
 router.use('/change-requests', changeRequestRoutes);
 router.use('/products', productRoutes);
+router.use('/categories', categoryRoutes);
 router.use('/services', serviceRoutes);
+router.use('/service-categories', serviceCategoryRoutes);
 router.use('/customers', customerRoutes);
 router.use('/orders', orderRoutes);
 router.use('/inventory', inventoryRoutes);
@@ -46,5 +51,6 @@ router.use('/communication', communicationRoutes);
 router.use('/notifications', notificationRoutes);
 router.use('/reports', reportRoutes);
 router.use('/audit-logs', auditLogRoutes);
+router.use('/email', emailRoutes);
 
 export default router;

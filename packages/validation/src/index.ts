@@ -37,7 +37,7 @@ export const registerShopOwnerSchema = z.object({
   businessName: z.string().min(2),
   businessAddress: z.string().min(3),
   businessCategory: z.string().min(2),
-  packageId: z.string().min(1),
+  packageId: z.string().optional(),
 });
 
 export const createShopSchema = z.object({
@@ -121,21 +121,25 @@ export const reviewChangeRequestSchema = z.object({
   reviewNotes: z.string().optional(),
 });
 
-export const createProductSchema = z.object({
-  sku: z.string().min(1),
-  name: z.string().min(2),
+export const createCategorySchema = z.object({
+  name: z.string().min(2, 'Category name must be at least 2 characters'),
   description: z.string().optional(),
-  category: z.string().min(2),
-  imageUrl: z.string().optional(),
+  status: z.enum(['active', 'inactive']).default('active'),
+});
+
+export const updateCategorySchema = createCategorySchema.partial();
+
+export const createProductSchema = z.object({
+  sku: z.string().min(1, 'SKU is required'),
+  name: z.string().min(2, 'Product name must be at least 2 characters'),
+  description: z.string().optional(),
+  category: z.string().min(2, 'Category is required'),
   costPrice: z.number().min(0).default(0),
   sellingPrice: z.number().min(0).default(0),
   minimumStockLevel: z.number().int().min(0).default(5),
-  supplierId: z.string().optional(),
-  supplierName: z.string().optional(),
   initialStock: z.number().int().min(0).default(0),
   isPublic: z.boolean().optional(),
   isFeatured: z.boolean().optional(),
-  tags: z.array(z.string()).optional(),
   variants: z.array(z.object({
     name: z.string(),
     options: z.array(z.string()),
@@ -166,13 +170,19 @@ export const createProductBatchSchema = z.object({
 
 export const updateProductBatchSchema = createProductBatchSchema.partial();
 
+export const createServiceCategorySchema = z.object({
+  name: z.string().min(2, 'Category name must be at least 2 characters'),
+  description: z.string().optional(),
+  status: z.enum(['active', 'inactive']).default('active'),
+});
+
+export const updateServiceCategorySchema = createServiceCategorySchema.partial();
+
 export const createServiceSchema = z.object({
   name: z.string().min(2),
   description: z.string().optional(),
   category: z.string().min(2),
-  imageUrl: z.string().optional(),
   price: z.number().min(0),
-  durationMinutes: z.number().int().min(5),
   availability: z.string().optional(),
   assignedStaffIds: z.array(z.string()).optional(),
   assignedStaffNames: z.array(z.string()).optional(),
@@ -187,9 +197,6 @@ export const createCustomerSchema = z.object({
   name: z.string().min(2),
   email: z.string().email().optional().or(z.literal('')),
   phone: z.string().min(3),
-  address: z.string().optional(),
-  notes: z.string().optional(),
-  tags: z.array(z.string()).optional(),
 });
 
 export const updateCustomerSchema = createCustomerSchema.partial();

@@ -8,6 +8,8 @@ const router = Router();
 router.use(authenticate);
 
 router.get('/my', SubscriptionController.getMySubscription);
+router.post('/downgrade', SubscriptionController.downgradeSubscription);
+router.post('/check-expiries', SubscriptionController.checkExpiringSubscriptions);
 router.get('/', isSuperAdmin, SubscriptionController.listSubscriptions);
 router.patch('/:id', isSuperAdmin, SubscriptionController.updateSubscription);
 router.patch('/:id/status', isSuperAdmin, SubscriptionController.updateSubscriptionStatus);

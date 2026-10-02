@@ -123,5 +123,43 @@
     "performedBy": "Marcus Vance",
     "createdAt": "2026-09-12T14:18:27.522Z",
     "id": "311b9eda-e156-4f4f-976a-ea4561eeca4a"
+  },
+  {
+    "shopId": "shp_urban_cafe",
+    "branchId": "br_urban_downtown",
+    "productId": "686d657c-684b-4a96-bfc2-ca1482cecb2b",
+    "type": "adjustment",
+    "quantityDelta": 50,
+    "newQuantity": 50,
+    "reason": "Batch BTH-2609-411 added",
+    "performedBy": "Marcus Vance",
+    "createdAt": "2026-09-30T14:36:01.880Z",
+    "id": "10c9bbec-507c-43ab-9426-86e6235a5d23"
+  },
+  {
+    "shopId": "shp_urban_cafe",
+    "branchId": "br_urban_downtown",
+    "productId": "686d657c-684b-4a96-bfc2-ca1482cecb2b",
+    "type": "po_receive",
+    "quantityDelta": 25,
+    "newQuantity": 75,
+    "reason": "GRN from PO #PO-082307",
+    "referenceId": "d0cfa78a-500f-4dcb-9447-3a01c4abec87",
+    "performedBy": "Marcus Vance",
+    "createdAt": "2026-09-30T14:38:10.647Z",
+    "id": "6bc7a8d5-a023-4c49-80bf-e94a46c42dba"
+  },
+  {
+    "shopId": "shp_urban_cafe",
+    "branchId": "br_urban_downtown",
+    "productId": "686d657c-684b-4a96-bfc2-ca1482cecb2b",
+    "type": "sale",
+    "quantityDelta": -1,
+    "newQuantity": 74,
+    "reason": "Order sale #JOB-487489 (Batch: BTH-2609-411)",
+    "referenceId": "e8bef59a-eac3-476a-842b-ef2f6aecb308",
+    "performedBy": "Marcus Vance",
+    "createdAt": "2026-09-30T14:44:55.664Z",
+    "id": "4d21fbab-91be-478c-b6ae-856389c043d2"
   }
 ]

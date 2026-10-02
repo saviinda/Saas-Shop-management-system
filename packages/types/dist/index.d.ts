@@ -166,6 +166,16 @@ export interface ProductBatch {
     createdAt: string;
     updatedAt: string;
 }
+export interface ProductCategory {
+    id: string;
+    shopId: string;
+    name: string;
+    description?: string;
+    productCount?: number;
+    status: 'active' | 'inactive';
+    createdAt: string;
+    updatedAt: string;
+}
 export interface Product {
     id: string;
     shopId: string;
@@ -173,17 +183,13 @@ export interface Product {
     name: string;
     description?: string;
     category: string;
-    imageUrl?: string;
     costPrice: number;
     sellingPrice: number;
     stockQuantity?: number;
     minimumStockLevel: number;
     status: 'active' | 'inactive';
-    supplierId?: string;
-    supplierName?: string;
     isPublic?: boolean;
     isFeatured?: boolean;
-    tags?: string[];
     variants?: Array<{
         name: string;
         options: string[];
@@ -196,15 +202,23 @@ export interface Product {
     createdAt: string;
     updatedAt: string;
 }
+export interface ServiceCategory {
+    id: string;
+    shopId: string;
+    name: string;
+    description?: string;
+    serviceCount?: number;
+    status: 'active' | 'inactive';
+    createdAt: string;
+    updatedAt: string;
+}
 export interface ServiceItem {
     id: string;
     shopId: string;
     name: string;
     description?: string;
     category: string;
-    imageUrl?: string;
     price: number;
-    durationMinutes: number;
     availability?: string;
     assignedStaffIds?: string[];
     assignedStaffNames?: string[];
@@ -220,9 +234,6 @@ export interface Customer {
     name: string;
     email?: string;
     phone: string;
-    address?: string;
-    notes?: string;
-    tags?: string[];
     loyaltyPoints?: number;
     lastVisitDate?: string;
     totalOrdersCount: number;

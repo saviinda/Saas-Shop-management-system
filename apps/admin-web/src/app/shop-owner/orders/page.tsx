@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { api, ApiError } from '@/lib/api-client';
 import { useBranch } from '@/lib/branch-context';
 import { Order, Product, ProductBatch, ServiceItem, Customer, OrderStatus, OrderPaymentStatus } from '@saas/types';
@@ -40,6 +40,8 @@ import {
   Layers,
   ArrowRight,
 } from 'lucide-react';
+import { CategorizedFilterBar, FilterCategory } from '@/components/CategorizedFilterBar';
+import { TablePagination } from '@/components/TablePagination';
 
 interface CartItem {
   type: 'product' | 'service';
@@ -57,6 +59,45 @@ interface CartItem {
   maxQuantity?: number;
 }
 
+const orderFilterCategories: FilterCategory[] = [
+  {
+    id: 'date_range',
+    label: 'Date Range',
+    type: 'date-range',
+  },
+  {
+    id: 'payment_status',
+    label: 'Payment Status',
+    type: 'select',
+    options: [
+      { label: 'Paid in Full', value: 'paid' },
+      { label: 'Partially Paid', value: 'partial' },
+      { label: 'Unpaid / Due', value: 'unpaid' },
+      { label: 'Refunded', value: 'refunded' },
+    ],
+  },
+  {
+    id: 'order_status',
+    label: 'Order Status',
+    type: 'select',
+    options: [
+      { label: 'Draft / Parked Job', value: 'draft' },
+      { label: 'Pending', value: 'pending' },
+      { label: 'Confirmed', value: 'confirmed' },
+      { label: 'Processing', value: 'processing' },
+      { label: 'Ready for Pickup', value: 'ready' },
+      { label: 'Completed', value: 'completed' },
+      { label: 'Cancelled', value: 'cancelled' },
+    ],
+  },
+  {
+    id: 'customer',
+    label: 'Customer Filter',
+    type: 'text',
+    placeholder: 'Filter by customer name or phone...',
+  },
+];
+
 export default function OrdersPage() {
   const { showSuccess, showError, showConfirm } = useModal();
   const { activeBranch } = useBranch();
@@ -66,10 +107,13 @@ export default function OrdersPage() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Filters & Search
+  // Pagination & Filtering
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [totalOrders, setTotalOrders] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
   const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [paymentStatusFilter, setPaymentStatusFilter] = useState('all');
+  const [activeFilters, setActiveFilters] = useState<Record<string, any>>({});
 
   // Modals State
   const [showPOSModal, setShowPOSModal] = useState(false);
@@ -100,16 +144,47 @@ export default function OrdersPage() {
   const [activeJobNumber, setActiveJobNumber] = useState<string | null>(null);
   const [jobTitle, setJobTitle] = useState('');
 
-  const loadData = async () => {
+  const loadData = async (
+    targetPage = page,
+    targetPageSize = pageSize,
+    currentFilters = activeFilters,
+    currentSearch = search
+  ) => {
     try {
       setIsLoading(true);
+      const queryParams: Record<string, any> = {
+        branchId: activeBranch?.id,
+        page: targetPage,
+        limit: targetPageSize,
+        search: currentSearch || undefined,
+      };
+
+      if (currentFilters.order_status) queryParams.status = currentFilters.order_status;
+      if (currentFilters.payment_status) queryParams.paymentStatus = currentFilters.payment_status;
+      if (currentFilters.date_range) {
+        if (currentFilters.date_range.from) queryParams.dateFrom = currentFilters.date_range.from;
+        if (currentFilters.date_range.to) queryParams.dateTo = currentFilters.date_range.to;
+      }
+      if (currentFilters.customer && !queryParams.search) {
+        queryParams.search = currentFilters.customer;
+      }
+
       const [ordRes, prdRes, srvRes, custRes] = await Promise.all([
-        api.get<Order[]>('/orders', { branchId: activeBranch?.id }),
+        api.get<Order[]>('/orders', queryParams),
         api.get<Product[]>('/products'),
         api.get<ServiceItem[]>('/services'),
         api.get<Customer[]>('/customers'),
       ]);
+
       setOrders(ordRes.data || []);
+      if (ordRes.meta) {
+        setTotalOrders(ordRes.meta.total || (ordRes.data || []).length);
+        setTotalPages(ordRes.meta.totalPages || 1);
+      } else {
+        const count = (ordRes.data || []).length;
+        setTotalOrders(count);
+        setTotalPages(Math.max(1, Math.ceil(count / targetPageSize)));
+      }
       setProducts(prdRes.data || []);
       setServices(srvRes.data || []);
       setCustomers(custRes.data || []);
@@ -121,8 +196,8 @@ export default function OrdersPage() {
   };
 
   useEffect(() => {
-    loadData();
-  }, [activeBranch]);
+    loadData(page, pageSize, activeFilters, search);
+  }, [activeBranch, page, pageSize, activeFilters, search]);
 
   // Fullscreen change listener
   useEffect(() => {
@@ -324,11 +399,15 @@ export default function OrdersPage() {
 
     try {
       setIsSubmitting(true);
+      const targetBranchId = activeJobId
+        ? (orders.find(o => o.id === activeJobId)?.branchId || activeBranch.id)
+        : activeBranch.id;
+
       const payload = {
-        branchId: activeBranch.id,
+        branchId: targetBranchId,
         customerId: selectedCustomerId !== 'walkin' ? selectedCustomerId : undefined,
-        customerName: customerName.trim(),
-        customerPhone: customerPhone.trim(),
+        customerName: customerName.trim() || 'Walk-in Customer',
+        customerPhone: customerPhone.trim() || '',
         items: cart.map(item => ({
           type: item.type,
           itemId: item.id,
@@ -343,17 +422,17 @@ export default function OrdersPage() {
         })),
         tax: calculatedTax,
         discount: discountAmount,
-        status: 'confirmed',
-        paymentStatus,
+        status: 'completed',
+        paymentStatus: paymentStatus || 'paid',
         paymentMethod,
         notes: orderNotes.trim() || undefined,
         isJob: false,
       };
 
       if (activeJobId) {
-        // Finalizing existing job
+        // Finalizing and completing existing job
         await api.put(`/orders/${activeJobId}`, payload);
-        showSuccess('Order Finalized', `Job #${activeJobNumber || activeJobId} has been completed successfully.`);
+        showSuccess('Order Finalized', `Job #${activeJobNumber || activeJobId} has been successfully completed and paid.`);
       } else {
         // Creating new order
         await api.post('/orders', payload);
@@ -385,11 +464,15 @@ export default function OrdersPage() {
 
     try {
       setIsSubmitting(true);
+      const targetBranchId = activeJobId
+        ? (orders.find(o => o.id === activeJobId)?.branchId || activeBranch.id)
+        : activeBranch.id;
+
       const payload = {
-        branchId: activeBranch.id,
+        branchId: targetBranchId,
         customerId: selectedCustomerId !== 'walkin' ? selectedCustomerId : undefined,
-        customerName: customerName.trim(),
-        customerPhone: customerPhone.trim(),
+        customerName: customerName.trim() || 'Walk-in Customer',
+        customerPhone: customerPhone.trim() || '',
         items: cart.map(item => ({
           type: item.type,
           itemId: item.id,
@@ -439,6 +522,9 @@ export default function OrdersPage() {
     setCustomerName(job.customerName);
     setCustomerPhone(job.customerPhone || '');
     setDiscountAmount(job.discount || 0);
+    setTaxPercent(job.tax && job.subtotal ? Math.round((job.tax / job.subtotal) * 100) : 0);
+    setPaymentMethod((job.paymentMethod as any) || 'cash');
+    setPaymentStatus('paid');
     setOrderNotes(job.notes || '');
 
     // Restore line items with custom unit prices and batch selections
@@ -516,25 +602,8 @@ export default function OrdersPage() {
 
   // Extract all categories
   const productCategories = Array.from(new Set(products.map(p => p.category).filter(Boolean)));
-  const parkedJobs = orders.filter(o => o.isJob || o.status === 'draft');
-
-  const filteredOrders = orders.filter(o => {
-    if (statusFilter === 'jobs') {
-      if (!o.isJob && o.status !== 'draft') return false;
-    } else if (statusFilter !== 'all' && o.status !== statusFilter) {
-      return false;
-    }
-
-    if (paymentStatusFilter !== 'all' && o.paymentStatus !== paymentStatusFilter) return false;
-    if (!search) return true;
-    const q = search.toLowerCase();
-    return (
-      o.orderNumber?.toLowerCase().includes(q) ||
-      o.customerName?.toLowerCase().includes(q) ||
-      (o.customerPhone && o.customerPhone.includes(q)) ||
-      (o.jobTitle && o.jobTitle.toLowerCase().includes(q))
-    );
-  });
+  const parkedJobs = orders.filter(o => o.status === 'draft');
+  const filteredOrders = orders;
 
   // Filter items in POS Catalog
   const displayedProducts = products.filter(p => {
@@ -567,7 +636,7 @@ export default function OrdersPage() {
           {/* Parked Jobs Quick Access */}
           <button
             onClick={() => setShowJobsModal(true)}
-            className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200/80 rounded-xl shadow-2xs transition-all active:scale-[0.98]"
+            className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200/80 rounded-xl shadow-2xs transition-all active:scale-[0.98] cursor-pointer"
           >
             <Clock className="h-4 w-4 text-amber-600" />
             <span>Parked Jobs</span>
@@ -583,44 +652,40 @@ export default function OrdersPage() {
               resetPOSForm();
               setShowPOSModal(true);
             }}
-            className="flex items-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-sm shadow-indigo-200 active:scale-[0.98] transition-all"
+            className="flex items-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-sm shadow-indigo-200 active:scale-[0.98] transition-all cursor-pointer"
           >
             <Plus className="h-4 w-4" /> Open POS Terminal
           </button>
         </div>
       </div>
 
-      {/* Filter and Search Bar */}
-      <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm shadow-slate-200/50 flex flex-col sm:flex-row gap-3 items-center justify-between">
-        <div className="relative w-full sm:w-72">
-          <Search className="absolute left-3.5 top-2.5 h-4 w-4 text-slate-400" />
-          <input
-            type="text"
-            placeholder="Search orders, jobs, customer..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 text-xs bg-slate-50 border border-slate-200/90 rounded-xl text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:border-indigo-500 shadow-2xs"
-          />
-        </div>
-
-        <div className="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto">
-          {['all', 'jobs', 'pending', 'confirmed', 'processing', 'ready', 'completed', 'cancelled'].map(st => (
-            <button
-              key={st}
-              onClick={() => setStatusFilter(st)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all capitalize ${
-                statusFilter === st
-                  ? st === 'jobs'
-                    ? 'bg-amber-600 text-white shadow-xs'
-                    : 'bg-indigo-600 text-white shadow-xs'
-                  : 'bg-slate-50 text-slate-600 border border-slate-200/80 hover:bg-slate-100'
-              }`}
-            >
-              {st === 'jobs' ? `Jobs (${parkedJobs.length})` : st}
-            </button>
-          ))}
-        </div>
-      </div>
+      {/* Categorized Filter Bar */}
+      <CategorizedFilterBar
+        categories={orderFilterCategories}
+        activeFilters={activeFilters}
+        onFilterChange={(categoryId, value) => {
+          setActiveFilters(prev => {
+            if (value === undefined || value === null || value === '') {
+              const next = { ...prev };
+              delete next[categoryId];
+              return next;
+            }
+            return { ...prev, [categoryId]: value };
+          });
+          setPage(1);
+        }}
+        onClearFilters={() => {
+          setActiveFilters({});
+          setSearch('');
+          setPage(1);
+        }}
+        search={search}
+        onSearchChange={val => {
+          setSearch(val);
+          setPage(1);
+        }}
+        searchPlaceholder="Search order number, job title, customer..."
+      />
 
       {/* Orders Table */}
       <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm shadow-slate-200/50 overflow-hidden">
@@ -652,9 +717,9 @@ export default function OrdersPage() {
                   >
                     <td className="py-4 px-6 font-mono font-bold text-indigo-600">
                       #{o.orderNumber}
-                      {o.isJob && (
+                      {o.status === 'draft' && (
                         <span className="ml-2 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase bg-amber-100 text-amber-800 border border-amber-300">
-                          Job
+                          Parked Job
                         </span>
                       )}
                     </td>
@@ -707,7 +772,7 @@ export default function OrdersPage() {
                     <td className="py-4 px-6 text-slate-500">{formatDate(o.createdAt)}</td>
                     <td className="py-4 px-6 text-right" onClick={e => e.stopPropagation()}>
                       <div className="flex items-center justify-end gap-1.5">
-                        {o.isJob || o.status === 'draft' ? (
+                        {o.status === 'draft' ? (
                           <button
                             onClick={() => handleResumeJob(o)}
                             className="inline-flex items-center gap-1 px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-semibold shadow-2xs transition-colors"
@@ -730,6 +795,20 @@ export default function OrdersPage() {
             </tbody>
           </table>
         </div>
+
+        {totalOrders > 0 && (
+          <TablePagination
+            currentPage={page}
+            totalPages={totalPages}
+            totalItems={totalOrders}
+            pageSize={pageSize}
+            onPageChange={setPage}
+            onPageSizeChange={size => {
+              setPageSize(size);
+              setPage(1);
+            }}
+          />
+        )}
       </div>
 
       {/* ORDER DETAILS MODAL */}
@@ -1225,9 +1304,6 @@ export default function OrdersPage() {
                           <div className="flex items-start justify-between gap-1">
                             <span className="px-1.5 py-0.5 bg-purple-50 text-purple-700 border border-purple-200 rounded text-[9px] font-bold uppercase tracking-wider">
                               Service
-                            </span>
-                            <span className="text-[10px] text-slate-400 font-medium">
-                              {s.durationMinutes} mins
                             </span>
                           </div>
                           <p className="font-bold text-slate-900 text-xs mt-1.5 line-clamp-2 leading-tight group-hover:text-indigo-600 transition-colors">

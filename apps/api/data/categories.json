@@ -1,0 +1,20 @@
+[
+  {
+    "shopId": "shp_urban_cafe",
+    "name": "Papers",
+    "description": "Category auto-synced from catalog products",
+    "status": "active",
+    "createdAt": "2026-09-30T14:33:53.744Z",
+    "updatedAt": "2026-09-30T14:33:53.744Z",
+    "id": "cdff687f-6e87-47d8-bf3a-808ab767684f"
+  },
+  {
+    "shopId": "shp_urban_cafe",
+    "name": "CR Books",
+    "description": "",
+    "status": "active",
+    "createdAt": "2026-09-30T14:34:39.383Z",
+    "updatedAt": "2026-09-30T14:34:39.383Z",
+    "id": "b2d865fa-c7ea-4e92-9307-3a4b9ce8e07c"
+  }
+]

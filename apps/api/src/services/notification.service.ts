@@ -1,5 +1,6 @@
 import { dbStore } from '../db/store';
 import { AppNotification, User } from '@saas/types';
+import { NotificationHub } from './notificationHub.service';
 
 export class NotificationService {
   static async create(params: {
@@ -11,7 +12,7 @@ export class NotificationService {
     link?: string;
   }) {
     try {
-      await dbStore.collection<AppNotification>('notifications').create({
+      const notif = await dbStore.collection<AppNotification>('notifications').create({
         recipientId: params.recipientId,
         shopId: params.shopId,
         title: params.title,
@@ -21,6 +22,8 @@ export class NotificationService {
         isRead: false,
         createdAt: new Date().toISOString(),
       });
+      NotificationHub.broadcastNotification(notif);
+      return notif;
     } catch (err) {
       console.error('Failed to create notification:', err);
     }

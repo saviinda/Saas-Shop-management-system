@@ -40,5 +40,26 @@
       "storageMb": 10000
     },
     "updatedAt": "2026-08-28T15:24:58.054Z"
+  },
+  {
+    "id": "sub_1790779823800",
+    "shopId": "shp_1790779823800",
+    "packageId": "pkg_standard",
+    "packageName": "Standard Tier",
+    "limits": {
+      "shops": 1,
+      "branches": 3,
+      "users": 15,
+      "products": 500,
+      "services": 50,
+      "storageMb": 2000
+    },
+    "price": 129,
+    "startAt": "2026-09-30T14:50:25.545Z",
+    "expiryAt": "2027-09-30T14:50:25.545Z",
+    "status": "active",
+    "autoRenew": true,
+    "createdAt": "2026-09-30T14:50:25.545Z",
+    "updatedAt": "2026-09-30T14:53:47.003Z"
   }
 ]

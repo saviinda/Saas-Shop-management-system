@@ -38,7 +38,7 @@ export class ServiceController {
     // Package limit check
     await PackageLimitService.checkServiceLimit(shopId);
 
-    const { name, description, category, price, durationMinutes, assignedStaffIds, status } = req.body;
+    const { name, description, category, price, assignedStaffIds, status } = req.body;
 
     const service = await dbStore.collection<ServiceItem>('services').create({
       shopId,
@@ -46,7 +46,6 @@ export class ServiceController {
       description,
       category,
       price,
-      durationMinutes,
       assignedStaffIds: assignedStaffIds || [],
       status: status || 'active',
       createdAt: new Date().toISOString(),

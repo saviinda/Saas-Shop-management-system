@@ -11,7 +11,7 @@ export class ProductController {
     const shopId = req.user?.role === 'super_admin' ? (req.query.shopId as string) || req.shopId : req.shopId;
     if (!shopId) return sendSuccess(res, []);
 
-    const { category, search, status } = req.query;
+    const { category, search, status, stockStatus, page, limit } = req.query;
 
     const where: Array<{ field: string; op: any; value: any }> = [
       { field: 'shopId', op: '==', value: shopId },
@@ -36,7 +36,7 @@ export class ProductController {
     }
 
     // Attach current aggregated inventory count across branches and batch data
-    const enriched = await Promise.all(
+    let enriched = await Promise.all(
       products.map(async p => {
         const invQuery = await dbStore.collection<InventoryItem>('inventory').query({
           where: [{ field: 'productId', op: '==', value: p.id }],
@@ -63,7 +63,32 @@ export class ProductController {
       })
     );
 
-    return sendSuccess(res, enriched);
+    // Filter by stock status if requested
+    if (stockStatus && stockStatus !== 'all') {
+      if (stockStatus === 'low') {
+        enriched = enriched.filter(p => p.currentStock <= (p.minimumStockLevel || 5) && p.currentStock > 0);
+      } else if (stockStatus === 'out') {
+        enriched = enriched.filter(p => p.currentStock <= 0);
+      } else if (stockStatus === 'in') {
+        enriched = enriched.filter(p => p.currentStock > (p.minimumStockLevel || 5));
+      }
+    }
+
+    if (page !== undefined || limit !== undefined) {
+      const pageNum = Math.max(1, parseInt(page as string, 10) || 1);
+      const limitNum = Math.max(1, parseInt(limit as string, 10) || 10);
+      const offset = (pageNum - 1) * limitNum;
+      const paginated = enriched.slice(offset, offset + limitNum);
+
+      return sendSuccess(res, paginated, {
+        total: enriched.length,
+        page: pageNum,
+        limit: limitNum,
+        totalPages: Math.ceil(enriched.length / limitNum),
+      });
+    }
+
+    return sendSuccess(res, enriched, { total: enriched.length });
   }
 
   static async getProduct(req: AuthenticatedRequest, res: Response) {
@@ -122,16 +147,12 @@ export class ProductController {
       name,
       description,
       category,
-      imageUrl,
       costPrice = 0,
       sellingPrice = 0,
       minimumStockLevel = 5,
-      supplierId,
-      supplierName,
       initialStock = 0,
       isPublic,
       isFeatured,
-      tags,
       variants,
     } = req.body;
 
@@ -153,15 +174,11 @@ export class ProductController {
       name,
       description,
       category,
-      imageUrl,
       costPrice: Number(costPrice) || 0,
       sellingPrice: Number(sellingPrice) || 0,
       minimumStockLevel: Number(minimumStockLevel) || 5,
-      supplierId,
-      supplierName,
       isPublic,
       isFeatured,
-      tags,
       variants,
       status: 'active',
       createdAt: now,
@@ -372,8 +389,8 @@ export class ProductController {
       initialQuantity: Number(quantity) || 0,
       manufacturingDate,
       expiryDate,
-      supplierId: supplierId || product.supplierId,
-      supplierName: supplierName || product.supplierName,
+      supplierId: supplierId || undefined,
+      supplierName: supplierName || undefined,
       status,
       notes,
       createdAt: now,
@@ -572,5 +589,90 @@ export class ProductController {
     });
 
     return sendSuccess(res, { deleted: true, id: batchId });
+  }
+
+  static async listAllBatches(req: AuthenticatedRequest, res: Response) {
+    const shopId = req.shopId;
+    if (!shopId) return sendSuccess(res, []);
+
+    const { productId, branchId, status, search } = req.query;
+
+    const where: Array<{ field: string; op: any; value: any }> = [
+      { field: 'shopId', op: '==', value: shopId },
+    ];
+
+    if (productId && productId !== 'all') {
+      where.push({ field: 'productId', op: '==', value: productId });
+    }
+    if (branchId && branchId !== 'all') {
+      where.push({ field: 'branchId', op: '==', value: branchId });
+    }
+    if (status && status !== 'all') {
+      where.push({ field: 'status', op: '==', value: status });
+    }
+
+    const batchesQuery = await dbStore.collection<ProductBatch>('productBatches').query({
+      where,
+      orderBy: { field: 'createdAt', direction: 'desc' },
+    });
+
+    // Query products to enrich batches with product name, SKU, and category
+    const productsQuery = await dbStore.collection<Product>('products').query({
+      where: [{ field: 'shopId', op: '==', value: shopId }],
+    });
+    const productMap = new Map<string, Product>();
+    productsQuery.data.forEach(p => productMap.set(p.id, p));
+
+    let batches = batchesQuery.data.map(b => {
+      const prod = productMap.get(b.productId);
+      return {
+        ...b,
+        productName: prod?.name || 'Unknown Product',
+        productSku: prod?.sku || '-',
+        productCategory: prod?.category || '-',
+      };
+    });
+
+    if (search) {
+      const q = (search as string).toLowerCase();
+      batches = batches.filter(
+        b =>
+          b.batchNumber.toLowerCase().includes(q) ||
+          b.productName.toLowerCase().includes(q) ||
+          b.productSku.toLowerCase().includes(q) ||
+          (b.notes && b.notes.toLowerCase().includes(q))
+      );
+    }
+
+    return sendSuccess(res, batches);
+  }
+
+  static async createBatchDirect(req: AuthenticatedRequest, res: Response) {
+    const { productId } = req.body;
+    if (!productId) {
+      return sendError(res, 'BAD_REQUEST', 'Product ID is required to create a batch', 400);
+    }
+    req.params.id = productId;
+    return ProductController.createBatch(req, res);
+  }
+
+  static async updateBatchDirect(req: AuthenticatedRequest, res: Response) {
+    const { batchId } = req.params;
+    const batch = await dbStore.collection<ProductBatch>('productBatches').get(batchId);
+    if (!batch || (req.user?.role !== 'super_admin' && batch.shopId !== req.shopId)) {
+      return sendError(res, 'NOT_FOUND', 'Batch not found', 404);
+    }
+    req.params.id = batch.productId;
+    return ProductController.updateBatch(req, res);
+  }
+
+  static async deleteBatchDirect(req: AuthenticatedRequest, res: Response) {
+    const { batchId } = req.params;
+    const batch = await dbStore.collection<ProductBatch>('productBatches').get(batchId);
+    if (!batch || (req.user?.role !== 'super_admin' && batch.shopId !== req.shopId)) {
+      return sendError(res, 'NOT_FOUND', 'Batch not found', 404);
+    }
+    req.params.id = batch.productId;
+    return ProductController.deleteBatch(req, res);
   }
 }

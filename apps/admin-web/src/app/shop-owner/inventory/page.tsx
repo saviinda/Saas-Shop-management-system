@@ -26,6 +26,8 @@ import {
   Calendar,
   Layers,
 } from 'lucide-react';
+import { CategorizedFilterBar, FilterCategory } from '@/components/CategorizedFilterBar';
+import { TablePagination } from '@/components/TablePagination';
 
 export default function InventoryPage() {
   const { showSuccess, showError } = useModal();
@@ -37,9 +39,50 @@ export default function InventoryPage() {
 
   // Tabs & Filters
   const [activeTab, setActiveTab] = useState<'inventory' | 'movements'>('inventory');
-  const [search, setSearch] = useState('');
-  const [stockFilter, setStockFilter] = useState<'all' | 'low_stock' | 'out_of_stock' | 'in_stock'>('all');
-  const [movementTypeFilter, setMovementTypeFilter] = useState('all');
+
+  // Tab 1 Pagination & Filter
+  const [invPage, setInvPage] = useState(1);
+  const [invPageSize, setInvPageSize] = useState(10);
+  const [invActiveFilters, setInvActiveFilters] = useState<Record<string, any>>({});
+  const [invSearch, setInvSearch] = useState('');
+
+  // Tab 2 Pagination & Filter
+  const [movPage, setMovPage] = useState(1);
+  const [movPageSize, setMovPageSize] = useState(10);
+  const [movActiveFilters, setMovActiveFilters] = useState<Record<string, any>>({});
+  const [movSearch, setMovSearch] = useState('');
+
+  const inventoryFilterCategories: FilterCategory[] = [
+    {
+      id: 'stock_status',
+      label: 'Stock Status',
+      type: 'select',
+      options: [
+        { label: 'All Items', value: 'all' },
+        { label: 'In Stock (> 0)', value: 'in_stock' },
+        { label: 'Low Stock Threshold', value: 'low_stock' },
+        { label: 'Out of Stock (0 units)', value: 'out_of_stock' },
+      ],
+    },
+  ];
+
+  const movementsFilterCategories: FilterCategory[] = [
+    {
+      id: 'movement_type',
+      label: 'Movement Type',
+      type: 'select',
+      options: [
+        { label: 'All Movement Types', value: 'all' },
+        { label: 'Opening Stock', value: 'opening' },
+        { label: 'Goods Received (PO/GRN)', value: 'po_receive' },
+        { label: 'Sales Deduction', value: 'sale' },
+        { label: 'Manual Adjustment', value: 'adjustment' },
+        { label: 'Damaged / Written Off', value: 'damaged' },
+        { label: 'Customer Return', value: 'returned' },
+        { label: 'Inter-Branch Transfer', value: 'transfer' },
+      ],
+    },
+  ];
 
   // Modals
   const [showAdjustModal, setShowAdjustModal] = useState(false);
@@ -191,18 +234,22 @@ export default function InventoryPage() {
   };
 
   const filteredItems = items.filter(it => {
-    if (stockFilter === 'low_stock' && (it.quantity <= 0 || it.quantity > it.minimumStockLevel)) return false;
-    if (stockFilter === 'out_of_stock' && it.quantity > 0) return false;
-    if (stockFilter === 'in_stock' && it.quantity <= 0) return false;
-    if (!search) return true;
-    const q = search.toLowerCase();
+    const filter = invActiveFilters.stock_status || 'all';
+    if (filter === 'low_stock' && (it.quantity <= 0 || it.quantity > it.minimumStockLevel)) return false;
+    if (filter === 'out_of_stock' && it.quantity > 0) return false;
+    if (filter === 'in_stock' && it.quantity <= 0) return false;
+    if (!invSearch) return true;
+    const q = invSearch.toLowerCase();
     return it.productName.toLowerCase().includes(q) || it.sku.toLowerCase().includes(q);
   });
 
+  const paginatedItems = filteredItems.slice((invPage - 1) * invPageSize, invPage * invPageSize);
+
   const filteredMovements = movements.filter(m => {
-    if (movementTypeFilter !== 'all' && m.type !== movementTypeFilter) return false;
-    if (!search) return true;
-    const q = search.toLowerCase();
+    const filter = movActiveFilters.movement_type || 'all';
+    if (filter !== 'all' && m.type !== filter) return false;
+    if (!movSearch) return true;
+    const q = movSearch.toLowerCase();
     const prod = products.find(p => p.id === m.productId);
     return (
       (prod && prod.name.toLowerCase().includes(q)) ||
@@ -210,6 +257,8 @@ export default function InventoryPage() {
       m.performedBy.toLowerCase().includes(q)
     );
   });
+
+  const paginatedMovements = filteredMovements.slice((movPage - 1) * movPageSize, movPage * movPageSize);
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
@@ -299,40 +348,33 @@ export default function InventoryPage() {
       {/* TAB 1: INVENTORY CATALOG */}
       {activeTab === 'inventory' && (
         <div className="space-y-4">
-          {/* Search & Filter Bar */}
-          <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm shadow-slate-200/50 flex flex-col sm:flex-row gap-3 items-center justify-between">
-            <div className="relative w-full sm:w-72">
-              <Search className="absolute left-3.5 top-2.5 h-4 w-4 text-slate-400" />
-              <input
-                type="text"
-                placeholder="Search products by title, SKU..."
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 text-xs bg-slate-50 border border-slate-200/90 rounded-xl text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:border-indigo-500 shadow-2xs"
-              />
-            </div>
-
-            <div className="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto">
-              {[
-                { id: 'all', label: 'All Items' },
-                { id: 'in_stock', label: 'In Stock' },
-                { id: 'low_stock', label: `Low Stock (${lowStockCount})` },
-                { id: 'out_of_stock', label: `Out of Stock (${outOfStockCount})` },
-              ].map(f => (
-                <button
-                  key={f.id}
-                  onClick={() => setStockFilter(f.id as any)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
-                    stockFilter === f.id
-                      ? 'bg-indigo-600 text-white shadow-xs'
-                      : 'bg-slate-50 text-slate-600 border border-slate-200/80 hover:bg-slate-100'
-                  }`}
-                >
-                  {f.label}
-                </button>
-              ))}
-            </div>
-          </div>
+          {/* Categorized Filter Bar */}
+          <CategorizedFilterBar
+            categories={inventoryFilterCategories}
+            activeFilters={invActiveFilters}
+            onFilterChange={(categoryId, value) => {
+              setInvActiveFilters(prev => {
+                if (value === undefined || value === null || value === '' || value === 'all') {
+                  const next = { ...prev };
+                  delete next[categoryId];
+                  return next;
+                }
+                return { ...prev, [categoryId]: value };
+              });
+              setInvPage(1);
+            }}
+            onClearFilters={() => {
+              setInvActiveFilters({});
+              setInvSearch('');
+              setInvPage(1);
+            }}
+            search={invSearch}
+            onSearchChange={val => {
+              setInvSearch(val);
+              setInvPage(1);
+            }}
+            searchPlaceholder="Search products by title, SKU..."
+          />
 
           {/* Inventory Table */}
           <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm shadow-slate-200/50 overflow-hidden">
@@ -355,7 +397,7 @@ export default function InventoryPage() {
                   ) : filteredItems.length === 0 ? (
                     <tr><td colSpan={7} className="py-12 text-center text-slate-400">No stock records found matching filters.</td></tr>
                   ) : (
-                    filteredItems.map(it => {
+                    paginatedItems.map(it => {
                       const isLow = it.quantity > 0 && it.quantity <= it.minimumStockLevel;
                       const isOut = it.quantity <= 0;
 
@@ -396,7 +438,7 @@ export default function InventoryPage() {
                           <td className="py-4 px-6 text-right">
                             <button
                               onClick={() => openAdjustModal(it)}
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-xl text-xs font-semibold transition-colors"
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
                             >
                               <ArrowUpDown className="h-3.5 w-3.5" /> Adjust Stock
                             </button>
@@ -408,6 +450,20 @@ export default function InventoryPage() {
                 </tbody>
               </table>
             </div>
+
+            {filteredItems.length > 0 && (
+              <TablePagination
+                currentPage={invPage}
+                totalPages={Math.max(1, Math.ceil(filteredItems.length / invPageSize))}
+                totalItems={filteredItems.length}
+                pageSize={invPageSize}
+                onPageChange={setInvPage}
+                onPageSizeChange={size => {
+                  setInvPageSize(size);
+                  setInvPage(1);
+                }}
+              />
+            )}
           </div>
         </div>
       )}
@@ -415,35 +471,33 @@ export default function InventoryPage() {
       {/* TAB 2: STOCK MOVEMENT LOGS */}
       {activeTab === 'movements' && (
         <div className="space-y-4">
-          <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm shadow-slate-200/50 flex flex-col sm:flex-row gap-3 items-center justify-between">
-            <div className="relative w-full sm:w-72">
-              <Search className="absolute left-3.5 top-2.5 h-4 w-4 text-slate-400" />
-              <input
-                type="text"
-                placeholder="Search movements by product, reason, staff..."
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 text-xs bg-slate-50 border border-slate-200/90 rounded-xl text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:border-indigo-500 shadow-2xs"
-              />
-            </div>
-
-            <div className="flex items-center gap-2 overflow-x-auto w-full sm:w-auto">
-              <select
-                value={movementTypeFilter}
-                onChange={e => setMovementTypeFilter(e.target.value)}
-                className="px-3 py-2 rounded-xl text-xs font-semibold bg-slate-50 text-slate-700 border border-slate-200 focus:bg-white focus:outline-none focus:border-indigo-500"
-              >
-                <option value="all">All Movement Types</option>
-                <option value="opening">Opening Stock</option>
-                <option value="po_receive">Goods Received (PO/GRN)</option>
-                <option value="sale">Sales Deduction</option>
-                <option value="adjustment">Manual Adjustment</option>
-                <option value="damaged">Damaged / Written Off</option>
-                <option value="returned">Customer Return</option>
-                <option value="transfer">Inter-Branch Transfer</option>
-              </select>
-            </div>
-          </div>
+          {/* Categorized Filter Bar */}
+          <CategorizedFilterBar
+            categories={movementsFilterCategories}
+            activeFilters={movActiveFilters}
+            onFilterChange={(categoryId, value) => {
+              setMovActiveFilters(prev => {
+                if (value === undefined || value === null || value === '' || value === 'all') {
+                  const next = { ...prev };
+                  delete next[categoryId];
+                  return next;
+                }
+                return { ...prev, [categoryId]: value };
+              });
+              setMovPage(1);
+            }}
+            onClearFilters={() => {
+              setMovActiveFilters({});
+              setMovSearch('');
+              setMovPage(1);
+            }}
+            search={movSearch}
+            onSearchChange={val => {
+              setMovSearch(val);
+              setMovPage(1);
+            }}
+            searchPlaceholder="Search movements by product, reason, staff..."
+          />
 
           <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm shadow-slate-200/50 overflow-hidden">
             <div className="overflow-x-auto">
@@ -463,7 +517,7 @@ export default function InventoryPage() {
                   {filteredMovements.length === 0 ? (
                     <tr><td colSpan={7} className="py-12 text-center text-slate-400">No stock movements found.</td></tr>
                   ) : (
-                    filteredMovements.map(m => {
+                    paginatedMovements.map(m => {
                       const prod = products.find(p => p.id === m.productId);
                       const isPositive = m.quantityDelta > 0;
 
@@ -493,6 +547,20 @@ export default function InventoryPage() {
                 </tbody>
               </table>
             </div>
+
+            {filteredMovements.length > 0 && (
+              <TablePagination
+                currentPage={movPage}
+                totalPages={Math.max(1, Math.ceil(filteredMovements.length / movPageSize))}
+                totalItems={filteredMovements.length}
+                pageSize={movPageSize}
+                onPageChange={setMovPage}
+                onPageSizeChange={size => {
+                  setMovPageSize(size);
+                  setMovPage(1);
+                }}
+              />
+            )}
           </div>
         </div>
       )}
