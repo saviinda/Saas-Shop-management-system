@@ -850,10 +850,10 @@ export default function ShopsManagementPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <h3 className="font-bold text-slate-900 text-base">
-                      {selectedShopDetails.subscription?.packageName || selectedShopDetails.shop?.packageName || 'Standard Tier'}
+                      {selectedShopDetails.subscription?.packageName || selectedShopDetails.package?.name || selectedShopDetails.shop?.packageName || selectedShopDetails.usage?.package?.name || 'Standard Tier'}
                     </h3>
                     <p className="text-xs text-slate-500">
-                      Pricing: <b>${selectedShopDetails.subscription?.price || 129}/month</b> | Status: <b className="uppercase text-indigo-700">{selectedShopDetails.subscription?.status || 'Active'}</b>
+                      Pricing: <b>${selectedShopDetails.subscription?.price ?? selectedShopDetails.package?.price ?? selectedShopDetails.usage?.package?.price ?? 129}/month</b> | Status: <b className="uppercase text-indigo-700">{selectedShopDetails.subscription?.status || 'Active'}</b>
                     </p>
                   </div>
                   <span className="px-3 py-1 bg-indigo-600 text-white rounded-full text-xs font-bold">
@@ -864,42 +864,104 @@ export default function ShopsManagementPage() {
                 <div className="grid grid-cols-2 gap-4 text-xs pt-2">
                   <div className="p-3 bg-white rounded-lg border border-slate-200">
                     <span className="text-[10px] text-slate-400 uppercase font-semibold">Start Date</span>
-                    <p className="font-bold text-slate-900 mt-0.5">{formatDate(selectedShopDetails.subscription?.startAt)}</p>
+                    <p className="font-bold text-slate-900 mt-0.5">{formatDate(selectedShopDetails.subscription?.startAt || selectedShopDetails.usage?.subscription?.startAt)}</p>
                   </div>
                   <div className="p-3 bg-white rounded-lg border border-slate-200">
                     <span className="text-[10px] text-slate-400 uppercase font-semibold">Expiry Date</span>
-                    <p className="font-bold text-slate-900 mt-0.5">{formatDate(selectedShopDetails.subscription?.expiryAt)}</p>
+                    <p className="font-bold text-slate-900 mt-0.5">{formatDate(selectedShopDetails.subscription?.expiryAt || selectedShopDetails.usage?.subscription?.expiryAt)}</p>
                   </div>
                 </div>
               </div>
             )}
 
             {/* TAB CONTENT 3: PACKAGE USAGE */}
-            {detailsTab === 'usage' && (
-              <div className="space-y-4">
-                <h3 className="font-bold text-slate-900 text-sm">Real-Time Quota Consumption</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                  {Object.entries(selectedShopDetails.usage || {}).map(([key, value]: [string, any]) => {
-                    const pct = Math.min(100, Math.round((value.current / Math.max(1, value.limit)) * 100));
-                    return (
-                      <div key={key} className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="font-bold capitalize text-slate-700">{key}</span>
-                          <span className="font-mono text-slate-900">{value.current} / {value.limit}</span>
-                        </div>
-                        <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
-                          <div
-                            className={`h-full rounded-full ${pct > 85 ? 'bg-rose-500' : 'bg-indigo-600'}`}
-                            style={{ width: `${pct}%` }}
-                          />
-                        </div>
-                        <p className="text-[10px] text-slate-500 text-right">{pct}% consumed</p>
+            {detailsTab === 'usage' && (() => {
+              const usageData = selectedShopDetails.usage?.usage || 
+                (selectedShopDetails.usage?.branches ? selectedShopDetails.usage : {});
+              const pkgInfo = selectedShopDetails.package || selectedShopDetails.usage?.package;
+              const subInfo = selectedShopDetails.subscription || selectedShopDetails.usage?.subscription;
+              const entries = Object.entries(usageData).filter(([k, v]) => typeof v === 'object' && v !== null && 'limit' in (v as any));
+
+              return (
+                <div className="space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-4 bg-slate-50 rounded-xl border border-slate-200">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Package Tier</span>
+                        <span className="px-2.5 py-0.5 bg-indigo-100 text-indigo-700 font-bold text-xs rounded-full border border-indigo-200">
+                          {pkgInfo?.name || subInfo?.packageName || selectedShopDetails.shop?.packageName || 'Standard Tier'}
+                        </span>
                       </div>
-                    );
-                  })}
+                      <p className="text-xs text-slate-500 mt-1">
+                        Pricing: <b className="text-slate-800">${pkgInfo?.price ?? subInfo?.price ?? 129}/month</b> | Active Quota Tracking
+                      </p>
+                    </div>
+                    <div className="text-right sm:text-right">
+                      <span className="text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200">
+                        {subInfo?.status?.toUpperCase() || 'ACTIVE'} SUBSCRIPTION
+                      </span>
+                    </div>
+                  </div>
+
+                  <h3 className="font-bold text-slate-900 text-sm flex items-center justify-between">
+                    <span>Real-Time Quota Consumption</span>
+                    <span className="text-xs font-normal text-slate-400">Live operational resource limits</span>
+                  </h3>
+
+                  {entries.length === 0 ? (
+                    <div className="p-8 text-center text-xs text-slate-400 bg-slate-50 rounded-xl border border-slate-200">
+                      No usage limits recorded for this shop.
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                      {entries.map(([key, val]: [string, any]) => {
+                        const current = typeof val.current === 'number' ? val.current : 0;
+                        const limit = typeof val.limit === 'number' ? val.limit : 1;
+                        const pct = Math.min(100, Math.round((current / Math.max(1, limit)) * 100));
+                        const isNearLimit = pct >= 85;
+                        const isAtLimit = current >= limit;
+
+                        const formatResourceName = (name: string) => {
+                          if (name === 'branches') return 'Branch Locations';
+                          if (name === 'users') return 'Staff Users';
+                          if (name === 'products') return 'Product SKUs';
+                          if (name === 'services') return 'Service Items';
+                          return name.charAt(0).toUpperCase() + name.slice(1);
+                        };
+
+                        return (
+                          <div key={key} className="p-4 bg-white rounded-xl border border-slate-200/90 shadow-2xs space-y-3">
+                            <div className="flex items-center justify-between">
+                              <span className="font-bold text-xs text-slate-800">{formatResourceName(key)}</span>
+                              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                                isAtLimit ? 'bg-rose-100 text-rose-700' : isNearLimit ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-600'
+                              }`}>
+                                {isAtLimit ? 'Limit Reached' : `${pct}%`}
+                              </span>
+                            </div>
+                            <div className="flex items-baseline justify-between text-xs">
+                              <span className="text-lg font-extrabold text-slate-900">{current}</span>
+                              <span className="text-xs text-slate-400">limit: <b className="text-slate-600">{limit}</b></span>
+                            </div>
+                            <div className="h-2 bg-slate-100 rounded-full overflow-hidden border border-slate-100">
+                              <div
+                                className={`h-full rounded-full transition-all duration-300 ${
+                                  isAtLimit ? 'bg-rose-500' : isNearLimit ? 'bg-amber-500' : 'bg-indigo-600'
+                                }`}
+                                style={{ width: `${pct}%` }}
+                              />
+                            </div>
+                            <p className="text-[10px] text-slate-400 text-right">
+                              {limit - current > 0 ? `${limit - current} remaining` : 'No quota remaining'}
+                            </p>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
-              </div>
-            )}
+              );
+            })()}
 
             {/* TAB CONTENT 4: PAYMENT HISTORY */}
             {detailsTab === 'payments' && (

@@ -2,23 +2,23 @@
   {
     "id": "sub_urban_cafe",
     "shopId": "shp_urban_cafe",
-    "packageId": "pkg_standard",
-    "packageName": "Standard Tier",
+    "packageId": "a505f3ca-c4ad-4d90-bc2d-d8af7afa911e",
+    "packageName": "Enterprise Pro",
     "limits": {
-      "shops": 1,
-      "branches": 3,
-      "users": 15,
-      "products": 500,
-      "services": 50,
-      "storageMb": 2000
+      "shops": 20,
+      "branches": 50,
+      "users": 200,
+      "products": 10000,
+      "services": 1000,
+      "storageMb": 50000
     },
-    "price": 129,
-    "startAt": "2026-09-11T10:16:53.090Z",
-    "expiryAt": "2026-10-11T10:16:53.090Z",
+    "price": 599,
+    "startAt": "2026-10-15T10:44:18.245Z",
+    "expiryAt": "2026-11-14T10:44:18.245Z",
     "status": "active",
     "autoRenew": true,
     "createdAt": "2026-09-11T10:16:53.090Z",
-    "updatedAt": "2026-09-11T10:16:53.090Z"
+    "updatedAt": "2026-10-15T10:44:18.245Z"
   },
   {
     "id": "sub_1787930675212",
@@ -55,11 +55,11 @@
       "storageMb": 2000
     },
     "price": 129,
-    "startAt": "2026-09-30T14:50:25.545Z",
-    "expiryAt": "2027-09-30T14:50:25.545Z",
+    "startAt": "2026-10-15T10:33:03.669Z",
+    "expiryAt": "2026-11-14T10:33:03.669Z",
     "status": "active",
     "autoRenew": true,
     "createdAt": "2026-09-30T14:50:25.545Z",
-    "updatedAt": "2026-09-30T14:53:47.003Z"
+    "updatedAt": "2026-10-15T10:33:03.669Z"
   }
 ]

@@ -30,6 +30,8 @@ import {
   Layers,
   Menu,
   X,
+  CreditCard,
+  ArrowRightLeft,
 } from 'lucide-react';
 
 const DEFAULT_ROLE_PERMISSIONS: Record<string, string[]> = {
@@ -64,6 +66,7 @@ const navCategories: NavCategory[] = [
   {
     title: 'Operations & Sales',
     items: [
+      { name: 'POS Terminal', href: '/shop-owner/pos', icon: CreditCard, permission: 'orders' },
       { name: 'Orders', href: '/shop-owner/orders', icon: ShoppingCart, permission: 'orders' },
       { name: 'Customers', href: '/shop-owner/customers', icon: UserCheck, permission: 'customers' },
       { name: 'Services', href: '/shop-owner/services', icon: Wrench, permission: 'services' },
@@ -78,6 +81,7 @@ const navCategories: NavCategory[] = [
       { name: 'Product Categories', href: '/shop-owner/products/categories', icon: Tag, permission: 'products' },
       { name: 'Batches', href: '/shop-owner/batches', icon: Layers, permission: 'inventory' },
       { name: 'Inventory & Stock', href: '/shop-owner/inventory', icon: Boxes, permission: 'inventory' },
+      { name: 'Transfer Requests', href: '/shop-owner/inventory/transfers', icon: ArrowRightLeft, permission: 'inventory' },
     ],
   },
   {
@@ -215,7 +219,8 @@ export default function ShopOwnerLayout({ children }: { children: React.ReactNod
                     pathname === item.href ||
                     (item.href !== '/shop-owner/dashboard' &&
                       pathname.startsWith(item.href) &&
-                      (item.href !== '/shop-owner/products' || pathname === '/shop-owner/products'));
+                      (item.href !== '/shop-owner/products' || pathname === '/shop-owner/products') &&
+                      (item.href !== '/shop-owner/inventory' || pathname === '/shop-owner/inventory'));
                   const Icon = item.icon;
 
                   return (

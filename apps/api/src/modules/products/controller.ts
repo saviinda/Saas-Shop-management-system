@@ -11,7 +11,8 @@ export class ProductController {
     const shopId = req.user?.role === 'super_admin' ? (req.query.shopId as string) || req.shopId : req.shopId;
     if (!shopId) return sendSuccess(res, []);
 
-    const { category, search, status, stockStatus, page, limit } = req.query;
+    const { category, search, status, stockStatus, page, limit, branchId } = req.query;
+    const targetBranchId = (branchId as string) || req.branchId || (req.headers['x-branch-id'] as string);
 
     const where: Array<{ field: string; op: any; value: any }> = [
       { field: 'shopId', op: '==', value: shopId },
@@ -35,15 +36,23 @@ export class ProductController {
       products = products.filter(p => p.name.toLowerCase().includes(q) || p.sku.toLowerCase().includes(q));
     }
 
-    // Attach current aggregated inventory count across branches and batch data
+    // Attach current inventory count for the selected branch (or aggregated if all branches) and batch data
     let enriched = await Promise.all(
       products.map(async p => {
-        const invQuery = await dbStore.collection<InventoryItem>('inventory').query({
-          where: [{ field: 'productId', op: '==', value: p.id }],
-        });
-        const batchesQuery = await dbStore.collection<ProductBatch>('productBatches').query({
-          where: [{ field: 'productId', op: '==', value: p.id }],
-        });
+        const invWhere: Array<{ field: string; op: any; value: any }> = [
+          { field: 'productId', op: '==', value: p.id },
+        ];
+        const batchWhere: Array<{ field: string; op: any; value: any }> = [
+          { field: 'productId', op: '==', value: p.id },
+        ];
+
+        if (targetBranchId && targetBranchId !== 'all') {
+          invWhere.push({ field: 'branchId', op: '==', value: targetBranchId });
+          batchWhere.push({ field: 'branchId', op: '==', value: targetBranchId });
+        }
+
+        const invQuery = await dbStore.collection<InventoryItem>('inventory').query({ where: invWhere });
+        const batchesQuery = await dbStore.collection<ProductBatch>('productBatches').query({ where: batchWhere });
 
         const totalStockFromBatches = batchesQuery.data.reduce((acc, curr) => acc + (curr.quantity || 0), 0);
         const totalStockFromInv = invQuery.data.reduce((acc, curr) => acc + curr.quantity, 0);
@@ -98,12 +107,25 @@ export class ProductController {
       return sendError(res, 'NOT_FOUND', 'Product not found', 404);
     }
 
+    const targetBranchId = (req.query.branchId as string) || req.branchId || (req.headers['x-branch-id'] as string);
+    const invWhere: Array<{ field: string; op: any; value: any }> = [
+      { field: 'productId', op: '==', value: id },
+    ];
+    const batchWhere: Array<{ field: string; op: any; value: any }> = [
+      { field: 'productId', op: '==', value: id },
+    ];
+
+    if (targetBranchId && targetBranchId !== 'all') {
+      invWhere.push({ field: 'branchId', op: '==', value: targetBranchId });
+      batchWhere.push({ field: 'branchId', op: '==', value: targetBranchId });
+    }
+
     const inv = await dbStore.collection<InventoryItem>('inventory').query({
-      where: [{ field: 'productId', op: '==', value: id }],
+      where: invWhere,
     });
 
     const batches = await dbStore.collection<ProductBatch>('productBatches').query({
-      where: [{ field: 'productId', op: '==', value: id }],
+      where: batchWhere,
       orderBy: { field: 'createdAt', direction: 'desc' },
     });
 

@@ -1,6 +1,6 @@
 import { Response } from 'express';
 import { dbStore } from '../../db/store';
-import { InventoryItem, StockMovement, Branch, User } from '@saas/types';
+import { InventoryItem, StockMovement, Branch, User, StockTransferRequest, ProductBatch, Product } from '@saas/types';
 import { AuthenticatedRequest } from '../../middleware/auth';
 import { sendSuccess, sendError } from '../../utils/response';
 import { AuditLogService } from '../../services/auditLog.service';
@@ -27,6 +27,18 @@ export class InventoryController {
     });
 
     let data = items.data;
+
+    // Deduplicate any duplicate inventory records by branchId & productId
+    const seen = new Set<string>();
+    const uniqueItems: InventoryItem[] = [];
+    for (const item of data) {
+      const key = `${item.branchId}_${item.productId}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        uniqueItems.push(item);
+      }
+    }
+    data = uniqueItems;
 
     if (lowStock === 'true') {
       data = data.filter(item => item.quantity <= item.minimumStockLevel);
@@ -199,14 +211,29 @@ export class InventoryController {
     return sendSuccess(res, { inventory: updated, movement });
   }
 
+  /**
+   * Direct Instant Transfer (combining dispatch & receipt immediately)
+   */
   static async transferStock(req: AuthenticatedRequest, res: Response) {
     const shopId = req.shopId;
     if (!shopId) return sendError(res, 'BAD_REQUEST', 'Shop ID required', 400);
 
-    const { sourceBranchId, destinationBranchId, productId, quantity, reason } = req.body;
+    const { sourceBranchId, destinationBranchId, productId, batchId, quantity, reason, notes } = req.body;
 
+    if (!sourceBranchId || !destinationBranchId) {
+      return sendError(res, 'BAD_REQUEST', 'Source and destination branches are required', 400);
+    }
     if (sourceBranchId === destinationBranchId) {
       return sendError(res, 'BAD_REQUEST', 'Source and destination branches must be different', 400);
+    }
+    if (!quantity || quantity <= 0) {
+      return sendError(res, 'BAD_REQUEST', 'Valid transfer quantity is required', 400);
+    }
+
+    const sourceBranch = await dbStore.collection<Branch>('branches').get(sourceBranchId);
+    const destBranch = await dbStore.collection<Branch>('branches').get(destinationBranchId);
+    if (!sourceBranch || !destBranch) {
+      return sendError(res, 'BAD_REQUEST', 'Invalid source or destination branch', 400);
     }
 
     // 1. Check source inventory
@@ -224,7 +251,35 @@ export class InventoryController {
 
     const srcInv = srcInvQuery.data[0];
 
-    // 2. Check or create destination inventory
+    // 2. If batch is specified, check source batch quantity
+    let sourceBatch: ProductBatch | null = null;
+    if (batchId) {
+      sourceBatch = await dbStore.collection<ProductBatch>('productBatches').get(batchId);
+      if (!sourceBatch || sourceBatch.branchId !== sourceBranchId || sourceBatch.quantity < quantity) {
+        return sendError(res, 'INSUFFICIENT_BATCH_STOCK', `Selected batch #${sourceBatch?.batchNumber || batchId} has insufficient stock in source branch`, 400);
+      }
+    }
+
+    const now = new Date().toISOString();
+
+    // 3. Deduct from source inventory
+    const newSrcQty = srcInv.quantity - quantity;
+    await dbStore.collection<InventoryItem>('inventory').update(srcInv.id, {
+      quantity: newSrcQty,
+      updatedAt: now,
+    });
+
+    // 4. Deduct from source batch if specified
+    if (sourceBatch) {
+      const newSrcBatchQty = sourceBatch.quantity - quantity;
+      await dbStore.collection<ProductBatch>('productBatches').update(sourceBatch.id, {
+        quantity: newSrcBatchQty,
+        status: newSrcBatchQty === 0 ? 'depleted' : sourceBatch.status,
+        updatedAt: now,
+      });
+    }
+
+    // 5. Check or create destination inventory
     const destInvQuery = await dbStore.collection<InventoryItem>('inventory').query({
       where: [
         { field: 'shopId', op: '==', value: shopId },
@@ -236,6 +291,11 @@ export class InventoryController {
     let destInv: InventoryItem;
     if (destInvQuery.data.length > 0) {
       destInv = destInvQuery.data[0];
+      const newDestQty = destInv.quantity + quantity;
+      await dbStore.collection<InventoryItem>('inventory').update(destInv.id, {
+        quantity: newDestQty,
+        updatedAt: now,
+      });
     } else {
       destInv = await dbStore.collection<InventoryItem>('inventory').create({
         shopId,
@@ -243,31 +303,58 @@ export class InventoryController {
         productId,
         productName: srcInv.productName,
         sku: srcInv.sku,
-        quantity: 0,
+        quantity,
         minimumStockLevel: srcInv.minimumStockLevel,
         costPrice: srcInv.costPrice,
         sellingPrice: srcInv.sellingPrice,
-        updatedAt: new Date().toISOString(),
+        updatedAt: now,
       });
     }
 
-    // Deduct from source
-    const newSrcQty = srcInv.quantity - quantity;
-    await dbStore.collection<InventoryItem>('inventory').update(srcInv.id, {
-      quantity: newSrcQty,
-      updatedAt: new Date().toISOString(),
-    });
+    // 6. Transfer batch to destination if sourceBatch was selected
+    let destBatch: ProductBatch | null = null;
+    if (sourceBatch) {
+      const destBatchQuery = await dbStore.collection<ProductBatch>('productBatches').query({
+        where: [
+          { field: 'shopId', op: '==', value: shopId },
+          { field: 'branchId', op: '==', value: destinationBranchId },
+          { field: 'productId', op: '==', value: productId },
+          { field: 'batchNumber', op: '==', value: sourceBatch.batchNumber },
+        ],
+      });
 
-    // Add to destination
-    const newDestQty = destInv.quantity + quantity;
-    await dbStore.collection<InventoryItem>('inventory').update(destInv.id, {
-      quantity: newDestQty,
-      updatedAt: new Date().toISOString(),
-    });
+      if (destBatchQuery.data.length > 0) {
+        destBatch = destBatchQuery.data[0];
+        await dbStore.collection<ProductBatch>('productBatches').update(destBatch.id, {
+          quantity: destBatch.quantity + quantity,
+          status: 'active',
+          updatedAt: now,
+        });
+      } else {
+        destBatch = await dbStore.collection<ProductBatch>('productBatches').create({
+          shopId,
+          productId,
+          branchId: destinationBranchId,
+          branchName: destBranch.name,
+          batchNumber: sourceBatch.batchNumber,
+          costPrice: sourceBatch.costPrice,
+          sellingPrice: sourceBatch.sellingPrice,
+          quantity,
+          initialQuantity: quantity,
+          manufacturingDate: sourceBatch.manufacturingDate,
+          expiryDate: sourceBatch.expiryDate,
+          supplierId: sourceBatch.supplierId,
+          supplierName: sourceBatch.supplierName,
+          status: 'active',
+          notes: `Transferred from ${sourceBranch.name}`,
+          createdAt: now,
+          updatedAt: now,
+        });
+      }
+    }
 
-    // Log stock movements for both branches
-    const sourceBranch = await dbStore.collection<Branch>('branches').get(sourceBranchId);
-    const destBranch = await dbStore.collection<Branch>('branches').get(destinationBranchId);
+    // 7. Log stock movements for both branches
+    const transferNum = `TRF-${Date.now().toString().slice(-6)}`;
 
     await dbStore.collection<StockMovement>('stockMovements').create({
       shopId,
@@ -276,37 +363,590 @@ export class InventoryController {
       type: 'transfer',
       quantityDelta: -quantity,
       newQuantity: newSrcQty,
-      reason: `Transfer out to ${destBranch?.name || destinationBranchId}: ${reason}`,
+      reason: `Transfer out to ${destBranch.name} (#${transferNum}): ${reason || 'Inter-branch transfer'}${sourceBatch ? ` [Batch: ${sourceBatch.batchNumber}]` : ''}`,
+      referenceId: transferNum,
       performedBy: req.user!.name,
-      createdAt: new Date().toISOString(),
+      createdAt: now,
     });
 
+    const finalDestQty = destInvQuery.data.length > 0 ? destInv.quantity + quantity : quantity;
     await dbStore.collection<StockMovement>('stockMovements').create({
       shopId,
       branchId: destinationBranchId,
       productId,
       type: 'transfer',
       quantityDelta: quantity,
-      newQuantity: newDestQty,
-      reason: `Transfer in from ${sourceBranch?.name || sourceBranchId}: ${reason}`,
+      newQuantity: finalDestQty,
+      reason: `Transfer in from ${sourceBranch.name} (#${transferNum}): ${reason || 'Inter-branch transfer'}${sourceBatch ? ` [Batch: ${sourceBatch.batchNumber}]` : ''}`,
+      referenceId: transferNum,
       performedBy: req.user!.name,
-      createdAt: new Date().toISOString(),
+      createdAt: now,
+    });
+
+    // 8. Record completed transfer request
+    const transferRecord = await dbStore.collection<StockTransferRequest>('transferRequests').create({
+      transferNumber: transferNum,
+      shopId,
+      sourceBranchId,
+      sourceBranchName: sourceBranch.name,
+      destinationBranchId,
+      destinationBranchName: destBranch.name,
+      items: [
+        {
+          productId,
+          productName: srcInv.productName,
+          sku: srcInv.sku,
+          batchId: sourceBatch?.id,
+          batchNumber: sourceBatch?.batchNumber,
+          quantity,
+          receivedQuantity: quantity,
+          costPrice: srcInv.costPrice,
+          sellingPrice: srcInv.sellingPrice,
+        },
+      ],
+      productId,
+      productName: srcInv.productName,
+      sku: srcInv.sku,
+      batchId: sourceBatch?.id,
+      batchNumber: sourceBatch?.batchNumber,
+      quantity,
+      receivedQuantity: quantity,
+      status: 'completed',
+      reason: reason || 'Direct inter-branch transfer',
+      notes,
+      requestedBy: req.user!.name,
+      requesterId: req.user!.id,
+      approvedBy: req.user!.name,
+      approvedAt: now,
+      dispatchedBy: req.user!.name,
+      dispatchedAt: now,
+      receivedBy: req.user!.name,
+      receivedAt: now,
+      createdAt: now,
+      updatedAt: now,
     });
 
     await AuditLogService.log({
       actor: req.user!,
-      action: 'TRANSFER_STOCK',
+      action: 'TRANSFER_STOCK_COMPLETED',
       entity: 'inventory',
       entityId: productId,
       shopId,
-      after: { sourceBranchId, destinationBranchId, quantity, reason },
+      after: transferRecord,
     });
 
     return sendSuccess(res, {
       message: 'Stock transferred successfully',
+      transfer: transferRecord,
       sourceQuantity: newSrcQty,
-      destinationQuantity: newDestQty,
+      destinationQuantity: finalDestQty,
     });
+  }
+
+  /**
+   * List Transfer Requests
+   */
+  static async listTransferRequests(req: AuthenticatedRequest, res: Response) {
+    const shopId = req.user?.role === 'super_admin' ? (req.query.shopId as string) || req.shopId : req.shopId;
+    if (!shopId) return sendSuccess(res, []);
+
+    const { branchId, status, type, search, page, limit } = req.query;
+    const targetBranchId = (branchId as string) || req.branchId || (req.headers['x-branch-id'] as string);
+
+    const transfers = await dbStore.collection<StockTransferRequest>('transferRequests').query({
+      where: [{ field: 'shopId', op: '==', value: shopId }],
+      orderBy: { field: 'createdAt', direction: 'desc' },
+    });
+
+    let results = transfers.data;
+
+    // Filter by branch
+    if (targetBranchId && targetBranchId !== 'all') {
+      if (type === 'incoming') {
+        results = results.filter(t => t.destinationBranchId === targetBranchId);
+      } else if (type === 'outgoing') {
+        results = results.filter(t => t.sourceBranchId === targetBranchId);
+      } else {
+        results = results.filter(t => t.sourceBranchId === targetBranchId || t.destinationBranchId === targetBranchId);
+      }
+    }
+
+    // Filter by status
+    if (status && status !== 'all') {
+      results = results.filter(t => t.status === status);
+    }
+
+    // Search filter
+    if (search) {
+      const q = (search as string).toLowerCase();
+      results = results.filter(t =>
+        t.transferNumber.toLowerCase().includes(q) ||
+        (t.sourceBranchName && t.sourceBranchName.toLowerCase().includes(q)) ||
+        (t.destinationBranchName && t.destinationBranchName.toLowerCase().includes(q)) ||
+        (t.productName && t.productName.toLowerCase().includes(q)) ||
+        (t.reason && t.reason.toLowerCase().includes(q)) ||
+        (t.items && t.items.some(i => i.productName.toLowerCase().includes(q) || (i.batchNumber && i.batchNumber.toLowerCase().includes(q))))
+      );
+    }
+
+    if (page !== undefined || limit !== undefined) {
+      const pageNum = Math.max(1, parseInt(page as string, 10) || 1);
+      const limitNum = Math.max(1, parseInt(limit as string, 10) || 10);
+      const offset = (pageNum - 1) * limitNum;
+      const paginated = results.slice(offset, offset + limitNum);
+
+      return sendSuccess(res, paginated, {
+        total: results.length,
+        page: pageNum,
+        limit: limitNum,
+        totalPages: Math.ceil(results.length / limitNum),
+      });
+    }
+
+    return sendSuccess(res, results, { total: results.length });
+  }
+
+  /**
+   * Get single Transfer Request
+   */
+  static async getTransferRequest(req: AuthenticatedRequest, res: Response) {
+    const { id } = req.params;
+    const transfer = await dbStore.collection<StockTransferRequest>('transferRequests').get(id);
+    if (!transfer || (req.user?.role !== 'super_admin' && transfer.shopId !== req.shopId)) {
+      return sendError(res, 'NOT_FOUND', 'Transfer request not found', 404);
+    }
+    return sendSuccess(res, transfer);
+  }
+
+  /**
+   * Create New Transfer Request (status: pending)
+   */
+  static async createTransferRequest(req: AuthenticatedRequest, res: Response) {
+    const shopId = req.shopId;
+    if (!shopId) return sendError(res, 'BAD_REQUEST', 'Shop ID required', 400);
+
+    const { sourceBranchId, destinationBranchId, productId, batchId, quantity, items, reason, notes } = req.body;
+
+    if (!sourceBranchId || !destinationBranchId) {
+      return sendError(res, 'BAD_REQUEST', 'Source and destination branches are required', 400);
+    }
+    if (sourceBranchId === destinationBranchId) {
+      return sendError(res, 'BAD_REQUEST', 'Source and destination branches must be different', 400);
+    }
+
+    const sourceBranch = await dbStore.collection<Branch>('branches').get(sourceBranchId);
+    const destBranch = await dbStore.collection<Branch>('branches').get(destinationBranchId);
+    if (!sourceBranch || !destBranch) {
+      return sendError(res, 'BAD_REQUEST', 'Invalid source or destination branch', 400);
+    }
+
+    // Prepare items list
+    let transferItems: any[] = [];
+    if (Array.isArray(items) && items.length > 0) {
+      transferItems = items;
+    } else if (productId && quantity) {
+      const prod = await dbStore.collection<Product>('products').get(productId);
+      let batchNumber: string | undefined;
+      if (batchId) {
+        const batch = await dbStore.collection<ProductBatch>('productBatches').get(batchId);
+        batchNumber = batch?.batchNumber;
+      }
+      transferItems = [
+        {
+          productId,
+          productName: prod?.name || 'Product',
+          sku: prod?.sku,
+          batchId,
+          batchNumber,
+          quantity: Number(quantity),
+          costPrice: prod?.costPrice,
+          sellingPrice: prod?.sellingPrice,
+        },
+      ];
+    } else {
+      return sendError(res, 'BAD_REQUEST', 'Product and quantity or items list required', 400);
+    }
+
+    // Validate available stock in source branch
+    for (const it of transferItems) {
+      const invQuery = await dbStore.collection<InventoryItem>('inventory').query({
+        where: [
+          { field: 'shopId', op: '==', value: shopId },
+          { field: 'branchId', op: '==', value: sourceBranchId },
+          { field: 'productId', op: '==', value: it.productId },
+        ],
+      });
+
+      if (invQuery.data.length === 0 || invQuery.data[0].quantity < it.quantity) {
+        return sendError(res, 'INSUFFICIENT_STOCK', `Source branch "${sourceBranch.name}" only has ${invQuery.data[0]?.quantity || 0} units of "${it.productName || it.productId}" available. Cannot transfer ${it.quantity}.`, 400);
+      }
+
+      if (it.batchId) {
+        const batch = await dbStore.collection<ProductBatch>('productBatches').get(it.batchId);
+        if (!batch || batch.branchId !== sourceBranchId || batch.quantity < it.quantity) {
+          return sendError(res, 'INSUFFICIENT_BATCH_STOCK', `Batch #${batch?.batchNumber || it.batchId} only has ${batch?.quantity || 0} units available in source branch.`, 400);
+        }
+      }
+    }
+
+    const now = new Date().toISOString();
+    const transferNum = `TRF-${Date.now().toString().slice(-6)}`;
+
+    const primaryItem = transferItems[0];
+    const newTransfer = await dbStore.collection<StockTransferRequest>('transferRequests').create({
+      transferNumber: transferNum,
+      shopId,
+      sourceBranchId,
+      sourceBranchName: sourceBranch.name,
+      destinationBranchId,
+      destinationBranchName: destBranch.name,
+      items: transferItems,
+      productId: primaryItem.productId,
+      productName: primaryItem.productName,
+      sku: primaryItem.sku,
+      batchId: primaryItem.batchId,
+      batchNumber: primaryItem.batchNumber,
+      quantity: primaryItem.quantity,
+      status: 'pending',
+      reason: reason || 'Stock transfer request',
+      notes,
+      requestedBy: req.user!.name,
+      requesterId: req.user!.id,
+      createdAt: now,
+      updatedAt: now,
+    });
+
+    await AuditLogService.log({
+      actor: req.user!,
+      action: 'CREATE_TRANSFER_REQUEST',
+      entity: 'transferRequests',
+      entityId: newTransfer.id,
+      shopId,
+      after: newTransfer,
+    });
+
+    return sendSuccess(res, newTransfer, { message: 'Transfer request created successfully' }, 201);
+  }
+
+  /**
+   * Approve Transfer Request (status: approved)
+   */
+  static async approveTransfer(req: AuthenticatedRequest, res: Response) {
+    const { id } = req.params;
+    const transfer = await dbStore.collection<StockTransferRequest>('transferRequests').get(id);
+    if (!transfer || (req.user?.role !== 'super_admin' && transfer.shopId !== req.shopId)) {
+      return sendError(res, 'NOT_FOUND', 'Transfer request not found', 404);
+    }
+
+    if (transfer.status !== 'pending') {
+      return sendError(res, 'INVALID_STATE', `Only pending transfers can be approved. Current status: ${transfer.status}`, 400);
+    }
+
+    const now = new Date().toISOString();
+    const updated = await dbStore.collection<StockTransferRequest>('transferRequests').update(id, {
+      status: 'approved',
+      approvedBy: req.user!.name,
+      approvedAt: now,
+      updatedAt: now,
+    });
+
+    await AuditLogService.log({
+      actor: req.user!,
+      action: 'APPROVE_TRANSFER_REQUEST',
+      entity: 'transferRequests',
+      entityId: id,
+      shopId: transfer.shopId,
+      after: updated,
+    });
+
+    return sendSuccess(res, updated, { message: 'Transfer request approved' });
+  }
+
+  /**
+   * Reject Transfer Request (status: rejected)
+   */
+  static async rejectTransfer(req: AuthenticatedRequest, res: Response) {
+    const { id } = req.params;
+    const { rejectionReason } = req.body;
+    const transfer = await dbStore.collection<StockTransferRequest>('transferRequests').get(id);
+    if (!transfer || (req.user?.role !== 'super_admin' && transfer.shopId !== req.shopId)) {
+      return sendError(res, 'NOT_FOUND', 'Transfer request not found', 404);
+    }
+
+    if (transfer.status !== 'pending' && transfer.status !== 'approved') {
+      return sendError(res, 'INVALID_STATE', `Cannot reject transfer in ${transfer.status} state`, 400);
+    }
+
+    const now = new Date().toISOString();
+    const updated = await dbStore.collection<StockTransferRequest>('transferRequests').update(id, {
+      status: 'rejected',
+      rejectedBy: req.user!.name,
+      rejectedAt: now,
+      rejectionReason: rejectionReason || 'Rejected by branch manager',
+      updatedAt: now,
+    });
+
+    await AuditLogService.log({
+      actor: req.user!,
+      action: 'REJECT_TRANSFER_REQUEST',
+      entity: 'transferRequests',
+      entityId: id,
+      shopId: transfer.shopId,
+      after: updated,
+    });
+
+    return sendSuccess(res, updated, { message: 'Transfer request rejected' });
+  }
+
+  /**
+   * Dispatch Transfer (deducts stock from source branch, status: dispatched)
+   */
+  static async dispatchTransfer(req: AuthenticatedRequest, res: Response) {
+    const { id } = req.params;
+    const transfer = await dbStore.collection<StockTransferRequest>('transferRequests').get(id);
+    if (!transfer || (req.user?.role !== 'super_admin' && transfer.shopId !== req.shopId)) {
+      return sendError(res, 'NOT_FOUND', 'Transfer request not found', 404);
+    }
+
+    if (transfer.status !== 'approved' && transfer.status !== 'pending') {
+      return sendError(res, 'INVALID_STATE', `Transfer cannot be dispatched in "${transfer.status}" status`, 400);
+    }
+
+    const now = new Date().toISOString();
+    const itemsToDispatch = transfer.items && transfer.items.length > 0
+      ? transfer.items
+      : [{
+          productId: transfer.productId!,
+          productName: transfer.productName || 'Product',
+          batchId: transfer.batchId,
+          batchNumber: transfer.batchNumber,
+          quantity: transfer.quantity || 1,
+        }];
+
+    // Validate and deduct from source branch
+    for (const it of itemsToDispatch) {
+      const invQuery = await dbStore.collection<InventoryItem>('inventory').query({
+        where: [
+          { field: 'shopId', op: '==', value: transfer.shopId },
+          { field: 'branchId', op: '==', value: transfer.sourceBranchId },
+          { field: 'productId', op: '==', value: it.productId },
+        ],
+      });
+
+      if (invQuery.data.length === 0 || invQuery.data[0].quantity < it.quantity) {
+        return sendError(res, 'INSUFFICIENT_STOCK', `Source branch has insufficient stock to dispatch "${it.productName}"`, 400);
+      }
+
+      const srcInv = invQuery.data[0];
+      const newSrcQty = srcInv.quantity - it.quantity;
+
+      await dbStore.collection<InventoryItem>('inventory').update(srcInv.id, {
+        quantity: newSrcQty,
+        updatedAt: now,
+      });
+
+      if (it.batchId) {
+        const batch = await dbStore.collection<ProductBatch>('productBatches').get(it.batchId);
+        if (batch && batch.quantity >= it.quantity) {
+          const newBatchQty = batch.quantity - it.quantity;
+          await dbStore.collection<ProductBatch>('productBatches').update(batch.id, {
+            quantity: newBatchQty,
+            status: newBatchQty === 0 ? 'depleted' : batch.status,
+            updatedAt: now,
+          });
+        }
+      }
+
+      await dbStore.collection<StockMovement>('stockMovements').create({
+        shopId: transfer.shopId,
+        branchId: transfer.sourceBranchId,
+        productId: it.productId,
+        type: 'transfer',
+        quantityDelta: -it.quantity,
+        newQuantity: newSrcQty,
+        reason: `Dispatched to ${transfer.destinationBranchName || transfer.destinationBranchId} (#${transfer.transferNumber})${it.batchNumber ? ` [Batch: ${it.batchNumber}]` : ''}`,
+        referenceId: transfer.transferNumber,
+        performedBy: req.user!.name,
+        createdAt: now,
+      });
+    }
+
+    const updated = await dbStore.collection<StockTransferRequest>('transferRequests').update(id, {
+      status: 'dispatched',
+      dispatchedBy: req.user!.name,
+      dispatchedAt: now,
+      updatedAt: now,
+    });
+
+    await AuditLogService.log({
+      actor: req.user!,
+      action: 'DISPATCH_TRANSFER',
+      entity: 'transferRequests',
+      entityId: id,
+      shopId: transfer.shopId,
+      after: updated,
+    });
+
+    return sendSuccess(res, updated, { message: 'Stock dispatched successfully. In-transit to destination branch.' });
+  }
+
+  /**
+   * Receive Transfer into Destination Branch (adds stock to destination branch, status: completed)
+   */
+  static async receiveTransfer(req: AuthenticatedRequest, res: Response) {
+    const { id } = req.params;
+    const { receivedQuantity, receivedItems, notes } = req.body;
+
+    const transfer = await dbStore.collection<StockTransferRequest>('transferRequests').get(id);
+    if (!transfer || (req.user?.role !== 'super_admin' && transfer.shopId !== req.shopId)) {
+      return sendError(res, 'NOT_FOUND', 'Transfer request not found', 404);
+    }
+
+    if (transfer.status !== 'dispatched') {
+      return sendError(res, 'INVALID_STATE', `Only dispatched transfers can be received. Current status: "${transfer.status}"`, 400);
+    }
+
+    const now = new Date().toISOString();
+    const sourceBranch = await dbStore.collection<Branch>('branches').get(transfer.sourceBranchId);
+    const destBranch = await dbStore.collection<Branch>('branches').get(transfer.destinationBranchId);
+
+    const itemsToProcess = transfer.items && transfer.items.length > 0
+      ? transfer.items
+      : [{
+          productId: transfer.productId!,
+          productName: transfer.productName || 'Product',
+          sku: transfer.sku,
+          batchId: transfer.batchId,
+          batchNumber: transfer.batchNumber,
+          quantity: transfer.quantity || 1,
+        }];
+
+    let totalDispatched = 0;
+    let totalReceived = 0;
+
+    for (const it of itemsToProcess) {
+      const itemReceivedQty = typeof receivedQuantity === 'number' && itemsToProcess.length === 1
+        ? receivedQuantity
+        : (receivedItems?.find((ri: any) => ri.productId === it.productId)?.quantity ?? it.quantity);
+
+      totalDispatched += it.quantity;
+      totalReceived += itemReceivedQty;
+
+      // Add to destination inventory
+      const destInvQuery = await dbStore.collection<InventoryItem>('inventory').query({
+        where: [
+          { field: 'shopId', op: '==', value: transfer.shopId },
+          { field: 'branchId', op: '==', value: transfer.destinationBranchId },
+          { field: 'productId', op: '==', value: it.productId },
+        ],
+      });
+
+      let finalDestQty = itemReceivedQty;
+      if (destInvQuery.data.length > 0) {
+        const destInv = destInvQuery.data[0];
+        finalDestQty = destInv.quantity + itemReceivedQty;
+        await dbStore.collection<InventoryItem>('inventory').update(destInv.id, {
+          quantity: finalDestQty,
+          updatedAt: now,
+        });
+      } else {
+        await dbStore.collection<InventoryItem>('inventory').create({
+          shopId: transfer.shopId,
+          branchId: transfer.destinationBranchId,
+          productId: it.productId,
+          productName: it.productName,
+          sku: it.sku || 'N/A',
+          quantity: itemReceivedQty,
+          minimumStockLevel: 5,
+          costPrice: it.costPrice || 0,
+          sellingPrice: it.sellingPrice || 0,
+          updatedAt: now,
+        });
+      }
+
+      // Replicate batch in destination branch if batch was transferred
+      if (it.batchNumber) {
+        const destBatchQuery = await dbStore.collection<ProductBatch>('productBatches').query({
+          where: [
+            { field: 'shopId', op: '==', value: transfer.shopId },
+            { field: 'branchId', op: '==', value: transfer.destinationBranchId },
+            { field: 'productId', op: '==', value: it.productId },
+            { field: 'batchNumber', op: '==', value: it.batchNumber },
+          ],
+        });
+
+        if (destBatchQuery.data.length > 0) {
+          const destBatch = destBatchQuery.data[0];
+          await dbStore.collection<ProductBatch>('productBatches').update(destBatch.id, {
+            quantity: destBatch.quantity + itemReceivedQty,
+            status: 'active',
+            updatedAt: now,
+          });
+        } else {
+          // Look up original batch for dates & supplier
+          let origBatch: ProductBatch | null = null;
+          if (it.batchId) {
+            origBatch = await dbStore.collection<ProductBatch>('productBatches').get(it.batchId);
+          }
+
+          await dbStore.collection<ProductBatch>('productBatches').create({
+            shopId: transfer.shopId,
+            productId: it.productId,
+            branchId: transfer.destinationBranchId,
+            branchName: destBranch?.name || 'Destination Branch',
+            batchNumber: it.batchNumber,
+            costPrice: it.costPrice || origBatch?.costPrice || 0,
+            sellingPrice: it.sellingPrice || origBatch?.sellingPrice || 0,
+            quantity: itemReceivedQty,
+            initialQuantity: itemReceivedQty,
+            manufacturingDate: origBatch?.manufacturingDate,
+            expiryDate: origBatch?.expiryDate,
+            supplierId: origBatch?.supplierId,
+            supplierName: origBatch?.supplierName,
+            status: 'active',
+            notes: `Received from ${sourceBranch?.name || transfer.sourceBranchId} (Transfer #${transfer.transferNumber})`,
+            createdAt: now,
+            updatedAt: now,
+          });
+        }
+      }
+
+      // Log StockMovement for destination branch
+      await dbStore.collection<StockMovement>('stockMovements').create({
+        shopId: transfer.shopId,
+        branchId: transfer.destinationBranchId,
+        productId: it.productId,
+        type: 'transfer',
+        quantityDelta: itemReceivedQty,
+        newQuantity: finalDestQty,
+        reason: `Received from ${sourceBranch?.name || transfer.sourceBranchId} (#${transfer.transferNumber})${it.batchNumber ? ` [Batch: ${it.batchNumber}]` : ''}`,
+        referenceId: transfer.transferNumber,
+        performedBy: req.user!.name,
+        createdAt: now,
+      });
+    }
+
+    const finalStatus = totalReceived < totalDispatched ? 'partially_received' : 'completed';
+
+    const updated = await dbStore.collection<StockTransferRequest>('transferRequests').update(id, {
+      status: finalStatus,
+      receivedQuantity: totalReceived,
+      receivedBy: req.user!.name,
+      receivedAt: now,
+      notes: notes || transfer.notes,
+      updatedAt: now,
+    });
+
+    await AuditLogService.log({
+      actor: req.user!,
+      action: 'RECEIVE_TRANSFER',
+      entity: 'transferRequests',
+      entityId: id,
+      shopId: transfer.shopId,
+      after: updated,
+    });
+
+    return sendSuccess(res, updated, { message: `Stock received successfully into ${destBranch?.name || 'destination branch'}.` });
   }
 
   static async listStockMovements(req: AuthenticatedRequest, res: Response) {

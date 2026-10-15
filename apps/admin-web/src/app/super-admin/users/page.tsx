@@ -43,24 +43,109 @@ interface ShopGroup {
 const ALL_SYSTEM_MODULES = [
   'dashboard',
   'shops',
-  'subscriptions',
-  'packages',
-  'users',
   'roles',
-  'audit_logs',
-  'inventory',
-  'pos_sales',
-  'repair_tickets',
-  'accounting',
-  'customer_crm',
-  'branch_management',
+  'users',
+  'packages',
+  'subscriptions',
+  'payments',
+  'change_requests',
   'communication',
-  'analytics_reports',
-  'system_settings',
-  'security_mfa',
-  'data_export',
-  'notifications',
+  'reports',
+  'audit_logs',
+  'branches',
+  'products',
+  'services',
+  'customers',
+  'orders',
+  'inventory',
+  'procurement',
+  'tasks',
 ];
+
+const BUILTIN_ROLE_PERMISSIONS: Record<string, Record<string, PermissionAction[]>> = {
+  super_admin: {
+    dashboard: ['view', 'create', 'edit', 'delete'],
+    shops: ['view', 'create', 'edit', 'delete'],
+    roles: ['view', 'create', 'edit', 'delete'],
+    users: ['view', 'create', 'edit', 'delete'],
+    packages: ['view', 'create', 'edit', 'delete'],
+    subscriptions: ['view', 'create', 'edit', 'delete'],
+    payments: ['view', 'create', 'edit', 'delete'],
+    change_requests: ['view', 'create', 'edit', 'delete'],
+    communication: ['view', 'create', 'edit', 'delete'],
+    reports: ['view', 'create', 'edit', 'delete'],
+    audit_logs: ['view', 'create', 'edit', 'delete'],
+    branches: ['view', 'create', 'edit', 'delete'],
+    products: ['view', 'create', 'edit', 'delete'],
+    services: ['view', 'create', 'edit', 'delete'],
+    customers: ['view', 'create', 'edit', 'delete'],
+    orders: ['view', 'create', 'edit', 'delete'],
+    inventory: ['view', 'create', 'edit', 'delete'],
+    procurement: ['view', 'create', 'edit', 'delete'],
+    tasks: ['view', 'create', 'edit', 'delete'],
+  },
+  shop_owner: {
+    dashboard: ['view'],
+    shops: ['view', 'edit'],
+    branches: ['view', 'create', 'edit', 'delete'],
+    users: ['view', 'create', 'edit', 'delete'],
+    roles: ['view', 'create', 'edit'],
+    products: ['view', 'create', 'edit', 'delete'],
+    services: ['view', 'create', 'edit', 'delete'],
+    customers: ['view', 'create', 'edit', 'delete'],
+    orders: ['view', 'create', 'edit', 'delete'],
+    inventory: ['view', 'create', 'edit', 'delete'],
+    procurement: ['view', 'create', 'edit', 'delete'],
+    tasks: ['view', 'create', 'edit', 'delete'],
+    reports: ['view', 'create'],
+    communication: ['view', 'create'],
+    subscriptions: ['view', 'create'],
+    change_requests: ['view', 'create'],
+  },
+  manager: {
+    dashboard: ['view'],
+    branches: ['view', 'edit'],
+    users: ['view', 'create', 'edit'],
+    products: ['view', 'create', 'edit', 'delete'],
+    services: ['view', 'create', 'edit', 'delete'],
+    customers: ['view', 'create', 'edit', 'delete'],
+    orders: ['view', 'create', 'edit', 'delete'],
+    inventory: ['view', 'create', 'edit', 'delete'],
+    procurement: ['view', 'create', 'edit', 'delete'],
+    tasks: ['view', 'create', 'edit', 'delete'],
+    reports: ['view'],
+    communication: ['view', 'create'],
+  },
+  sales_staff: {
+    dashboard: ['view'],
+    products: ['view'],
+    services: ['view'],
+    customers: ['view', 'create', 'edit'],
+    orders: ['view', 'create', 'edit'],
+    tasks: ['view', 'edit'],
+  },
+  inventory_staff: {
+    dashboard: ['view'],
+    products: ['view', 'create', 'edit'],
+    inventory: ['view', 'create', 'edit', 'delete'],
+    procurement: ['view', 'create', 'edit'],
+    tasks: ['view', 'edit'],
+  },
+  finance_auditor: {
+    dashboard: ['view'],
+    payments: ['view', 'edit'],
+    reports: ['view', 'create'],
+    audit_logs: ['view'],
+    orders: ['view'],
+    subscriptions: ['view'],
+  },
+  worker: {
+    dashboard: ['view'],
+    tasks: ['view', 'edit'],
+    orders: ['view'],
+    inventory: ['view'],
+  },
+};
 
 export default function UsersManagementPage() {
   const { showSuccess, showError, showConfirm } = useModal();
@@ -117,6 +202,7 @@ export default function UsersManagementPage() {
 
   // Inspect Permissions Modal
   const [inspectPermissionsUser, setInspectPermissionsUser] = useState<any | null>(null);
+  const [permissionsSearch, setPermissionsSearch] = useState('');
 
   const fetchUsersData = async () => {
     try {
@@ -159,6 +245,24 @@ export default function UsersManagementPage() {
     setCollapsedShops(prev => ({ ...prev, [shopId]: !prev[shopId] }));
   };
 
+  const findRole = (roleKey: string): Role | undefined => {
+    if (!roleKey) return undefined;
+    const normalized = roleKey.toLowerCase().trim();
+    const stripped = normalized.startsWith('role_') ? normalized.slice(5) : normalized;
+    return availableRoles.find(r => {
+      const rId = (r.id || '').toLowerCase();
+      const rSlug = (r.slug || '').toLowerCase();
+      const rName = (r.name || '').toLowerCase();
+      return (
+        rId === normalized ||
+        rSlug === normalized ||
+        rSlug === stripped ||
+        rId === `role_${stripped}` ||
+        rName === normalized
+      );
+    });
+  };
+
   const getUserRolesList = (user: any): string[] => {
     if (Array.isArray(user.roles) && user.roles.length > 0) return user.roles;
     if (user.role) return [user.role];
@@ -166,9 +270,17 @@ export default function UsersManagementPage() {
   };
 
   const getRoleDisplayName = (roleKey: string): string => {
-    const found = availableRoles.find(r => r.id === roleKey);
+    const found = findRole(roleKey);
     if (found) return found.name;
-    return roleKey
+    const stripped = roleKey.replace(/^role_/, '');
+    if (stripped === 'super_admin') return 'Super Administrator';
+    if (stripped === 'shop_owner') return 'Shop Owner';
+    if (stripped === 'manager') return 'Branch Manager';
+    if (stripped === 'worker') return 'General Staff Worker';
+    if (stripped === 'sales_staff') return 'Sales Staff';
+    if (stripped === 'inventory_staff') return 'Inventory Specialist';
+    if (stripped === 'finance_auditor') return 'Finance Auditor';
+    return stripped
       .split('_')
       .map(w => w.charAt(0).toUpperCase() + w.slice(1))
       .join(' ');
@@ -368,16 +480,41 @@ export default function UsersManagementPage() {
     }
 
     rolesList.forEach(roleKey => {
-      const roleObj = availableRoles.find(r => r.id === roleKey);
-      if (roleObj && Array.isArray(roleObj.permissions)) {
+      const roleObj = findRole(roleKey);
+      if (roleObj && Array.isArray(roleObj.permissions) && roleObj.permissions.length > 0) {
         roleObj.permissions.forEach(p => {
           if (!matrix[p.module]) {
             matrix[p.module] = new Set<PermissionAction>();
           }
-          p.actions.forEach(act => matrix[p.module].add(act));
+          (p.actions || []).forEach(act => matrix[p.module].add(act));
+        });
+      }
+
+      // Check builtin definitions
+      const normKey = roleKey.toLowerCase().replace(/^role_/, '');
+      const builtin = BUILTIN_ROLE_PERMISSIONS[normKey] || BUILTIN_ROLE_PERMISSIONS[roleKey];
+      if (builtin) {
+        Object.entries(builtin).forEach(([mod, actions]) => {
+          if (!matrix[mod]) {
+            matrix[mod] = new Set<PermissionAction>();
+          }
+          actions.forEach(act => matrix[mod].add(act));
         });
       }
     });
+
+    // Check direct permissions on user object if any
+    if (Array.isArray(user.permissions)) {
+      user.permissions.forEach((perm: any) => {
+        if (typeof perm === 'string') {
+          if (!matrix[perm]) matrix[perm] = new Set<PermissionAction>();
+          matrix[perm].add('view');
+        } else if (perm && perm.module && Array.isArray(perm.actions)) {
+          if (!matrix[perm.module]) matrix[perm.module] = new Set<PermissionAction>();
+          perm.actions.forEach((act: PermissionAction) => matrix[perm.module].add(act));
+        }
+      });
+    }
 
     return { isSuperAdmin: false, matrix };
   };
@@ -556,11 +693,15 @@ export default function UsersManagementPage() {
                     </div>
                     <div className="flex items-center gap-1.5">
                       <button
-                        onClick={() => setInspectPermissionsUser(admin)}
+                        onClick={() => {
+                          setPermissionsSearch('');
+                          setInspectPermissionsUser(admin);
+                        }}
                         title="View Full Permissions Matrix"
-                        className="p-1.5 bg-slate-700 hover:bg-slate-600 text-indigo-300 rounded-lg border border-slate-600 transition-colors"
+                        className="flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-700 hover:bg-slate-600 text-indigo-300 rounded-lg border border-slate-600 text-xs font-semibold transition-colors cursor-pointer"
                       >
                         <Eye className="h-3.5 w-3.5" />
+                        <span>View Permissions</span>
                       </button>
                     </div>
                   </div>
@@ -641,11 +782,15 @@ export default function UsersManagementPage() {
                           <td className="py-3 px-4 text-right">
                             <div className="flex items-center justify-end gap-1.5">
                               <button
-                                onClick={() => setInspectPermissionsUser(user)}
+                                onClick={() => {
+                                  setPermissionsSearch('');
+                                  setInspectPermissionsUser(user);
+                                }}
                                 title="View Assigned Roles & Permissions Matrix"
-                                className="p-1.5 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg border border-slate-200/80 transition-colors"
+                                className="flex items-center gap-1 px-2.5 py-1 text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-lg border border-indigo-200/80 text-xs font-semibold transition-colors cursor-pointer"
                               >
-                                <Eye className="h-3.5 w-3.5" />
+                                <Eye className="h-3.5 w-3.5 text-indigo-600" />
+                                <span>View Permissions</span>
                               </button>
                               <button
                                 onClick={() => handleOpenResetModal(user)}
@@ -1456,20 +1601,36 @@ export default function UsersManagementPage() {
       {/* MODAL 4: VIEW ROLES & PERMISSIONS MATRIX */}
       {inspectPermissionsUser && (
         <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-2xl w-full p-6 space-y-4 border border-slate-200 shadow-2xl animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] flex flex-col">
+          <div className="bg-white rounded-2xl max-w-3xl w-full p-6 space-y-4 border border-slate-200 shadow-2xl animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] flex flex-col">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold">
+                <div className="h-10 w-10 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-base shadow-2xs">
                   {inspectPermissionsUser.name?.charAt(0) || 'U'}
                 </div>
                 <div>
-                  <h3 className="font-bold text-slate-900 text-base">{inspectPermissionsUser.name}</h3>
-                  <p className="text-xs text-slate-500 font-mono">{inspectPermissionsUser.email}</p>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-bold text-slate-900 text-base">{inspectPermissionsUser.name}</h3>
+                    <span
+                      className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-semibold border ${
+                        inspectPermissionsUser.status === 'active'
+                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200/70'
+                          : 'bg-rose-50 text-rose-700 border-rose-200/70'
+                      }`}
+                    >
+                      {inspectPermissionsUser.status || 'active'}
+                    </span>
+                    {inspectPermissionsUser.shopName && inspectPermissionsUser.shopName !== 'Platform Admin' && (
+                      <span className="text-[11px] text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md font-medium">
+                        {inspectPermissionsUser.shopName}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-slate-500 font-mono mt-0.5">{inspectPermissionsUser.email}</p>
                 </div>
               </div>
               <button
                 onClick={() => setInspectPermissionsUser(null)}
-                className="p-1 text-slate-400 hover:text-slate-600 rounded-lg"
+                className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition-colors"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -1482,7 +1643,7 @@ export default function UsersManagementPage() {
               </p>
               <div className="flex flex-wrap gap-2">
                 {getUserRolesList(inspectPermissionsUser).map(r => {
-                  const roleObj = availableRoles.find(item => item.id === r);
+                  const roleObj = findRole(r);
                   return (
                     <div
                       key={r}
@@ -1504,36 +1665,65 @@ export default function UsersManagementPage() {
             </div>
 
             {/* Effective Matrix */}
-            <div className="flex-1 overflow-hidden flex flex-col min-h-0 pt-2">
-              <div className="flex items-center justify-between mb-2">
-                <p className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-                  Aggregated Effective Permissions Matrix
-                </p>
-                <span className="text-[11px] text-slate-500">
-                  Calculated from all active assigned roles
-                </span>
+            <div className="flex-1 overflow-hidden flex flex-col min-h-0 pt-1">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2.5">
+                <div>
+                  <p className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                    Aggregated Effective Permissions Matrix
+                  </p>
+                  <p className="text-[11px] text-slate-500">
+                    Live calculated permissions from all active assigned roles and direct privileges
+                  </p>
+                </div>
+                {/* Search filter for modules */}
+                <div className="relative w-full sm:w-56">
+                  <Search className="absolute left-2.5 top-2 h-3.5 w-3.5 text-slate-400" />
+                  <input
+                    type="text"
+                    value={permissionsSearch}
+                    onChange={e => setPermissionsSearch(e.target.value)}
+                    placeholder="Search modules..."
+                    className="w-full pl-8 pr-3 py-1 text-xs border border-slate-200 rounded-lg bg-slate-50 focus:bg-white focus:outline-none focus:border-indigo-500"
+                  />
+                </div>
               </div>
 
               {(() => {
                 const { isSuperAdmin, matrix } = getAggregatedPermissions(inspectPermissionsUser);
-                const modules = Object.keys(matrix);
+                let modules = Object.keys(matrix);
+
+                if (permissionsSearch.trim()) {
+                  const q = permissionsSearch.toLowerCase().trim();
+                  modules = modules.filter(m => m.toLowerCase().includes(q));
+                }
+
+                const totalGranted = Object.values(matrix).reduce((acc, s) => acc + s.size, 0);
 
                 return (
                   <div className="flex-1 overflow-y-auto border border-slate-200 rounded-xl divide-y divide-slate-100">
                     {isSuperAdmin && (
                       <div className="p-3 bg-amber-50/80 border-b border-amber-200 flex items-center gap-2.5 text-amber-800 text-xs font-semibold">
                         <ShieldAlert className="h-4 w-4 text-amber-600 shrink-0" />
-                        <span>Root Super Administrator: Unrestricted View, Create, Edit, and Delete access across all system features.</span>
+                        <span>Root Super Administrator: Unrestricted View, Create, Edit, and Delete access across all system modules ({totalGranted} granted actions).</span>
+                      </div>
+                    )}
+
+                    {!isSuperAdmin && totalGranted > 0 && (
+                      <div className="p-2.5 bg-indigo-50/50 border-b border-indigo-100 flex items-center justify-between text-xs text-indigo-900 font-medium">
+                        <span>Active Privileges Summary</span>
+                        <span className="font-bold text-indigo-700 bg-white px-2 py-0.5 rounded-md border border-indigo-200 shadow-2xs">
+                          {totalGranted} granted actions across {Object.keys(matrix).length} modules
+                        </span>
                       </div>
                     )}
 
                     {modules.length === 0 ? (
                       <div className="p-8 text-center text-xs text-slate-400">
-                        No permissions currently granted by the assigned role(s).
+                        {permissionsSearch ? 'No system modules matching your filter.' : 'No permissions currently granted by the assigned role(s).'}
                       </div>
                     ) : (
                       modules.map(mod => {
-                        const actions = matrix[mod];
+                        const actions = matrix[mod] || new Set();
                         const allActions: PermissionAction[] = ['view', 'create', 'edit', 'delete'];
                         const formattedMod = mod
                           .split('_')
@@ -1543,7 +1733,7 @@ export default function UsersManagementPage() {
                         return (
                           <div
                             key={mod}
-                            className="p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 hover:bg-slate-50/50 transition-colors"
+                            className="p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 hover:bg-slate-50/60 transition-colors"
                           >
                             <div className="min-w-0">
                               <p className="font-semibold text-xs text-slate-900">{formattedMod}</p>
@@ -1585,7 +1775,7 @@ export default function UsersManagementPage() {
             <div className="flex items-center justify-end pt-2 border-t border-slate-100">
               <button
                 onClick={() => setInspectPermissionsUser(null)}
-                className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-semibold shadow-xs"
+                className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-semibold shadow-xs transition-colors"
               >
                 Close Inspector
               </button>

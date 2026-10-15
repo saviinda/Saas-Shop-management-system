@@ -569,5 +569,42 @@
     ],
     "createdAt": "2026-08-15T00:00:00.000Z",
     "updatedAt": "2026-08-15T00:00:00.000Z"
+  },
+  {
+    "id": "role_worker",
+    "name": "General Operations Worker",
+    "slug": "worker",
+    "description": "Floor worker handling day-to-day workshop tasks, order fulfillment, and inventory handling.",
+    "isSystem": true,
+    "permissions": [
+      {
+        "module": "dashboard",
+        "actions": [
+          "view"
+        ]
+      },
+      {
+        "module": "orders",
+        "actions": [
+          "view",
+          "edit"
+        ]
+      },
+      {
+        "module": "tasks",
+        "actions": [
+          "view",
+          "edit"
+        ]
+      },
+      {
+        "module": "inventory",
+        "actions": [
+          "view"
+        ]
+      }
+    ],
+    "createdAt": "2026-08-15T00:00:00.000Z",
+    "updatedAt": "2026-08-15T00:00:00.000Z"
   }
 ]

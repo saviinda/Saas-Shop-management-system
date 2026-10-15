@@ -213,6 +213,7 @@ export interface Product {
   costPrice: number;
   sellingPrice: number;
   stockQuantity?: number;
+  currentStock?: number;
   minimumStockLevel: number;
   status: 'active' | 'inactive';
   isPublic?: boolean;
@@ -340,6 +341,62 @@ export interface StockMovement {
   referenceId?: string;
   performedBy: string;
   createdAt: string;
+}
+
+export type StockTransferStatus = 
+  | 'pending' 
+  | 'approved' 
+  | 'rejected' 
+  | 'dispatched' 
+  | 'partially_received' 
+  | 'completed' 
+  | 'cancelled';
+
+export interface StockTransferItem {
+  productId: string;
+  productName: string;
+  sku?: string;
+  batchId?: string;
+  batchNumber?: string;
+  quantity: number;
+  receivedQuantity?: number;
+  costPrice?: number;
+  sellingPrice?: number;
+}
+
+export interface StockTransferRequest {
+  id: string;
+  transferNumber: string;
+  shopId: string;
+  sourceBranchId: string;
+  sourceBranchName?: string;
+  destinationBranchId: string;
+  destinationBranchName?: string;
+  items: StockTransferItem[];
+  // Convenience/legacy single item fields
+  productId?: string;
+  productName?: string;
+  sku?: string;
+  batchId?: string;
+  batchNumber?: string;
+  quantity?: number;
+  receivedQuantity?: number;
+  status: StockTransferStatus;
+  reason: string;
+  notes?: string;
+  requestedBy: string;
+  requesterId?: string;
+  approvedBy?: string;
+  approvedAt?: string;
+  rejectedBy?: string;
+  rejectedAt?: string;
+  rejectionReason?: string;
+  dispatchedBy?: string;
+  dispatchedAt?: string;
+  receivedBy?: string;
+  receivedAt?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Supplier {

@@ -253,8 +253,49 @@ export const stockTransferSchema = z.object({
   sourceBranchId: z.string().min(1),
   destinationBranchId: z.string().min(1),
   productId: z.string().min(1),
+  batchId: z.string().optional(),
   quantity: z.number().int().min(1),
-  reason: z.string().min(3),
+  reason: z.string().min(2),
+  notes: z.string().optional(),
+});
+
+export const createTransferRequestSchema = z.object({
+  sourceBranchId: z.string().min(1),
+  destinationBranchId: z.string().min(1),
+  productId: z.string().optional(),
+  batchId: z.string().optional(),
+  quantity: z.number().int().min(1).optional(),
+  items: z.array(
+    z.object({
+      productId: z.string().min(1),
+      productName: z.string().optional(),
+      sku: z.string().optional(),
+      batchId: z.string().optional(),
+      batchNumber: z.string().optional(),
+      quantity: z.number().int().min(1),
+    })
+  ).optional(),
+  reason: z.string().min(2),
+  notes: z.string().optional(),
+});
+
+export const receiveTransferSchema = z.object({
+  receivedQuantity: z.number().int().min(0).optional(),
+  receivedItems: z.array(
+    z.object({
+      productId: z.string().min(1),
+      batchId: z.string().optional(),
+      quantity: z.number().int().min(0),
+    })
+  ).optional(),
+  notes: z.string().optional(),
+});
+
+export const updateTransferStatusSchema = z.object({
+  action: z.enum(['approve', 'reject', 'dispatch', 'receive', 'cancel']),
+  rejectionReason: z.string().optional(),
+  receivedQuantity: z.number().int().min(0).optional(),
+  notes: z.string().optional(),
 });
 
 export const createSupplierSchema = z.object({

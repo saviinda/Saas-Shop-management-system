@@ -64,6 +64,7 @@ export const CategorizedFilterBar: React.FC<CategorizedFilterBarProps> = ({
   const [activePickerCategory, setActivePickerCategory] = useState<FilterCategory | null>(null);
   const [customDateFrom, setCustomDateFrom] = useState('');
   const [customDateTo, setCustomDateTo] = useState('');
+  const [textFilterValue, setTextFilterValue] = useState('');
 
   const menuRef = useRef<HTMLDivElement>(null);
   const pickerRef = useRef<HTMLDivElement>(null);
@@ -96,6 +97,23 @@ export const CategorizedFilterBar: React.FC<CategorizedFilterBarProps> = ({
     return <Filter className="h-4 w-4 text-slate-400" />;
   };
 
+  const handleOpenCategoryPicker = (cat: FilterCategory) => {
+    setActivePickerCategory(cat);
+    setIsAddMenuOpen(false);
+    if (cat.type === 'text') {
+      setTextFilterValue(activeFilters[cat.id] || '');
+    } else if (cat.type === 'date-range') {
+      const existing = activeFilters[cat.id] || activeFilters['date_range'] || activeFilters['dateRange'];
+      if (existing && typeof existing === 'object') {
+        setCustomDateFrom(existing.from || '');
+        setCustomDateTo(existing.to || '');
+      } else {
+        setCustomDateFrom('');
+        setCustomDateTo('');
+      }
+    }
+  };
+
   const handleSelectOption = (categoryId: string, optionValue: string) => {
     onFilterChange(categoryId, optionValue);
     setActivePickerCategory(null);
@@ -103,6 +121,7 @@ export const CategorizedFilterBar: React.FC<CategorizedFilterBarProps> = ({
   };
 
   const handleDatePreset = (preset: string) => {
+    const targetCatId = activePickerCategory?.id || 'date_range';
     const now = new Date();
     let from = '';
     let to = '';
@@ -128,18 +147,27 @@ export const CategorizedFilterBar: React.FC<CategorizedFilterBarProps> = ({
       to = now.toISOString().split('T')[0];
     }
 
-    onFilterChange('dateRange', { from, to, preset });
+    onFilterChange(targetCatId, { from, to, preset });
     setActivePickerCategory(null);
     setIsAddMenuOpen(false);
   };
 
   const handleApplyCustomDateRange = () => {
+    const targetCatId = activePickerCategory?.id || 'date_range';
     if (!customDateFrom && !customDateTo) return;
-    onFilterChange('dateRange', {
+    onFilterChange(targetCatId, {
       from: customDateFrom,
       to: customDateTo || customDateFrom,
       preset: 'custom',
     });
+    setActivePickerCategory(null);
+    setIsAddMenuOpen(false);
+  };
+
+  const handleApplyTextFilter = () => {
+    if (!activePickerCategory) return;
+    const trimmed = textFilterValue.trim();
+    onFilterChange(activePickerCategory.id, trimmed || null);
     setActivePickerCategory(null);
     setIsAddMenuOpen(false);
   };
@@ -152,11 +180,14 @@ export const CategorizedFilterBar: React.FC<CategorizedFilterBarProps> = ({
   }> = [];
 
   Object.entries(activeFilters).forEach(([catId, val]) => {
-    if (!val || val === 'all' || val === '') return;
+    if (val === undefined || val === null || val === 'all' || val === '') return;
 
-    if (catId === 'dateRange' && typeof val === 'object') {
-      let label = 'Date';
-      let display = `${val.from} to ${val.to}`;
+    const cat = categories.find(c => c.id === catId);
+
+    // Date range object
+    if (typeof val === 'object' && val !== null && (val.from || val.to || cat?.type === 'date-range' || catId.includes('date'))) {
+      const label = cat?.label ? cat.label.replace(' Filters', '').replace(' Filter', '') : 'Date Range';
+      let display = `${val.from || ''} to ${val.to || ''}`.trim();
       if (val.preset === 'today') display = 'Today';
       else if (val.preset === 'yesterday') display = 'Yesterday';
       else if (val.preset === '7days') display = 'Last 7 Days';
@@ -166,18 +197,15 @@ export const CategorizedFilterBar: React.FC<CategorizedFilterBarProps> = ({
       return;
     }
 
-    const cat = categories.find(c => c.id === catId);
-    if (!cat) return;
-
     let displayValue = String(val);
-    if (cat.options) {
+    if (cat?.options) {
       const matched = cat.options.find(o => o.value === val);
       if (matched) displayValue = matched.label;
     }
 
     activePills.push({
       categoryId: catId,
-      categoryLabel: cat.label.replace(' Filters', '').replace(' Filter', ''),
+      categoryLabel: cat?.label ? cat.label.replace(' Filters', '').replace(' Filter', '') : catId,
       displayValue,
     });
   });
@@ -238,10 +266,7 @@ export const CategorizedFilterBar: React.FC<CategorizedFilterBarProps> = ({
                     <button
                       key={cat.id}
                       type="button"
-                      onClick={() => {
-                        setActivePickerCategory(cat);
-                        setIsAddMenuOpen(false);
-                      }}
+                      onClick={() => handleOpenCategoryPicker(cat)}
                       className="w-full flex items-center justify-between px-3 py-2 text-xs font-semibold rounded-xl text-slate-700 hover:bg-indigo-50/70 hover:text-indigo-700 transition-colors text-left"
                     >
                       <div className="flex items-center gap-2.5">
@@ -391,6 +416,64 @@ export const CategorizedFilterBar: React.FC<CategorizedFilterBarProps> = ({
                 })}
               </div>
             )}
+
+            {/* TEXT SEARCH PICKER */}
+            {activePickerCategory.type === 'text' && (
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleApplyTextFilter();
+                }}
+                className="space-y-4"
+              >
+                <p className="text-xs text-slate-500 font-medium">
+                  {activePickerCategory.placeholder || `Filter records by ${activePickerCategory.label.toLowerCase()}:`}
+                </p>
+
+                <div className="relative">
+                  <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                  <input
+                    type="text"
+                    value={textFilterValue}
+                    onChange={(e) => setTextFilterValue(e.target.value)}
+                    placeholder={activePickerCategory.placeholder || 'Type search term...'}
+                    autoFocus
+                    className="w-full pl-9 pr-8 py-2 text-xs font-medium border border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 shadow-2xs"
+                  />
+                  {textFilterValue && (
+                    <button
+                      type="button"
+                      onClick={() => setTextFilterValue('')}
+                      className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600 p-0.5 rounded-md"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-2 pt-1">
+                  <button
+                    type="submit"
+                    className="flex-1 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold transition-colors shadow-2xs cursor-pointer"
+                  >
+                    Apply Filter
+                  </button>
+                  {Boolean(activeFilters[activePickerCategory.id]) && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onFilterChange(activePickerCategory.id, null);
+                        setActivePickerCategory(null);
+                        setIsAddMenuOpen(false);
+                      }}
+                      className="px-3 py-2 border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
+              </form>
+            )}
           </div>
         </div>
       )}
@@ -410,8 +493,8 @@ export const CategorizedFilterBar: React.FC<CategorizedFilterBarProps> = ({
               <span>{pill.displayValue}</span>
               <button
                 type="button"
-                onClick={() => onFilterChange(pill.categoryId, pill.categoryId === 'dateRange' ? null : 'all')}
-                className="hover:bg-indigo-200/60 rounded-full p-0.5 text-indigo-500 hover:text-indigo-800 transition-colors"
+                onClick={() => onFilterChange(pill.categoryId, null)}
+                className="hover:bg-indigo-200/60 rounded-full p-0.5 text-indigo-500 hover:text-indigo-800 transition-colors cursor-pointer"
                 title={`Remove ${pill.categoryLabel} filter`}
               >
                 <X className="h-3 w-3" />

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.replyTicketSchema = exports.createTicketSchema = exports.addTaskCommentSchema = exports.updateTaskStatusSchema = exports.createTaskSchema = exports.createGRNSchema = exports.updatePOSchema = exports.createPOSchema = exports.updateSupplierSchema = exports.createSupplierSchema = exports.stockTransferSchema = exports.stockAdjustmentSchema = exports.updateOrderStatusSchema = exports.updateOrderSchema = exports.createOrderSchema = exports.updateCustomerSchema = exports.createCustomerSchema = exports.updateServiceSchema = exports.createServiceSchema = exports.updateServiceCategorySchema = exports.createServiceCategorySchema = exports.updateProductBatchSchema = exports.createProductBatchSchema = exports.updateProductSchema = exports.createProductSchema = exports.updateCategorySchema = exports.createCategorySchema = exports.reviewChangeRequestSchema = exports.createChangeRequestSchema = exports.createPaymentRequestSchema = exports.createPackageSchema = exports.createStaffUserSchema = exports.updateBranchSchema = exports.createBranchSchema = exports.updateShopSchema = exports.createShopSchema = exports.registerShopOwnerSchema = exports.restrictShopPaymentSchema = exports.reviewPaymentSchema = exports.resetPasswordSchema = exports.forgotPasswordSchema = exports.changePasswordSchema = exports.loginSchema = void 0;
+exports.replyTicketSchema = exports.createTicketSchema = exports.addTaskCommentSchema = exports.updateTaskStatusSchema = exports.createTaskSchema = exports.createGRNSchema = exports.updatePOSchema = exports.createPOSchema = exports.updateSupplierSchema = exports.createSupplierSchema = exports.updateTransferStatusSchema = exports.receiveTransferSchema = exports.createTransferRequestSchema = exports.stockTransferSchema = exports.stockAdjustmentSchema = exports.updateOrderStatusSchema = exports.updateOrderSchema = exports.createOrderSchema = exports.updateCustomerSchema = exports.createCustomerSchema = exports.updateServiceSchema = exports.createServiceSchema = exports.updateServiceCategorySchema = exports.createServiceCategorySchema = exports.updateProductBatchSchema = exports.createProductBatchSchema = exports.updateProductSchema = exports.createProductSchema = exports.updateCategorySchema = exports.createCategorySchema = exports.reviewChangeRequestSchema = exports.createChangeRequestSchema = exports.createPaymentRequestSchema = exports.createPackageSchema = exports.createStaffUserSchema = exports.updateBranchSchema = exports.createBranchSchema = exports.updateShopSchema = exports.createShopSchema = exports.registerShopOwnerSchema = exports.restrictShopPaymentSchema = exports.reviewPaymentSchema = exports.resetPasswordSchema = exports.forgotPasswordSchema = exports.changePasswordSchema = exports.loginSchema = void 0;
 const zod_1 = require("zod");
 exports.loginSchema = zod_1.z.object({
     email: zod_1.z.string().email(),
@@ -221,8 +221,42 @@ exports.stockTransferSchema = zod_1.z.object({
     sourceBranchId: zod_1.z.string().min(1),
     destinationBranchId: zod_1.z.string().min(1),
     productId: zod_1.z.string().min(1),
+    batchId: zod_1.z.string().optional(),
     quantity: zod_1.z.number().int().min(1),
-    reason: zod_1.z.string().min(3),
+    reason: zod_1.z.string().min(2),
+    notes: zod_1.z.string().optional(),
+});
+exports.createTransferRequestSchema = zod_1.z.object({
+    sourceBranchId: zod_1.z.string().min(1),
+    destinationBranchId: zod_1.z.string().min(1),
+    productId: zod_1.z.string().optional(),
+    batchId: zod_1.z.string().optional(),
+    quantity: zod_1.z.number().int().min(1).optional(),
+    items: zod_1.z.array(zod_1.z.object({
+        productId: zod_1.z.string().min(1),
+        productName: zod_1.z.string().optional(),
+        sku: zod_1.z.string().optional(),
+        batchId: zod_1.z.string().optional(),
+        batchNumber: zod_1.z.string().optional(),
+        quantity: zod_1.z.number().int().min(1),
+    })).optional(),
+    reason: zod_1.z.string().min(2),
+    notes: zod_1.z.string().optional(),
+});
+exports.receiveTransferSchema = zod_1.z.object({
+    receivedQuantity: zod_1.z.number().int().min(0).optional(),
+    receivedItems: zod_1.z.array(zod_1.z.object({
+        productId: zod_1.z.string().min(1),
+        batchId: zod_1.z.string().optional(),
+        quantity: zod_1.z.number().int().min(0),
+    })).optional(),
+    notes: zod_1.z.string().optional(),
+});
+exports.updateTransferStatusSchema = zod_1.z.object({
+    action: zod_1.z.enum(['approve', 'reject', 'dispatch', 'receive', 'cancel']),
+    rejectionReason: zod_1.z.string().optional(),
+    receivedQuantity: zod_1.z.number().int().min(0).optional(),
+    notes: zod_1.z.string().optional(),
 });
 exports.createSupplierSchema = zod_1.z.object({
     name: zod_1.z.string().min(2),

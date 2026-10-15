@@ -16,5 +16,14 @@
     "createdAt": "2026-09-30T14:34:39.383Z",
     "updatedAt": "2026-09-30T14:34:39.383Z",
     "id": "b2d865fa-c7ea-4e92-9307-3a4b9ce8e07c"
+  },
+  {
+    "shopId": "shp_1787930675212",
+    "name": "Papers",
+    "description": "Category auto-synced from catalog products",
+    "status": "active",
+    "createdAt": "2026-10-15T10:10:49.009Z",
+    "updatedAt": "2026-10-15T10:10:49.009Z",
+    "id": "9ca0e8b8-313c-46a0-a1ad-8dcc7111e2e1"
   }
 ]

@@ -13,12 +13,12 @@
     "category": "Print shops",
     "openingHours": "Mon-Sun: 07:00 AM - 10:00 PM",
     "status": "active",
-    "packageId": "pkg_standard",
-    "packageName": "Standard Tier",
+    "packageId": "a505f3ca-c4ad-4d90-bc2d-d8af7afa911e",
+    "packageName": "Enterprise Pro",
     "subscriptionId": "sub_urban_cafe",
     "defaultBranchId": "br_urban_downtown",
     "createdAt": "2026-09-11T10:16:53.178Z",
-    "updatedAt": "2026-09-30T05:21:23.889Z",
+    "updatedAt": "2026-10-15T10:44:18.251Z",
     "socialMedia": {
       "facebook": "",
       "instagram": "",
@@ -71,7 +71,7 @@
     "subscriptionId": "sub_1790779823800",
     "defaultBranchId": "br_1790779823800",
     "createdAt": "2026-09-30T14:50:25.548Z",
-    "updatedAt": "2026-09-30T14:53:47.005Z",
+    "updatedAt": "2026-10-15T10:33:03.672Z",
     "description": ""
   }
 ]

@@ -16,7 +16,7 @@ export class CustomerController {
       orderBy: { field: 'createdAt', direction: 'desc' },
     });
 
-    let data = customers.data;
+    let data = customers.data.filter(c => c.name.toLowerCase() !== 'walk-in customer' && c.id !== 'walkin');
     if (search) {
       const q = (search as string).toLowerCase();
       data = data.filter(c => c.name.toLowerCase().includes(q) || c.phone.includes(q) || c.email?.toLowerCase().includes(q));

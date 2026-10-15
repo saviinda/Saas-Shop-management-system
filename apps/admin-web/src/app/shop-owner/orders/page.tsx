@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useEffect, useState, useRef, useMemo } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { api, ApiError } from '@/lib/api-client';
 import { useBranch } from '@/lib/branch-context';
 import { Order, Product, ProductBatch, ServiceItem, Customer, OrderStatus, OrderPaymentStatus } from '@saas/types';
@@ -11,6 +13,7 @@ import {
   Plus,
   CheckCircle2,
   User,
+  CreditCard,
   Phone,
   Trash2,
   Package,
@@ -99,6 +102,7 @@ const orderFilterCategories: FilterCategory[] = [
 ];
 
 export default function OrdersPage() {
+  const router = useRouter();
   const { showSuccess, showError, showConfirm } = useModal();
   const { activeBranch } = useBranch();
   const [orders, setOrders] = useState<Order[]>([]);
@@ -159,14 +163,19 @@ export default function OrdersPage() {
         search: currentSearch || undefined,
       };
 
-      if (currentFilters.order_status) queryParams.status = currentFilters.order_status;
-      if (currentFilters.payment_status) queryParams.paymentStatus = currentFilters.payment_status;
-      if (currentFilters.date_range) {
-        if (currentFilters.date_range.from) queryParams.dateFrom = currentFilters.date_range.from;
-        if (currentFilters.date_range.to) queryParams.dateTo = currentFilters.date_range.to;
+      if (currentFilters.order_status && currentFilters.order_status !== 'all') {
+        queryParams.status = currentFilters.order_status;
       }
-      if (currentFilters.customer && !queryParams.search) {
-        queryParams.search = currentFilters.customer;
+      if (currentFilters.payment_status && currentFilters.payment_status !== 'all') {
+        queryParams.paymentStatus = currentFilters.payment_status;
+      }
+      const dateRange = currentFilters.date_range || currentFilters.dateRange;
+      if (dateRange && typeof dateRange === 'object') {
+        if (dateRange.from) queryParams.dateFrom = dateRange.from;
+        if (dateRange.to) queryParams.dateTo = dateRange.to;
+      }
+      if (currentFilters.customer && currentFilters.customer !== 'all') {
+        queryParams.customer = currentFilters.customer;
       }
 
       const [ordRes, prdRes, srvRes, custRes] = await Promise.all([
@@ -515,43 +524,7 @@ export default function OrdersPage() {
 
   // Resume Job in POS
   const handleResumeJob = (job: Order) => {
-    setActiveJobId(job.id);
-    setActiveJobNumber(job.orderNumber);
-    setJobTitle(job.jobTitle || '');
-    setSelectedCustomerId(job.customerId || 'walkin');
-    setCustomerName(job.customerName);
-    setCustomerPhone(job.customerPhone || '');
-    setDiscountAmount(job.discount || 0);
-    setTaxPercent(job.tax && job.subtotal ? Math.round((job.tax / job.subtotal) * 100) : 0);
-    setPaymentMethod((job.paymentMethod as any) || 'cash');
-    setPaymentStatus('paid');
-    setOrderNotes(job.notes || '');
-
-    // Restore line items with custom unit prices and batch selections
-    const restoredCart: CartItem[] = job.items.map(it => {
-      const product = products.find(p => p.id === it.itemId);
-      const batch = product?.batches?.find(b => b.id === it.batchId);
-      return {
-        type: it.type,
-        id: it.itemId,
-        name: it.name,
-        sku: it.sku,
-        originalPrice: it.unitPrice,
-        unitPrice: it.unitPrice,
-        quantity: it.quantity,
-        batchId: it.batchId,
-        batchNumber: it.batchNumber,
-        variant: it.variant,
-        assignedStaffId: it.assignedStaffId,
-        assignedStaffName: it.assignedStaffName,
-        maxQuantity: batch ? batch.quantity : undefined,
-      };
-    });
-
-    setCart(restoredCart);
-    setShowJobsModal(false);
-    setSelectedOrderDetails(null);
-    setShowPOSModal(true);
+    router.push(`/shop-owner/pos?resumeJobId=${job.id}`);
   };
 
   // Direct Complete Job from List
@@ -647,15 +620,12 @@ export default function OrdersPage() {
             )}
           </button>
 
-          <button
-            onClick={() => {
-              resetPOSForm();
-              setShowPOSModal(true);
-            }}
+          <Link
+            href="/shop-owner/pos"
             className="flex items-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-sm shadow-indigo-200 active:scale-[0.98] transition-all cursor-pointer"
           >
-            <Plus className="h-4 w-4" /> Open POS Terminal
-          </button>
+            <CreditCard className="h-4 w-4" /> Open POS Terminal
+          </Link>
         </div>
       </div>
 
@@ -665,7 +635,7 @@ export default function OrdersPage() {
         activeFilters={activeFilters}
         onFilterChange={(categoryId, value) => {
           setActiveFilters(prev => {
-            if (value === undefined || value === null || value === '') {
+            if (value === undefined || value === null || value === '' || value === 'all') {
               const next = { ...prev };
               delete next[categoryId];
               return next;

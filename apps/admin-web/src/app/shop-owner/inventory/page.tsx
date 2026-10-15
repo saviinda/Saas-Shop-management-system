@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { api } from '@/lib/api-client';
 import { useBranch } from '@/lib/branch-context';
 import { InventoryItem, StockMovement, Branch, Product } from '@saas/types';
@@ -104,6 +105,7 @@ export default function InventoryPage() {
     sourceBranchId: '',
     destinationBranchId: '',
     productId: '',
+    batchId: '',
     quantity: 5,
     reason: 'Inter-branch replenishment',
   });
@@ -192,6 +194,7 @@ export default function InventoryPage() {
       sourceBranchId: activeBranch?.id || (branches[0]?.id ?? ''),
       destinationBranchId: availableBranches[0]?.id || '',
       productId: items[0]?.productId || '',
+      batchId: '',
       quantity: 5,
       reason: 'Inter-branch stock balancing',
     });
@@ -219,6 +222,7 @@ export default function InventoryPage() {
         sourceBranchId: transferForm.sourceBranchId,
         destinationBranchId: transferForm.destinationBranchId,
         productId: transferForm.productId,
+        batchId: transferForm.batchId || undefined,
         quantity: Number(transferForm.quantity),
         reason: transferForm.reason.trim(),
       });
@@ -272,18 +276,25 @@ export default function InventoryPage() {
         </div>
 
         <div className="flex items-center gap-2 self-start sm:self-auto">
+          <Link
+            href="/shop-owner/inventory/transfers"
+            className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-200/90 rounded-xl hover:bg-slate-50 shadow-2xs transition-colors"
+          >
+            <ArrowRightLeft className="h-4 w-4 text-indigo-600" /> Transfer Requests
+          </Link>
+
           {branches.length > 1 && (
             <button
               onClick={openTransferModal}
-              className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-200/90 rounded-xl hover:bg-slate-50 shadow-2xs transition-colors"
+              className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-indigo-600 bg-indigo-50 border border-indigo-100 rounded-xl hover:bg-indigo-100/70 shadow-2xs transition-colors cursor-pointer"
             >
-              <ArrowRightLeft className="h-4 w-4 text-indigo-600" /> Transfer Stock
+              <Plus className="h-4 w-4" /> Direct Transfer
             </button>
           )}
 
           <button
             onClick={() => setActiveTab(activeTab === 'inventory' ? 'movements' : 'inventory')}
-            className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-indigo-600 bg-indigo-50 border border-indigo-100 rounded-xl hover:bg-indigo-100/70 transition-colors"
+            className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-200/90 rounded-xl hover:bg-slate-50 shadow-2xs transition-colors cursor-pointer"
           >
             <History className="h-4 w-4" /> {activeTab === 'inventory' ? 'View Movement Logs' : 'View Stock Catalog'}
           </button>
@@ -702,7 +713,7 @@ export default function InventoryPage() {
                 <label className="block font-bold text-slate-800 mb-1">Select Product to Transfer</label>
                 <select
                   value={transferForm.productId}
-                  onChange={e => setTransferForm({ ...transferForm, productId: e.target.value })}
+                  onChange={e => setTransferForm({ ...transferForm, productId: e.target.value, batchId: '' })}
                   className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800 focus:bg-white focus:outline-none"
                 >
                   {items.map(it => (
@@ -712,6 +723,32 @@ export default function InventoryPage() {
                   ))}
                 </select>
               </div>
+
+              {/* Batch selection */}
+              {(() => {
+                const prod = products.find(p => p.id === transferForm.productId);
+                const batches = (prod?.batches || []).filter(
+                  b => b.branchId === transferForm.sourceBranchId && b.status === 'active' && b.quantity > 0
+                );
+                if (!batches || batches.length === 0) return null;
+                return (
+                  <div>
+                    <label className="block font-bold text-slate-800 mb-1">Select Batch (Optional)</label>
+                    <select
+                      value={transferForm.batchId}
+                      onChange={e => setTransferForm({ ...transferForm, batchId: e.target.value })}
+                      className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800 focus:bg-white focus:outline-none font-mono text-xs"
+                    >
+                      <option value="">-- General / FIFO Stock --</option>
+                      {batches.map(b => (
+                        <option key={b.id} value={b.id}>
+                          Batch #{b.batchNumber} - {b.quantity} units ({formatCurrency(b.sellingPrice)})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                );
+              })()}
 
               <div>
                 <label className="block font-bold text-slate-800 mb-1">Transfer Quantity (Units)</label>

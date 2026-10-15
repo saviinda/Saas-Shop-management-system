@@ -914,20 +914,138 @@ export declare const stockTransferSchema: z.ZodObject<{
     sourceBranchId: z.ZodString;
     destinationBranchId: z.ZodString;
     productId: z.ZodString;
+    batchId: z.ZodOptional<z.ZodString>;
     quantity: z.ZodNumber;
     reason: z.ZodString;
+    notes: z.ZodOptional<z.ZodString>;
 }, "strip", z.ZodTypeAny, {
     reason: string;
     quantity: number;
     productId: string;
     sourceBranchId: string;
     destinationBranchId: string;
+    notes?: string | undefined;
+    batchId?: string | undefined;
 }, {
     reason: string;
     quantity: number;
     productId: string;
     sourceBranchId: string;
     destinationBranchId: string;
+    notes?: string | undefined;
+    batchId?: string | undefined;
+}>;
+export declare const createTransferRequestSchema: z.ZodObject<{
+    sourceBranchId: z.ZodString;
+    destinationBranchId: z.ZodString;
+    productId: z.ZodOptional<z.ZodString>;
+    batchId: z.ZodOptional<z.ZodString>;
+    quantity: z.ZodOptional<z.ZodNumber>;
+    items: z.ZodOptional<z.ZodArray<z.ZodObject<{
+        productId: z.ZodString;
+        productName: z.ZodOptional<z.ZodString>;
+        sku: z.ZodOptional<z.ZodString>;
+        batchId: z.ZodOptional<z.ZodString>;
+        batchNumber: z.ZodOptional<z.ZodString>;
+        quantity: z.ZodNumber;
+    }, "strip", z.ZodTypeAny, {
+        quantity: number;
+        productId: string;
+        sku?: string | undefined;
+        batchNumber?: string | undefined;
+        batchId?: string | undefined;
+        productName?: string | undefined;
+    }, {
+        quantity: number;
+        productId: string;
+        sku?: string | undefined;
+        batchNumber?: string | undefined;
+        batchId?: string | undefined;
+        productName?: string | undefined;
+    }>, "many">>;
+    reason: z.ZodString;
+    notes: z.ZodOptional<z.ZodString>;
+}, "strip", z.ZodTypeAny, {
+    reason: string;
+    sourceBranchId: string;
+    destinationBranchId: string;
+    notes?: string | undefined;
+    quantity?: number | undefined;
+    batchId?: string | undefined;
+    items?: {
+        quantity: number;
+        productId: string;
+        sku?: string | undefined;
+        batchNumber?: string | undefined;
+        batchId?: string | undefined;
+        productName?: string | undefined;
+    }[] | undefined;
+    productId?: string | undefined;
+}, {
+    reason: string;
+    sourceBranchId: string;
+    destinationBranchId: string;
+    notes?: string | undefined;
+    quantity?: number | undefined;
+    batchId?: string | undefined;
+    items?: {
+        quantity: number;
+        productId: string;
+        sku?: string | undefined;
+        batchNumber?: string | undefined;
+        batchId?: string | undefined;
+        productName?: string | undefined;
+    }[] | undefined;
+    productId?: string | undefined;
+}>;
+export declare const receiveTransferSchema: z.ZodObject<{
+    receivedQuantity: z.ZodOptional<z.ZodNumber>;
+    receivedItems: z.ZodOptional<z.ZodArray<z.ZodObject<{
+        productId: z.ZodString;
+        batchId: z.ZodOptional<z.ZodString>;
+        quantity: z.ZodNumber;
+    }, "strip", z.ZodTypeAny, {
+        quantity: number;
+        productId: string;
+        batchId?: string | undefined;
+    }, {
+        quantity: number;
+        productId: string;
+        batchId?: string | undefined;
+    }>, "many">>;
+    notes: z.ZodOptional<z.ZodString>;
+}, "strip", z.ZodTypeAny, {
+    notes?: string | undefined;
+    receivedQuantity?: number | undefined;
+    receivedItems?: {
+        quantity: number;
+        productId: string;
+        batchId?: string | undefined;
+    }[] | undefined;
+}, {
+    notes?: string | undefined;
+    receivedQuantity?: number | undefined;
+    receivedItems?: {
+        quantity: number;
+        productId: string;
+        batchId?: string | undefined;
+    }[] | undefined;
+}>;
+export declare const updateTransferStatusSchema: z.ZodObject<{
+    action: z.ZodEnum<["approve", "reject", "dispatch", "receive", "cancel"]>;
+    rejectionReason: z.ZodOptional<z.ZodString>;
+    receivedQuantity: z.ZodOptional<z.ZodNumber>;
+    notes: z.ZodOptional<z.ZodString>;
+}, "strip", z.ZodTypeAny, {
+    action: "approve" | "reject" | "dispatch" | "receive" | "cancel";
+    notes?: string | undefined;
+    receivedQuantity?: number | undefined;
+    rejectionReason?: string | undefined;
+}, {
+    action: "approve" | "reject" | "dispatch" | "receive" | "cancel";
+    notes?: string | undefined;
+    receivedQuantity?: number | undefined;
+    rejectionReason?: string | undefined;
 }>;
 export declare const createSupplierSchema: z.ZodObject<{
     name: z.ZodString;
@@ -1062,23 +1180,23 @@ export declare const createGRNSchema: z.ZodObject<{
     notes: z.ZodOptional<z.ZodString>;
     documentUrl: z.ZodOptional<z.ZodString>;
 }, "strip", z.ZodTypeAny, {
-    purchaseOrderId: string;
     receivedItems: {
         productId: string;
         unitCost: number;
         receivedQty: number;
         damagedQty: number;
     }[];
+    purchaseOrderId: string;
     notes?: string | undefined;
     documentUrl?: string | undefined;
 }, {
-    purchaseOrderId: string;
     receivedItems: {
         productId: string;
         unitCost: number;
         receivedQty: number;
         damagedQty?: number | undefined;
     }[];
+    purchaseOrderId: string;
     notes?: string | undefined;
     documentUrl?: string | undefined;
 }>;

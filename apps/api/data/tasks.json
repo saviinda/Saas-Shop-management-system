@@ -10,7 +10,7 @@
     "createdById": "usr_manager_1",
     "createdByName": "Sarah Jenkins",
     "priority": "high",
-    "status": "in_progress",
+    "status": "completed",
     "dueDate": "2026-09-11T14:16:53.365Z",
     "comments": [
       {
@@ -22,7 +22,7 @@
       }
     ],
     "createdAt": "2026-09-11T10:16:53.365Z",
-    "updatedAt": "2026-09-11T10:16:53.365Z"
+    "updatedAt": "2026-10-15T10:53:11.193Z"
   },
   {
     "shopId": "shp_1787930675212",

@@ -104,5 +104,29 @@
     "status": "active",
     "createdAt": "2026-09-30T14:50:23.800Z",
     "updatedAt": "2026-09-30T14:50:23.800Z"
+  },
+  {
+    "id": "6dd1ad21-f2bf-435a-a575-1c3bff4f7aeb",
+    "createdAt": "2026-10-15T06:59:24.504Z",
+    "isDefault": false,
+    "address": "200 Uptown Ave",
+    "code": "UP-02",
+    "phone": "555-0102",
+    "name": "Uptown Express Branch",
+    "shopId": "test-shop-1792047564135",
+    "status": "active",
+    "updatedAt": "2026-10-15T06:59:24.504Z"
+  },
+  {
+    "id": "7a0422e9-251e-4072-92f3-a76f109ed8fb",
+    "createdAt": "2026-10-15T06:59:24.150Z",
+    "isDefault": true,
+    "address": "100 Main St",
+    "code": "DT-01",
+    "phone": "555-0101",
+    "name": "Downtown Main Branch",
+    "shopId": "test-shop-1792047564135",
+    "status": "active",
+    "updatedAt": "2026-10-15T06:59:24.151Z"
   }
 ]

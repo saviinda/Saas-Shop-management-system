@@ -43,8 +43,12 @@ export class UserController {
 
     if (role && role !== 'all') {
       const targetRole = role as string;
+      const strippedRole = targetRole.startsWith('role_') ? targetRole.replace('role_', '') : targetRole;
       users = users.filter(
-        u => u.role === targetRole || (Array.isArray(u.roles) && u.roles.includes(targetRole))
+        u =>
+          u.role === targetRole ||
+          u.role === strippedRole ||
+          (Array.isArray(u.roles) && (u.roles.includes(targetRole) || u.roles.includes(strippedRole)))
       );
     }
 

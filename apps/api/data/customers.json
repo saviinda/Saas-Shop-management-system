@@ -42,5 +42,38 @@
     "createdAt": "2026-09-12T14:18:21.039Z",
     "updatedAt": "2026-09-30T14:43:28.822Z",
     "id": "b33117ca-446a-4aa9-91cc-8ef61f004dd9"
+  },
+  {
+    "id": "4fce1ec6-0466-4d94-9a42-6af5235af6a4",
+    "createdAt": "2026-10-15T06:59:26.647Z",
+    "phone": "+1-555-0199",
+    "name": "Alice Johnson",
+    "shopId": "test-shop-1792047564135",
+    "email": "alice@example.com",
+    "totalSpent": 799.92,
+    "totalOrdersCount": 2,
+    "updatedAt": "2026-10-15T06:59:26.961Z"
+  },
+  {
+    "shopId": "shp_1787930675212",
+    "name": "kasun",
+    "email": "kasun@gmail.com",
+    "phone": "+94 72 456 7899",
+    "totalOrdersCount": 0,
+    "totalSpent": 0,
+    "createdAt": "2026-10-15T10:08:15.251Z",
+    "updatedAt": "2026-10-15T10:08:15.252Z",
+    "id": "bad15aa0-f249-4955-9fd2-30b1605eca14"
+  },
+  {
+    "shopId": "shp_urban_cafe",
+    "name": "Dineth",
+    "email": "ssds@gmail.com",
+    "phone": "+94 72 55555555",
+    "totalOrdersCount": 0,
+    "totalSpent": 0,
+    "createdAt": "2026-10-15T10:52:08.574Z",
+    "updatedAt": "2026-10-15T10:52:08.574Z",
+    "id": "c9230b16-69a5-4420-8bbc-44bd589eaea2"
   }
 ]

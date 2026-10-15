@@ -525,5 +525,103 @@
     "isRead": false,
     "createdAt": "2026-09-30T14:55:02.113Z",
     "id": "a849bddf-2382-40af-99e5-a2307efc0de9"
+  },
+  {
+    "recipientId": "usr_1790779823800",
+    "shopId": "shp_1790779823800",
+    "title": "Payment Status Update: Under Review / Pending for Dilshan Com",
+    "message": "Payment of USD 129 is now Under Review / Pending.",
+    "type": "info",
+    "link": "/shop-owner/subscription",
+    "isRead": false,
+    "createdAt": "2026-10-15T10:32:29.751Z",
+    "id": "d1266f7b-97e5-4c36-9b83-a60c3dc57495"
+  },
+  {
+    "recipientId": "usr_1790779823800",
+    "shopId": "shp_1790779823800",
+    "title": "Payment Approved - Subscription Activated for Dilshan Com",
+    "message": "Payment of USD 129 is now Approved & Verified.",
+    "type": "success",
+    "link": "/shop-owner/subscription",
+    "isRead": false,
+    "createdAt": "2026-10-15T10:33:03.694Z",
+    "id": "455d9d68-2153-4fe4-886e-bfede485de36"
+  },
+  {
+    "recipientId": "usr_shop_owner_1",
+    "shopId": "shp_urban_cafe",
+    "title": "Payment Approved - Subscription Activated for 4U Print House",
+    "message": "Payment of USD 299 is now Approved & Verified.",
+    "type": "success",
+    "link": "/shop-owner/subscription",
+    "isRead": false,
+    "createdAt": "2026-10-15T10:33:13.619Z",
+    "id": "43f790d2-0314-4e3d-84e6-b40f31afba45"
+  },
+  {
+    "recipientId": "usr_super_admin",
+    "title": "New Bank Slip Payment Request",
+    "message": "Shop \"4U Print House\" submitted a bank transfer payment of $599 for review.",
+    "type": "alert",
+    "link": "/super-admin/payments",
+    "isRead": false,
+    "createdAt": "2026-10-15T10:43:36.224Z",
+    "id": "fa554c71-7b96-4715-bcc9-d9e9b8c77f68"
+  },
+  {
+    "recipientId": "usr_shop_owner_1",
+    "shopId": "shp_urban_cafe",
+    "title": "Payment Approved - Subscription Activated for 4U Print House",
+    "message": "Payment of USD 599 is now Approved & Verified.",
+    "type": "success",
+    "link": "/shop-owner/subscription",
+    "isRead": false,
+    "createdAt": "2026-10-15T10:44:18.281Z",
+    "id": "e254ff7d-2cfc-4053-a9d0-87aecbd9e176"
+  },
+  {
+    "recipientId": "usr_shop_owner_1",
+    "shopId": "shp_urban_cafe",
+    "title": "Job Completed",
+    "message": "Job #JOB-188811 has been finalized and converted to completed order.",
+    "type": "success",
+    "link": "/shop-owner/orders",
+    "isRead": false,
+    "createdAt": "2026-10-15T10:46:41.364Z",
+    "id": "9c23047a-2f77-4480-9327-5932b3ac41ef"
+  },
+  {
+    "recipientId": "usr_manager_1",
+    "shopId": "shp_urban_cafe",
+    "title": "Job Completed",
+    "message": "Job #JOB-188811 has been finalized and converted to completed order.",
+    "type": "success",
+    "link": "/shop-owner/orders",
+    "isRead": false,
+    "createdAt": "2026-10-15T10:46:41.367Z",
+    "id": "15f24599-dc93-4ed2-80de-80cad5b178c6"
+  },
+  {
+    "recipientId": "usr_worker_1",
+    "shopId": "shp_urban_cafe",
+    "title": "Job Completed",
+    "message": "Job #JOB-188811 has been finalized and converted to completed order.",
+    "type": "success",
+    "link": "/shop-owner/orders",
+    "isRead": false,
+    "createdAt": "2026-10-15T10:46:41.371Z",
+    "id": "9ee823ba-2633-4e4b-9869-53a19f7548e5"
+  },
+  {
+    "recipientId": "c810d135-4b2d-4dcd-a363-55950330e3a0",
+    "shopId": "shp_urban_cafe",
+    "title": "Job Completed",
+    "message": "Job #JOB-188811 has been finalized and converted to completed order.",
+    "type": "success",
+    "link": "/shop-owner/orders",
+    "isRead": false,
+    "createdAt": "2026-10-15T10:46:41.374Z",
+    "id": "f6bac8c1-2253-4879-a57e-fff1fbd67290"
   }
 ]

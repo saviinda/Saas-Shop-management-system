@@ -12,24 +12,11 @@ export class OrderController {
     const shopId = req.user?.role === 'super_admin' ? (req.query.shopId as string) || req.shopId : req.shopId;
     if (!shopId) return sendSuccess(res, []);
 
-    const { branchId, status, paymentStatus, isJob, search, dateFrom, dateTo, customerId, page = '1', limit = '10' } = req.query;
+    const { branchId, status, paymentStatus, isJob, search, dateFrom, dateTo, customerId, customer, page = '1', limit = '10' } = req.query;
 
     const where: Array<{ field: string; op: any; value: any }> = [
       { field: 'shopId', op: '==', value: shopId },
     ];
-
-    if (branchId && branchId !== 'all') {
-      where.push({ field: 'branchId', op: '==', value: branchId });
-    }
-    if (status && status !== 'all' && status !== 'jobs') {
-      where.push({ field: 'status', op: '==', value: status });
-    }
-    if (paymentStatus && paymentStatus !== 'all') {
-      where.push({ field: 'paymentStatus', op: '==', value: paymentStatus });
-    }
-    if (customerId && customerId !== 'all') {
-      where.push({ field: 'customerId', op: '==', value: customerId });
-    }
 
     const orders = await dbStore.collection<Order>('orders').query({
       where,
@@ -37,9 +24,33 @@ export class OrderController {
     });
 
     let results = orders.data;
+
+    // Filter by branch
     if (branchId && branchId !== 'all') {
-      // Keep orders matching branchId, and always include parked/draft jobs so they are not hidden across branches
-      results = results.filter(o => o.branchId === branchId || o.status === 'draft');
+      if (status === 'draft' || isJob === 'true' || status === 'jobs') {
+        // For parked jobs, show jobs for this branch or unassigned branch jobs
+        results = results.filter(o => o.branchId === branchId || !o.branchId);
+      } else {
+        results = results.filter(o => o.branchId === branchId);
+      }
+    }
+
+    if (status && status !== 'all' && status !== 'jobs') {
+      results = results.filter(o => o.status === status);
+    }
+    if (paymentStatus && paymentStatus !== 'all') {
+      results = results.filter(o => o.paymentStatus === paymentStatus);
+    }
+    if (customerId && customerId !== 'all') {
+      results = results.filter(o => o.customerId === customerId);
+    }
+    if (customer && customer !== 'all') {
+      const cQuery = (customer as string).toLowerCase().trim();
+      results = results.filter(o =>
+        (o.customerName && o.customerName.toLowerCase().includes(cQuery)) ||
+        (o.customerPhone && o.customerPhone.toLowerCase().includes(cQuery)) ||
+        (o.customerId && o.customerId.toLowerCase() === cQuery)
+      );
     }
     if (isJob === 'true' || status === 'jobs') {
       results = results.filter(o => o.status === 'draft' || o.isJob);
@@ -47,12 +58,18 @@ export class OrderController {
 
     // Filter by Date Range if provided
     if (dateFrom) {
-      const fromTimestamp = new Date(dateFrom as string).getTime();
-      results = results.filter(o => new Date(o.createdAt).getTime() >= fromTimestamp);
+      const fromStr = (dateFrom as string).split('T')[0];
+      const fromTimestamp = new Date(`${fromStr}T00:00:00.000Z`).getTime();
+      if (!isNaN(fromTimestamp)) {
+        results = results.filter(o => new Date(o.createdAt).getTime() >= fromTimestamp);
+      }
     }
     if (dateTo) {
-      const toTimestamp = new Date(dateTo as string).getTime() + 24 * 60 * 60 * 1000 - 1;
-      results = results.filter(o => new Date(o.createdAt).getTime() <= toTimestamp);
+      const toStr = (dateTo as string).split('T')[0];
+      const toTimestamp = new Date(`${toStr}T23:59:59.999Z`).getTime();
+      if (!isNaN(toTimestamp)) {
+        results = results.filter(o => new Date(o.createdAt).getTime() <= toTimestamp);
+      }
     }
 
     // Search filter across orderNumber, customerName, customerPhone, items
@@ -65,6 +82,15 @@ export class OrderController {
         (o.jobTitle && o.jobTitle.toLowerCase().includes(q)) ||
         o.items.some(i => i.name.toLowerCase().includes(q))
       );
+    }
+
+    if (limit === 'all') {
+      return sendSuccess(res, results, {
+        total: results.length,
+        page: 1,
+        limit: results.length,
+        totalPages: 1,
+      });
     }
 
     const pageNum = Math.max(1, parseInt(page as string, 10) || 1);
@@ -199,38 +225,33 @@ export class OrderController {
     const branch = await dbStore.collection<Branch>('branches').get(branchId);
     if (!branch || branch.shopId !== shopId) return sendError(res, 'BAD_REQUEST', 'Invalid branch', 400);
 
-    let customer: Customer | null = null;
-    if (customerId && customerId !== 'walkin') {
-      customer = await dbStore.collection<Customer>('customers').get(customerId);
-      if (!customer || customer.shopId !== shopId) return sendError(res, 'BAD_REQUEST', 'Invalid customer', 400);
-    } else {
-      // Walk-in customer or new customer
-      const targetPhone = customerPhone || 'N/A';
-      const targetName = customerName || 'Walk-in Customer';
-      if (targetPhone && targetPhone !== 'N/A') {
-        const found = await dbStore.collection<Customer>('customers').query({
-          where: [
-            { field: 'shopId', op: '==', value: shopId },
-            { field: 'phone', op: '==', value: targetPhone },
-          ],
-        });
-        if (found.data.length > 0) {
-          customer = found.data[0];
-        }
-      }
+    // Customer resolution - default walkin does not create fake records
+    let finalCustomerId = 'walkin';
+    let finalCustomerName = 'Walk-in Customer';
+    let finalCustomerPhone: string | undefined = undefined;
 
-      if (!customer) {
-        customer = await dbStore.collection<Customer>('customers').create({
-          shopId,
-          name: targetName,
-          phone: targetPhone,
-          totalOrdersCount: 0,
-          totalSpent: 0,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        });
+    if (customerId && customerId !== 'walkin') {
+      const foundCustomer = await dbStore.collection<Customer>('customers').get(customerId);
+      if (!foundCustomer || foundCustomer.shopId !== shopId) {
+        return sendError(res, 'BAD_REQUEST', 'Invalid customer', 400);
       }
+      finalCustomerId = foundCustomer.id;
+      finalCustomerName = foundCustomer.name;
+      finalCustomerPhone = foundCustomer.phone;
+    } else {
+      finalCustomerId = 'walkin';
+      finalCustomerName = 'Walk-in Customer';
+      finalCustomerPhone = undefined; // Do not store phone for default walk-in
     }
+
+    // Permission check for Price Override
+    const canOverride = req.user?.role === 'super_admin' ||
+      req.user?.role === 'shop_owner' ||
+      req.user?.role === 'manager' ||
+      Boolean(req.user?.permissions && (
+        req.user.permissions.includes('price_override') ||
+        req.user.permissions.includes('orders_override_price')
+      ));
 
     let subtotal = 0;
     const resolvedItems: OrderItem[] = [];
@@ -251,10 +272,25 @@ export class OrderController {
           }
         }
 
-        // Direct editable unit price takes precedence; fallback to batch price or product catalog price
-        const unitPrice = typeof it.unitPrice === 'number' && it.unitPrice >= 0
-          ? it.unitPrice
-          : (batchPrice !== undefined ? batchPrice : prod.sellingPrice);
+        const expectedPrice = batchPrice !== undefined ? batchPrice : prod.sellingPrice;
+        let unitPrice = expectedPrice;
+
+        // Check if cashier attempted to override the price
+        if (typeof it.unitPrice === 'number' && it.unitPrice >= 0) {
+          if (Math.abs(it.unitPrice - expectedPrice) > 0.001) {
+            if (!canOverride) {
+              return sendError(
+                res,
+                'FORBIDDEN',
+                `Price override requires manager or owner permission for item "${prod.name}".`,
+                403
+              );
+            }
+            unitPrice = it.unitPrice;
+          } else {
+            unitPrice = it.unitPrice;
+          }
+        }
 
         const itemTotal = unitPrice * it.quantity;
         subtotal += itemTotal;
@@ -273,7 +309,24 @@ export class OrderController {
       } else {
         const serv = await dbStore.collection<ServiceItem>('services').get(it.itemId);
         if (!serv || serv.shopId !== shopId) return sendError(res, 'BAD_REQUEST', `Service ${it.itemId} not found`, 400);
-        const unitPrice = typeof it.unitPrice === 'number' && it.unitPrice >= 0 ? it.unitPrice : serv.price;
+
+        let unitPrice = serv.price;
+        if (typeof it.unitPrice === 'number' && it.unitPrice >= 0) {
+          if (Math.abs(it.unitPrice - serv.price) > 0.001) {
+            if (!canOverride) {
+              return sendError(
+                res,
+                'FORBIDDEN',
+                `Price override requires manager or owner permission for service "${serv.name}".`,
+                403
+              );
+            }
+            unitPrice = it.unitPrice;
+          } else {
+            unitPrice = it.unitPrice;
+          }
+        }
+
         const itemTotal = unitPrice * it.quantity;
         subtotal += itemTotal;
         resolvedItems.push({
@@ -299,9 +352,9 @@ export class OrderController {
       shopId,
       branchId,
       branchName: branch.name,
-      customerId: customer.id,
-      customerName: customer.name,
-      customerPhone: customer.phone,
+      customerId: finalCustomerId,
+      customerName: finalCustomerName,
+      customerPhone: finalCustomerPhone,
       items: resolvedItems,
       subtotal,
       tax,
@@ -322,15 +375,20 @@ export class OrderController {
     if (order.status !== 'draft') {
       await OrderController.deductOrderInventory(order, req.user!.name);
 
-      // Update customer lifetime stats
-      await dbStore.collection<Customer>('customers').update(customer.id, {
-        totalOrdersCount: (customer.totalOrdersCount || 0) + 1,
-        totalSpent: (customer.totalSpent || 0) + totalAmount,
-      });
+      // Update customer lifetime stats for registered customers
+      if (finalCustomerId !== 'walkin') {
+        const cust = await dbStore.collection<Customer>('customers').get(finalCustomerId);
+        if (cust) {
+          await dbStore.collection<Customer>('customers').update(cust.id, {
+            totalOrdersCount: (cust.totalOrdersCount || 0) + 1,
+            totalSpent: (cust.totalSpent || 0) + totalAmount,
+          });
+        }
+      }
 
       await NotificationService.notifyShop(shopId, {
         title: 'New Order Received',
-        message: `Order #${orderNumber} (${totalAmount.toFixed(2)}) placed for ${customer.name}.`,
+        message: `Order #${orderNumber} (${totalAmount.toFixed(2)}) placed for ${finalCustomerName}.`,
         type: 'success',
         link: '/shop-owner/orders',
       });
@@ -372,6 +430,15 @@ export class OrderController {
       jobTitle = existingOrder.jobTitle,
     } = req.body;
 
+    // Price override permission
+    const canOverride = req.user?.role === 'super_admin' ||
+      req.user?.role === 'shop_owner' ||
+      req.user?.role === 'manager' ||
+      Boolean(req.user?.permissions && (
+        req.user.permissions.includes('price_override') ||
+        req.user.permissions.includes('orders_override_price')
+      ));
+
     let resolvedItems: OrderItem[] = existingOrder.items;
     let subtotal = existingOrder.subtotal;
 
@@ -394,9 +461,24 @@ export class OrderController {
             }
           }
 
-          const unitPrice = typeof it.unitPrice === 'number' && it.unitPrice >= 0
-            ? it.unitPrice
-            : (batchPrice !== undefined ? batchPrice : prod.sellingPrice);
+          const expectedPrice = batchPrice !== undefined ? batchPrice : prod.sellingPrice;
+          let unitPrice = expectedPrice;
+
+          if (typeof it.unitPrice === 'number' && it.unitPrice >= 0) {
+            if (Math.abs(it.unitPrice - expectedPrice) > 0.001) {
+              if (!canOverride) {
+                return sendError(
+                  res,
+                  'FORBIDDEN',
+                  `Price override requires manager or owner permission for item "${prod.name}".`,
+                  403
+                );
+              }
+              unitPrice = it.unitPrice;
+            } else {
+              unitPrice = it.unitPrice;
+            }
+          }
 
           const itemTotal = unitPrice * it.quantity;
           subtotal += itemTotal;
@@ -415,7 +497,24 @@ export class OrderController {
         } else {
           const serv = await dbStore.collection<ServiceItem>('services').get(it.itemId);
           if (!serv || serv.shopId !== shopId) return sendError(res, 'BAD_REQUEST', `Service ${it.itemId} not found`, 400);
-          const unitPrice = typeof it.unitPrice === 'number' && it.unitPrice >= 0 ? it.unitPrice : serv.price;
+
+          let unitPrice = serv.price;
+          if (typeof it.unitPrice === 'number' && it.unitPrice >= 0) {
+            if (Math.abs(it.unitPrice - serv.price) > 0.001) {
+              if (!canOverride) {
+                return sendError(
+                  res,
+                  'FORBIDDEN',
+                  `Price override requires manager or owner permission for service "${serv.name}".`,
+                  403
+                );
+              }
+              unitPrice = it.unitPrice;
+            } else {
+              unitPrice = it.unitPrice;
+            }
+          }
+
           const itemTotal = unitPrice * it.quantity;
           subtotal += itemTotal;
           resolvedItems.push({
@@ -435,11 +534,21 @@ export class OrderController {
     const totalAmount = Math.max(0, subtotal + tax - discount);
     const finalIsJob = status === 'draft' ? true : (typeof isJob === 'boolean' ? isJob : false);
 
+    // Customer handling
+    let finalCustId = customerId !== undefined ? customerId : existingOrder.customerId;
+    let finalCustName = customerName !== undefined ? customerName : existingOrder.customerName;
+    let finalCustPhone = customerPhone !== undefined ? customerPhone : existingOrder.customerPhone;
+
+    if (finalCustId === 'walkin') {
+      finalCustName = 'Walk-in Customer';
+      finalCustPhone = undefined;
+    }
+
     const updated = await dbStore.collection<Order>('orders').update(id, {
       ...(branchId && { branchId }),
-      customerId: customerId !== undefined ? customerId : existingOrder.customerId,
-      customerName: customerName !== undefined ? customerName : existingOrder.customerName,
-      customerPhone: customerPhone !== undefined ? customerPhone : existingOrder.customerPhone,
+      customerId: finalCustId,
+      customerName: finalCustName,
+      customerPhone: finalCustPhone,
       items: resolvedItems,
       subtotal,
       tax,
@@ -462,7 +571,7 @@ export class OrderController {
     if (existingOrder.status === 'draft' && (status === 'confirmed' || status === 'completed')) {
       await OrderController.deductOrderInventory(updated, req.user?.name || 'Staff');
 
-      if (updated.customerId) {
+      if (updated.customerId && updated.customerId !== 'walkin') {
         const cust = await dbStore.collection<Customer>('customers').get(updated.customerId);
         if (cust) {
           await dbStore.collection<Customer>('customers').update(cust.id, {

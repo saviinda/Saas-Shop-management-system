@@ -22,12 +22,12 @@
     "sku": "PD-001",
     "name": "A4 pack",
     "category": "Papers",
-    "costPrice": 500,
-    "sellingPrice": 650,
+    "costPrice": 510,
+    "sellingPrice": 660,
     "minimumStockLevel": 5,
     "status": "active",
     "createdAt": "2026-08-31T06:02:58.374Z",
-    "updatedAt": "2026-09-02T10:53:08.177Z",
+    "updatedAt": "2026-10-15T10:12:56.779Z",
     "id": "30dd3392-81ba-4e04-8596-a10a3d374101",
     "description": "",
     "initialStock": 21,
@@ -51,5 +51,18 @@
     "createdAt": "2026-09-30T14:35:35.036Z",
     "updatedAt": "2026-09-30T14:36:01.992Z",
     "id": "686d657c-684b-4a96-bfc2-ca1482cecb2b"
+  },
+  {
+    "id": "49f4a66c-a74b-4e71-845a-32a0ae68ed4a",
+    "createdAt": "2026-10-15T06:59:24.510Z",
+    "sellingPrice": 89.99,
+    "costPrice": 45,
+    "name": "Wireless Mechanical Keyboard",
+    "shopId": "test-shop-1792047564135",
+    "category": "Electronics",
+    "sku": "KB-WL-001",
+    "minimumStockLevel": 5,
+    "status": "active",
+    "updatedAt": "2026-10-15T06:59:24.510Z"
   }
 ]
