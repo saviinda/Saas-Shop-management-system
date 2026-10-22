@@ -1165,7 +1165,7 @@ function PosTerminalContent() {
             {/* Discount & Tax */}
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Discount ($)</label>
+                <label className="block text-[10px] font-bold uppercase text-slate-500 mb-0.5">Discount (LKR)</label>
                 <input
                   type="number"
                   min="0"

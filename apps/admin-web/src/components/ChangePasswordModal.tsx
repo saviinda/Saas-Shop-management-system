@@ -3,6 +3,8 @@
 import React, { useState } from 'react';
 import { api, ApiError } from '@/lib/api-client';
 import { Lock, X, CheckCircle2, KeyRound } from 'lucide-react';
+import { checkPasswordStrength } from '@saas/validation';
+import { PasswordStrengthIndicator } from './PasswordStrengthIndicator';
 
 interface ChangePasswordModalProps {
   isOpen: boolean;
@@ -25,13 +27,14 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen
     setError(null);
     setSuccessMsg(null);
 
-    if (newPassword !== confirmPassword) {
-      setError('New password and confirmation do not match');
+    const strength = checkPasswordStrength(newPassword);
+    if (!strength.isValid) {
+      setError(strength.errors[0] || 'New password does not meet strength requirements');
       return;
     }
 
-    if (newPassword.length < 6) {
-      setError('New password must be at least 6 characters');
+    if (newPassword !== confirmPassword) {
+      setError('New password and confirmation do not match');
       return;
     }
 
@@ -107,15 +110,16 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen
           </div>
 
           <div>
-            <label className="block font-bold text-slate-700 mb-1">New Password (min. 6 characters) *</label>
+            <label className="block font-bold text-slate-700 mb-1">New Password *</label>
             <input
               type="password"
               required
-              placeholder="Enter your new password"
+              placeholder="Min 8 chars with upper, lower, number, symbol"
               value={newPassword}
               onChange={e => setNewPassword(e.target.value)}
               className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-indigo-500"
             />
+            <PasswordStrengthIndicator password={newPassword} className="mt-2" />
           </div>
 
           <div>

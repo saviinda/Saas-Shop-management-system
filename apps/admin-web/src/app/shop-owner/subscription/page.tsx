@@ -526,7 +526,7 @@ export default function ShopSubscriptionPage() {
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div>
                 <h2 className="text-lg font-bold text-slate-900 tracking-tight">Upgrade to {selectedPkg.name}</h2>
-                <p className="text-xs text-slate-500">Amount due: <span className="font-bold text-indigo-600 text-sm">${selectedPkg.price}.00 USD</span></p>
+                <p className="text-xs text-slate-500">Amount due: <span className="font-bold text-indigo-600 text-sm">LKR {selectedPkg.price}.00</span></p>
               </div>
               <button
                 onClick={() => setShowPaymentModal(false)}
@@ -909,7 +909,7 @@ export default function ShopSubscriptionPage() {
 
             <div className="space-y-3 text-xs text-slate-600">
               <p>
-                You are switching your shop's plan to <strong className="text-slate-900 font-semibold">{selectedDowngradePkg.name}</strong> (${selectedDowngradePkg.price}/month).
+                You are switching your shop's plan to <strong className="text-slate-900 font-semibold">{selectedDowngradePkg.name}</strong> (LKR {selectedDowngradePkg.price}/month).
               </p>
 
               <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200 text-emerald-800 space-y-1">

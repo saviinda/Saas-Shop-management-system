@@ -27,7 +27,7 @@
     "id": "pkg_basic",
     "name": "Basic Tier",
     "description": "Essential toolkit for single shop and small boutique operations",
-    "price": 49,
+    "price": 4900,
     "durationDays": 30,
     "limits": {
       "shops": 1,
@@ -45,13 +45,13 @@
     ],
     "status": "active",
     "createdAt": "2026-09-11T10:16:52.960Z",
-    "updatedAt": "2026-09-11T10:16:52.960Z"
+    "updatedAt": "2026-10-21T06:40:26.337Z"
   },
   {
     "id": "pkg_standard",
     "name": "Standard Tier",
     "description": "Scaling multi-branch business with advanced inventory and purchasing",
-    "price": 129,
+    "price": 6900,
     "durationDays": 30,
     "limits": {
       "shops": 1,
@@ -70,13 +70,13 @@
     ],
     "status": "active",
     "createdAt": "2026-09-11T10:16:52.968Z",
-    "updatedAt": "2026-09-11T10:16:52.968Z"
+    "updatedAt": "2026-10-21T06:41:09.745Z"
   },
   {
     "id": "pkg_premium",
     "name": "Premium Tier",
     "description": "Full enterprise SaaS capability with unlimited staff, branches and high throughput",
-    "price": 299,
+    "price": 7900,
     "durationDays": 30,
     "limits": {
       "shops": 5,
@@ -96,12 +96,12 @@
     ],
     "status": "active",
     "createdAt": "2026-09-11T10:16:52.972Z",
-    "updatedAt": "2026-09-11T10:16:52.972Z"
+    "updatedAt": "2026-10-21T06:41:28.888Z"
   },
   {
     "name": "Enterprise Pro",
     "description": "For large multi-chain operations with franchise management",
-    "price": 599,
+    "price": 9900,
     "durationDays": 30,
     "limits": {
       "shops": 20,
@@ -118,7 +118,7 @@
     ],
     "status": "active",
     "createdAt": "2026-09-04T06:07:13.173Z",
-    "updatedAt": "2026-09-04T06:07:13.173Z",
+    "updatedAt": "2026-10-21T06:41:48.398Z",
     "id": "a505f3ca-c4ad-4d90-bc2d-d8af7afa911e"
   }
 ]

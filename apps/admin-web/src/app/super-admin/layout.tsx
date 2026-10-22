@@ -22,6 +22,7 @@ import {
   ShieldCheck,
   Menu,
   X,
+  Settings,
 } from 'lucide-react';
 
 interface NavItem {
@@ -66,6 +67,7 @@ const adminNavCategories: NavCategory[] = [
       { name: 'Communication', href: '/super-admin/communication', icon: MessageSquare, permission: 'communication' },
       { name: 'Analytics & Reports', href: '/super-admin/reports', icon: BarChart3, permission: 'reports' },
       { name: 'Audit Logs', href: '/super-admin/audit-logs', icon: ScrollText, permission: 'audit_logs' },
+      { name: 'System Settings', href: '/super-admin/settings', icon: Settings, permission: 'dashboard' },
     ],
   },
 ];

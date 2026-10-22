@@ -738,7 +738,7 @@ export default function BatchesManagementPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-bold text-slate-800 mb-1">
-                  Cost Price per Unit ($) <span className="text-rose-500">*</span>
+                  Cost Price per Unit (LKR) <span className="text-rose-500">*</span>
                 </label>
                 <Input
                   type="number"
@@ -752,7 +752,7 @@ export default function BatchesManagementPage() {
 
               <div>
                 <label className="block text-xs font-bold text-slate-800 mb-1">
-                  Selling Price per Unit ($) <span className="text-rose-500">*</span>
+                  Selling Price per Unit (LKR) <span className="text-rose-500">*</span>
                 </label>
                 <Input
                   type="number"

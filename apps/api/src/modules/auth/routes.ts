@@ -8,12 +8,19 @@ import {
   changePasswordSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
+  verifyEmailSchema,
+  resendVerificationSchema,
+  checkEmailSchema,
 } from '@saas/validation';
 
 const router = Router();
 
 router.post('/login', validateBody(loginSchema), AuthController.login);
 router.post('/register', validateBody(registerShopOwnerSchema), AuthController.registerShopOwner);
+router.post('/check-email', validateBody(checkEmailSchema), AuthController.checkEmail);
+router.get('/check-email', AuthController.checkEmail);
+router.post('/verify-email', validateBody(verifyEmailSchema), AuthController.verifyEmail);
+router.post('/resend-verification', validateBody(resendVerificationSchema), AuthController.resendVerification);
 router.post('/logout', authenticate, AuthController.logout);
 router.post('/forgot-password', validateBody(forgotPasswordSchema), AuthController.forgotPassword);
 router.post('/reset-password', validateBody(resetPasswordSchema), AuthController.resetPassword);

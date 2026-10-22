@@ -498,7 +498,7 @@ export async function seedDatabase() {
     shopName: shop.name,
     packageId: standardPkg.id,
     amount: standardPkg.price,
-    currency: 'USD',
+    currency: 'LKR',
     method: 'bank_transfer',
     status: 'successful',
     bankSlipUrl: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=400',

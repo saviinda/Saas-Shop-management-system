@@ -8,6 +8,7 @@ export interface EmailOptions {
   recipientName?: string;
   subject: string;
   template:
+    | 'email_verification'
     | 'registration_welcome'
     | 'account_approved'
     | 'account_status'
@@ -245,6 +246,47 @@ export class EmailService {
     }
 
     return { success: true, messageId, previewUrl };
+  }
+
+  /**
+   * Helper to send mandatory email verification on new account registration
+   */
+  static async sendEmailVerification(params: {
+    email: string;
+    name: string;
+    shopName: string;
+    verificationToken: string;
+    verificationCode: string;
+    userId: string;
+    shopId?: string;
+    expiresMinutes?: number;
+  }) {
+    const subject = `Verify Your Email Address - ${params.shopName}`;
+    const expiresMinutes = params.expiresMinutes || 60;
+    const appUrl = config.corsOrigin || 'http://localhost:3000';
+    const verificationUrl = `${appUrl}/verify-email?token=${params.verificationToken}&email=${encodeURIComponent(params.email)}`;
+
+    return this.sendEmail({
+      to: params.email,
+      recipientName: params.name,
+      subject,
+      template: 'email_verification',
+      data: {
+        recipientId: params.userId,
+        userId: params.userId,
+        shopId: params.shopId,
+        name: params.name,
+        email: params.email,
+        shopName: params.shopName,
+        verificationToken: params.verificationToken,
+        verificationCode: params.verificationCode,
+        verificationUrl,
+        expiresMinutes,
+        notificationType: 'alert',
+        summaryMessage: `Please verify your email address (${params.email}) using verification code: ${params.verificationCode}`,
+        link: verificationUrl,
+      },
+    });
   }
 
   /**
@@ -771,6 +813,24 @@ export class EmailService {
     const greeting = recipientName ? `Dear ${recipientName},` : `Dear Store Owner,`;
 
     switch (template) {
+      case 'email_verification':
+        return `
+${greeting}
+
+Thank you for registering with SaaS Platform! Please verify your email address to complete your account activation.
+
+Verification Code: ${data.verificationCode}
+Verification Link: ${data.verificationUrl}
+
+Valid for: ${data.expiresMinutes || 60} minutes
+
+Enter the 6-digit verification code on the verification screen, or click the link above to verify your account immediately.
+You will not be able to log in until your email address has been successfully verified.
+
+Best regards,
+SaaS Platform Security Team
+        `.trim();
+
       case 'registration_welcome':
         return `
 ${greeting}
@@ -1046,6 +1106,67 @@ Platform Support
         <h1>${title}</h1>
       </div>
     `;
+
+    if (template === 'email_verification') {
+      return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>${subject}</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f1f5f9; margin: 0; padding: 24px; color: #1e293b; }
+    .card { max-width: 580px; margin: 0 auto; background: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+    .header { background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%); padding: 32px 24px; text-align: center; color: #ffffff; }
+    .badge { display: inline-block; background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 9999px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+    .header h1 { margin: 0; font-size: 20px; font-weight: 800; letter-spacing: -0.02em; }
+    .content { padding: 32px 28px; font-size: 14px; line-height: 1.6; }
+    .code-box { background: #f8fafc; border: 2px dashed #4f46e5; border-radius: 12px; padding: 20px; margin: 24px 0; text-align: center; }
+    .code { font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace; font-size: 32px; font-weight: 800; letter-spacing: 6px; color: #4f46e5; display: inline-block; }
+    .code-caption { font-size: 12px; color: #64748b; margin-top: 6px; }
+    .btn { display: inline-block; background: #4f46e5; color: #ffffff !important; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-weight: 700; font-size: 14px; margin-top: 10px; text-align: center; box-shadow: 0 2px 4px rgba(79,70,229,0.3); }
+    .footer { padding: 20px 28px; background: #f8fafc; border-top: 1px solid #e2e8f0; font-size: 12px; color: #64748b; text-align: center; }
+    .warning { background: #fffbeb; border: 1px solid #fef3c7; border-radius: 10px; padding: 12px 16px; font-size: 12px; color: #92400e; margin: 20px 0; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    ${baseHeader('Verify Your Email Address', 'Mandatory Account Activation')}
+    <div class="content">
+      <p style="font-size: 15px; font-weight: 600; margin-top: 0;">${greeting}</p>
+      <p>Thank you for registering <b>${data.shopName}</b> with our SaaS platform. To complete your account activation and secure your profile, please verify your email address.</p>
+      
+      <div class="code-box">
+        <div class="code">${data.verificationCode}</div>
+        <div class="code-caption">Your 6-Digit Email Verification Code</div>
+      </div>
+
+      <div style="text-align: center; margin: 24px 0;">
+        <a href="${data.verificationUrl}" class="btn">Verify Email Address Now</a>
+      </div>
+
+      <div class="warning">
+        <strong>Important:</strong> This verification code and link will expire in <strong>${data.expiresMinutes || 60} minutes</strong>. You will not be able to log in to your account until your email address is verified.
+      </div>
+
+      <p style="font-size: 12px; color: #64748b; line-height: 1.5;">
+        If the button above does not work, copy and paste this link into your browser:<br/>
+        <span style="font-family: monospace; word-break: break-all; color: #4f46e5;">${data.verificationUrl}</span>
+      </p>
+
+      <p style="margin-top: 28px; color: #64748b; font-size: 13px;">
+        Best regards,<br>
+        <b>SaaS Platform Security Team</b>
+      </p>
+    </div>
+    <div class="footer">
+      This verification request was initiated for ${data.email}. If you did not create this account, please disregard this email.
+    </div>
+  </div>
+</body>
+</html>
+      `.trim();
+    }
 
     if (template === 'registration_welcome') {
       return `

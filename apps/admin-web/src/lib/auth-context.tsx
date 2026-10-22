@@ -12,7 +12,7 @@ interface AuthContextType {
   token: string | null;
   isLoading: boolean;
   login: (token: string, user: User, shop?: Shop | null, defaultBranch?: Branch | null) => void;
-  logout: () => void;
+  logout: (reason?: string | React.MouseEvent | any) => void;
   refreshUser: () => Promise<void>;
   hasPermission: (module: string, action?: 'view' | 'create' | 'edit' | 'delete') => boolean;
 }
@@ -38,7 +38,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const logout = () => {
+  const logout = (reason?: string | React.MouseEvent | any) => {
+    const reasonStr = typeof reason === 'string' ? reason : undefined;
     setToken(null);
     setUser(null);
     setShop(null);
@@ -46,7 +47,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setBranches([]);
     localStorage.removeItem('saas_token');
     localStorage.removeItem('saas_active_branch_id');
-    window.location.href = '/login';
+    localStorage.removeItem('saas_last_activity');
+    window.location.href = reasonStr ? `/login?reason=${encodeURIComponent(reasonStr)}` : '/login';
   };
 
   const hasPermission = (module: string, action?: 'view' | 'create' | 'edit' | 'delete'): boolean => {
@@ -86,7 +88,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     } catch (err) {
       console.warn('Session expired or invalid:', err);
-      logout();
+      logout('session_expired');
     } finally {
       setIsLoading(false);
     }
@@ -95,6 +97,44 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     refreshUser();
   }, []);
+
+  // Inactivity tracking (30 minutes of idle time)
+  useEffect(() => {
+    if (!token) return;
+
+    const INACTIVITY_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes
+    localStorage.setItem('saas_last_activity', Date.now().toString());
+
+    let throttleTimer: any = null;
+    const updateActivity = () => {
+      if (!throttleTimer) {
+        throttleTimer = setTimeout(() => {
+          localStorage.setItem('saas_last_activity', Date.now().toString());
+          throttleTimer = null;
+        }, 3000); // Throttle activity updates to once every 3s
+      }
+    };
+
+    const checkInactivity = () => {
+      const last = localStorage.getItem('saas_last_activity');
+      if (last) {
+        const diff = Date.now() - parseInt(last, 10);
+        if (diff > INACTIVITY_TIMEOUT_MS) {
+          logout('session_timeout');
+        }
+      }
+    };
+
+    const interval = setInterval(checkInactivity, 30000); // Check every 30s
+    const events = ['mousedown', 'keydown', 'scroll', 'touchstart', 'click'];
+    events.forEach(evt => window.addEventListener(evt, updateActivity, { passive: true }));
+
+    return () => {
+      clearInterval(interval);
+      if (throttleTimer) clearTimeout(throttleTimer);
+      events.forEach(evt => window.removeEventListener(evt, updateActivity));
+    };
+  }, [token]);
 
   return (
     <AuthContext.Provider value={{ user, shop, defaultBranch, branches, token, isLoading, login, logout, refreshUser, hasPermission }}>

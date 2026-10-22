@@ -7,6 +7,7 @@ import { sendSuccess, sendError } from '../../utils/response';
 import { PackageLimitService } from '../../services/packageLimit.service';
 import { AuditLogService } from '../../services/auditLog.service';
 import { EmailService } from '../../services/email.service';
+import { checkPasswordStrength } from '@saas/validation';
 
 const DEFAULT_ROLE_PERMISSIONS: Record<string, string[]> = {
   shop_owner: ['dashboard', 'branches', 'staff', 'products', 'services', 'customers', 'orders', 'inventory', 'procurement', 'tasks', 'communication', 'subscription', 'change-requests', 'information'],
@@ -219,16 +220,19 @@ export class UserController {
 
     let tempPassword = 'TempPass@' + Math.floor(1000 + Math.random() * 9000);
     if (newPassword && typeof newPassword === 'string' && newPassword.trim().length > 0) {
-      if (newPassword.trim().length < 6) {
-        return sendError(res, 'VALIDATION_ERROR', 'Custom temporary password must be at least 6 characters', 400);
+      const strength = checkPasswordStrength(newPassword.trim());
+      if (!strength.isValid) {
+        return sendError(res, 'WEAK_PASSWORD', `Password requirements not met: ${strength.errors.join(', ')}`, 400);
       }
       tempPassword = newPassword.trim();
     }
     const passwordHash = await bcrypt.hash(tempPassword, 10);
 
-    const updated = await dbStore.collection<User & { passwordHash?: string }>('users').update(id, {
+    const updated = await dbStore.collection<User & { passwordHash?: string; failedLoginAttempts?: number; lockoutUntil?: string }>('users').update(id, {
       passwordHash,
       status: 'active', // Reactivate account if it was locked or suspended
+      failedLoginAttempts: 0,
+      lockoutUntil: undefined,
       updatedAt: new Date().toISOString(),
     });
 
@@ -287,6 +291,11 @@ export class UserController {
 
     if (!email || !name || !password) {
       return sendError(res, 'BAD_REQUEST', 'Name, email, and password are required', 400);
+    }
+
+    const strength = checkPasswordStrength(password.trim());
+    if (!strength.isValid) {
+      return sendError(res, 'WEAK_PASSWORD', `Password requirements not met: ${strength.errors.join(', ')}`, 400);
     }
 
     const normalizedEmail = email.trim().toLowerCase();
@@ -348,6 +357,11 @@ export class UserController {
 
     if (!email || !name || !password) {
       return sendError(res, 'BAD_REQUEST', 'Name, email, and password are required', 400);
+    }
+
+    const staffStrength = checkPasswordStrength(password.trim());
+    if (!staffStrength.isValid) {
+      return sendError(res, 'WEAK_PASSWORD', `Password requirements not met: ${staffStrength.errors.join(', ')}`, 400);
     }
 
     const normalizedEmail = email.trim().toLowerCase();

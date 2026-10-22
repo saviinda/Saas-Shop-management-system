@@ -12,7 +12,7 @@
   },
   {
     "id": "usr_shop_owner_1",
-    "name": "Sumudu saman",
+    "name": "Marcus Vance",
     "email": "owner@urbancafe.com",
     "role": "shop_owner",
     "status": "active",
@@ -21,10 +21,10 @@
       "br_urban_downtown",
       "br_urban_westside"
     ],
-    "phone": "+94 75 234 5678",
+    "phone": "+1 555 234 5678",
     "passwordHash": "$2a$10$8RmBFlsUR89Rr5jFquyagOrrXL0dLTntZ6TkSyH1KOqmVSeVkm/yG",
     "createdAt": "2026-09-11T10:16:53.176Z",
-    "updatedAt": "2026-10-15T10:44:18.273Z",
+    "updatedAt": "2026-10-22T05:56:09.806Z",
     "roles": [
       "shop_owner"
     ]
@@ -43,7 +43,7 @@
     "phone": "+1 555 111 2233",
     "passwordHash": "$2a$10$mogD6RlTSggsEl29ROpzxeFr6hh48pM1/t596QFluD3uhO/dXvaV6",
     "createdAt": "2026-09-11T10:16:53.331Z",
-    "updatedAt": "2026-09-11T10:16:53.331Z"
+    "updatedAt": "2026-10-22T05:56:09.799Z"
   },
   {
     "id": "usr_worker_1",
@@ -58,7 +58,7 @@
     "phone": "+1 555 444 7788",
     "passwordHash": "$2a$10$mogD6RlTSggsEl29ROpzxeFr6hh48pM1/t596QFluD3uhO/dXvaV6",
     "createdAt": "2026-09-11T10:16:53.332Z",
-    "updatedAt": "2026-09-11T10:16:53.332Z"
+    "updatedAt": "2026-10-22T05:56:09.800Z"
   },
   {
     "id": "usr_1787930675212",
@@ -73,7 +73,8 @@
     "phone": "078888888",
     "createdAt": "2026-08-28T15:24:38.163Z",
     "passwordHash": "$2a$10$7wvYCLYPnu2Vm1Gng.O2ae6CVutG7IZKqkTDG7GGP9/.FlSv4Az8O",
-    "updatedAt": "2026-08-28T15:41:08.261Z"
+    "updatedAt": "2026-10-22T05:54:24.678Z",
+    "failedLoginAttempts": 3
   },
   {
     "email": "alex@gmail.com",
@@ -141,7 +142,7 @@
     "branchIds": [],
     "passwordHash": "$2a$10$Lt5sydXx7nHDqBU6wCrVAOa3bc6yyDvktyu1.EKA7xq3XjH2io.Nm",
     "createdAt": "2026-09-11T08:07:16.818Z",
-    "updatedAt": "2026-09-11T08:07:16.818Z",
+    "updatedAt": "2026-10-22T05:56:09.803Z",
     "id": "c810d135-4b2d-4dcd-a363-55950330e3a0"
   },
   {
@@ -234,6 +235,40 @@
     "phone": "+94 72 977 5412",
     "passwordHash": "$2a$10$NaY1v/PjrB/Z70bYPbu2t.61zqs0oi2vdRxANC4vLI9acIsXlP3A.",
     "createdAt": "2026-09-30T14:50:25.582Z",
-    "updatedAt": "2026-10-15T10:33:03.691Z"
+    "updatedAt": "2026-10-21T05:35:30.956Z"
+  },
+  {
+    "id": "usr_1792564605085",
+    "email": "saviindadil@gmail.com",
+    "name": "Dilshaan",
+    "role": "shop_owner",
+    "status": "active",
+    "shopId": "shp_1792564605085",
+    "branchIds": [
+      "br_1792564605085"
+    ],
+    "phone": "+94 72 9775411",
+    "passwordHash": "$2a$10$v.cpo9o58Pyyt5nZ07k2U.LqRGpY8qcWRl4FMQV8lN/i2Y0koUDIa",
+    "createdAt": "2026-10-21T06:36:45.129Z",
+    "updatedAt": "2026-10-21T06:36:45.129Z"
+  },
+  {
+    "id": "usr_1792654300766",
+    "role": "shop_owner",
+    "passwordHash": "$2a$10$1CRVciqhLNvV.f1w2aV7DerEkgHJ9bwJuVPTpKZRwH7TVJYTouRQy",
+    "createdAt": "2026-10-22T07:31:40.788Z",
+    "phone": "+94 77 123 4567",
+    "emailVerificationExpires": "2026-10-22T08:31:40.788Z",
+    "name": "Sunil Perera",
+    "branchIds": [
+      "br_1792654300766"
+    ],
+    "shopId": "shp_1792654300766",
+    "email": "sri_lanka_shop_1792654300577@example.com",
+    "emailVerificationCode": "978196",
+    "emailVerificationToken": "b50ede871fbc6ff910b53c887874a8b10e6bb11dc3541f91",
+    "status": "active",
+    "emailVerified": true,
+    "updatedAt": "2026-10-22T07:31:42.099Z"
   }
 ]

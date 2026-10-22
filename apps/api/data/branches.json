@@ -128,5 +128,29 @@
     "shopId": "test-shop-1792047564135",
     "status": "active",
     "updatedAt": "2026-10-15T06:59:24.151Z"
+  },
+  {
+    "id": "br_1792564605085",
+    "shopId": "shp_1792564605085",
+    "name": "New Rich - Main Branch",
+    "code": "MAIN-01",
+    "address": "105 old road, Kandana",
+    "phone": "+94 72 9775411",
+    "isDefault": true,
+    "status": "active",
+    "createdAt": "2026-10-21T06:36:45.085Z",
+    "updatedAt": "2026-10-21T06:36:45.085Z"
+  },
+  {
+    "id": "br_1792654300766",
+    "shopId": "shp_1792654300766",
+    "name": "Lanka Print Solutions - Main Branch",
+    "code": "MAIN-01",
+    "address": "No. 200 Galle Road, Colombo 03",
+    "phone": "+94 77 123 4567",
+    "isDefault": true,
+    "status": "active",
+    "createdAt": "2026-10-22T07:31:40.768Z",
+    "updatedAt": "2026-10-22T07:31:40.768Z"
   }
 ]

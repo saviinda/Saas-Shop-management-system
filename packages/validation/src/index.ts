@@ -1,13 +1,116 @@
 import { z } from 'zod';
 
+export interface PasswordStrengthResult {
+  minLength: boolean;
+  hasUpper: boolean;
+  hasLower: boolean;
+  hasNumber: boolean;
+  hasSpecial: boolean;
+  isValid: boolean;
+  errors: string[];
+}
+
+export function checkPasswordStrength(password: string): PasswordStrengthResult {
+  const pwd = password || '';
+  const minLength = pwd.length >= 8;
+  const hasUpper = /[A-Z]/.test(pwd);
+  const hasLower = /[a-z]/.test(pwd);
+  const hasNumber = /[0-9]/.test(pwd);
+  const hasSpecial = /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?~`]/.test(pwd);
+
+  const errors: string[] = [];
+  if (!minLength) errors.push('Password must be at least 8 characters long');
+  if (!hasUpper) errors.push('Password must contain at least one uppercase letter (A-Z)');
+  if (!hasLower) errors.push('Password must contain at least one lowercase letter (a-z)');
+  if (!hasNumber) errors.push('Password must contain at least one number (0-9)');
+  if (!hasSpecial) errors.push('Password must contain at least one special character (!@#$%^&* etc.)');
+
+  return {
+    minLength,
+    hasUpper,
+    hasLower,
+    hasNumber,
+    hasSpecial,
+    isValid: minLength && hasUpper && hasLower && hasNumber && hasSpecial,
+    errors,
+  };
+}
+
+/**
+ * Validates Sri Lankan mobile & landline phone numbers.
+ * Supported formats:
+ * - +94 7X XXX XXXX (or +947XXXXXXXX)
+ * - 07X XXX XXXX (or 07XXXXXXXX)
+ * - 7X XXX XXXX (or 7XXXXXXXX)
+ * - Landlines: +94 11 XXX XXXX, 011 XXX XXXX, etc.
+ */
+export function validateSriLankanPhone(phone: string): { isValid: boolean; normalized?: string; error?: string } {
+  if (!phone || typeof phone !== 'string') {
+    return { isValid: false, error: 'Mobile number is required' };
+  }
+
+  // Remove spaces, hyphens, brackets, dots
+  const clean = phone.replace(/[\s\-\(\)\.]/g, '');
+
+  // Sri Lankan phone regex
+  // Matches +94, 0094, 0 or without prefix, followed by 9 digits
+  const slPhoneRegex = /^(?:(?:\+94|0094)|0)?([1-9][0-9]{8})$/;
+  const match = clean.match(slPhoneRegex);
+
+  if (!match) {
+    return {
+      isValid: false,
+      error: 'Please enter a valid Sri Lankan mobile number (e.g. +94 77 123 4567 or 077 123 4567)',
+    };
+  }
+
+  const nationalNumber = match[1]; // 9 digits, e.g. 771234567
+  const operatorOrArea = nationalNumber.substring(0, 2);
+
+  // Check valid mobile prefixes (70, 71, 72, 74, 75, 76, 77, 78) and landline area codes
+  const validMobilePrefixes = ['70', '71', '72', '74', '75', '76', '77', '78'];
+  const validLandlinePrefixes = [
+    '11', '21', '23', '24', '25', '26', '27',
+    '31', '32', '33', '34', '35', '36', '37', '38',
+    '41', '45', '47', '51', '52', '54', '55', '57',
+    '63', '65', '66', '67', '81', '91',
+  ];
+
+  if (!validMobilePrefixes.includes(operatorOrArea) && !validLandlinePrefixes.includes(operatorOrArea)) {
+    return {
+      isValid: false,
+      error: 'Please enter a valid Sri Lankan mobile operator prefix (e.g. 070, 071, 072, 074, 075, 076, 077, 078)',
+    };
+  }
+
+  // Format nicely: +94 XX XXX XXXX
+  const formatted = `+94 ${nationalNumber.substring(0, 2)} ${nationalNumber.substring(2, 5)} ${nationalNumber.substring(5)}`;
+
+  return {
+    isValid: true,
+    normalized: formatted,
+  };
+}
+
+export const sriLankanPhoneSchema = z.string().refine(val => validateSriLankanPhone(val).isValid, {
+  message: 'Please enter a valid Sri Lankan mobile number (e.g. +94 77 123 4567 or 077 123 4567)',
+});
+
+export const passwordSchema = z.string()
+  .min(8, 'Password must be at least 8 characters long')
+  .regex(/[A-Z]/, 'Password must contain at least one uppercase letter (A-Z)')
+  .regex(/[a-z]/, 'Password must contain at least one lowercase letter (a-z)')
+  .regex(/[0-9]/, 'Password must contain at least one number (0-9)')
+  .regex(/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?~`]/, 'Password must contain at least one special character (!@#$%^&* etc.)');
+
 export const loginSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(6),
+  email: z.string().email('Please provide a valid email address'),
+  password: z.string().min(1, 'Password is required'),
 });
 
 export const changePasswordSchema = z.object({
   oldPassword: z.string().min(1, 'Old password is required'),
-  newPassword: z.string().min(6, 'New password must be at least 6 characters'),
+  newPassword: passwordSchema,
 });
 
 export const forgotPasswordSchema = z.object({
@@ -16,7 +119,23 @@ export const forgotPasswordSchema = z.object({
 
 export const resetPasswordSchema = z.object({
   token: z.string().min(1, 'Reset token is required'),
-  newPassword: z.string().min(6, 'New password must be at least 6 characters'),
+  newPassword: passwordSchema,
+});
+
+export const verifyEmailSchema = z.object({
+  email: z.string().email('Invalid email format').optional(),
+  token: z.string().optional(),
+  code: z.string().optional(),
+}).refine(data => !!(data.token || (data.email && data.code)), {
+  message: 'Either verification token or email with verification code must be provided',
+});
+
+export const resendVerificationSchema = z.object({
+  email: z.string().email('Invalid email format'),
+});
+
+export const checkEmailSchema = z.object({
+  email: z.string().email('Please provide a valid email address'),
 });
 
 export const reviewPaymentSchema = z.object({
@@ -30,13 +149,13 @@ export const restrictShopPaymentSchema = z.object({
 });
 
 export const registerShopOwnerSchema = z.object({
-  name: z.string().min(2),
-  email: z.string().email('Invalid email format'),
-  password: z.string().min(6),
-  phone: z.string().min(8),
-  businessName: z.string().min(2),
-  businessAddress: z.string().min(3),
-  businessCategory: z.string().min(2),
+  name: z.string().min(2, 'Name must be at least 2 characters'),
+  email: z.string().email('Please enter a valid email address'),
+  password: passwordSchema,
+  phone: sriLankanPhoneSchema,
+  businessName: z.string().min(2, 'Business name must be at least 2 characters'),
+  businessAddress: z.string().min(3, 'Business address must be at least 3 characters'),
+  businessCategory: z.string().min(2, 'Business category must be at least 2 characters'),
   packageId: z.string().optional(),
 });
 
@@ -76,8 +195,8 @@ export const updateBranchSchema = z.object({
 
 export const createStaffUserSchema = z.object({
   name: z.string().min(2),
-  email: z.string().email(),
-  password: z.string().min(6),
+  email: z.string().email('Invalid email format'),
+  password: passwordSchema,
   phone: z.string().optional(),
   role: z.enum(['manager', 'sales_staff', 'inventory_staff', 'purchasing_staff', 'worker']),
   branchIds: z.array(z.string()).optional(),

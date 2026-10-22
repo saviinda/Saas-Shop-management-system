@@ -24,6 +24,7 @@ import reportRoutes from '../modules/reports/routes';
 import auditLogRoutes from '../modules/audit-logs/routes';
 import roleRoutes from '../modules/roles/routes';
 import emailRoutes from '../modules/email/routes';
+import settingsRoutes from '../modules/settings/routes';
 
 const router = Router();
 
@@ -52,5 +53,6 @@ router.use('/notifications', notificationRoutes);
 router.use('/reports', reportRoutes);
 router.use('/audit-logs', auditLogRoutes);
 router.use('/email', emailRoutes);
+router.use('/settings', settingsRoutes);
 
 export default router;

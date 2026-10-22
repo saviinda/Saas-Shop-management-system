@@ -957,7 +957,7 @@ export default function ProcurementPage() {
                       </div>
 
                       <div className="w-28">
-                        <label className="block text-[10px] font-bold text-slate-500 mb-0.5">Unit Cost ($)</label>
+                        <label className="block text-[10px] font-bold text-slate-500 mb-0.5">Unit Cost (LKR)</label>
                         <input
                           type="number"
                           step="0.01"

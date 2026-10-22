@@ -53,18 +53,59 @@ class ApiClient {
     }));
 
     if (!res.ok || !json.success) {
-      if (res.status === 401 && (json.error?.code === 'USER_NOT_FOUND' || json.error?.code === 'INVALID_TOKEN' || json.error?.code === 'UNAUTHORIZED')) {
+      if (
+        res.status === 401 &&
+        (json.error?.code === 'USER_NOT_FOUND' ||
+          json.error?.code === 'INVALID_TOKEN' ||
+          json.error?.code === 'UNAUTHORIZED' ||
+          json.error?.code === 'TOKEN_EXPIRED' ||
+          json.error?.code === 'TOKEN_REVOKED')
+      ) {
         if (typeof window !== 'undefined' && !endpoint.includes('/auth/login')) {
           localStorage.removeItem('saas_token');
           localStorage.removeItem('saas_user');
           localStorage.removeItem('saas_shop');
           localStorage.removeItem('saas_active_branch_id');
+          const reason =
+            json.error?.code === 'TOKEN_EXPIRED'
+              ? 'session_expired'
+              : json.error?.code === 'TOKEN_REVOKED'
+              ? 'session_revoked'
+              : 'unauthorized';
+          window.location.href = `/login?reason=${reason}`;
+        }
+      }
+
+      if (
+        res.status === 403 &&
+        (json.error?.code === 'SHOP_INACTIVE' ||
+          json.error?.code === 'SHOP_SUSPENDED' ||
+          json.error?.code === 'ACCOUNT_INACTIVE')
+      ) {
+        if (typeof window !== 'undefined' && !endpoint.includes('/auth/login')) {
+          localStorage.removeItem('saas_token');
+          localStorage.removeItem('saas_user');
+          localStorage.removeItem('saas_shop');
+          localStorage.removeItem('saas_active_branch_id');
+          const reason =
+            json.error?.code === 'ACCOUNT_INACTIVE' ? 'account_inactive' : 'shop_inactive';
+          window.location.href = `/login?reason=${reason}`;
+        }
+      }
+
+      let resolvedMessage = json.error?.message || 'An unexpected error occurred';
+      if (json.error?.details && Array.isArray(json.error.details) && json.error.details.length > 0) {
+        const detailMessages = json.error.details
+          .map((d: any) => d.message || `${d.field}: invalid`)
+          .filter(Boolean);
+        if (detailMessages.length > 0) {
+          resolvedMessage = detailMessages.join('. ');
         }
       }
 
       throw new ApiError(
         json.error?.code || 'UNKNOWN_ERROR',
-        json.error?.message || 'An unexpected error occurred',
+        resolvedMessage,
         json.error?.details,
         res.status
       );

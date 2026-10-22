@@ -240,8 +240,8 @@ export default function SuperAdminDashboard() {
                   </linearGradient>
                 </defs>
                 <XAxis dataKey="month" stroke="#94A3B8" fontSize={12} tickLine={false} />
-                <YAxis stroke="#94A3B8" fontSize={12} tickLine={false} tickFormatter={v => `$${v}`} />
-                <Tooltip formatter={(value: any) => [`$${value.toLocaleString()}`, 'Intake']} />
+                <YAxis stroke="#94A3B8" fontSize={12} tickLine={false} tickFormatter={v => `LKR ${v}`} />
+                <Tooltip formatter={(value: any) => [`LKR ${value.toLocaleString()}`, 'Intake']} />
                 <Area type="monotone" dataKey="revenue" stroke="#4F46E5" strokeWidth={2.5} fillOpacity={1} fill="url(#colorRevDash)" />
               </AreaChart>
             </ResponsiveContainer>

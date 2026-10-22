@@ -231,7 +231,7 @@ export default function PlatformReportsPage() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="p-4 bg-slate-50 rounded-xl border border-slate-200/80">
           <span className="text-[10px] font-bold text-slate-400 uppercase">Avg. Rev Per Shop (ARPU)</span>
-          <p className="text-lg font-bold text-slate-900 mt-0.5">${metrics.arpu || 0}</p>
+          <p className="text-lg font-bold text-slate-900 mt-0.5">LKR {metrics.arpu || 0}</p>
         </div>
         <div className="p-4 bg-slate-50 rounded-xl border border-slate-200/80">
           <span className="text-[10px] font-bold text-slate-400 uppercase">Verification Rate</span>
@@ -273,8 +273,8 @@ export default function PlatformReportsPage() {
                   </linearGradient>
                 </defs>
                 <XAxis dataKey="month" stroke="#94A3B8" fontSize={12} tickLine={false} />
-                <YAxis stroke="#94A3B8" fontSize={12} tickLine={false} tickFormatter={v => `$${v}`} />
-                <Tooltip formatter={(value: any) => [`$${value.toLocaleString()}`, 'Intake']} />
+                <YAxis stroke="#94A3B8" fontSize={12} tickLine={false} tickFormatter={v => `LKR ${v}`} />
+                <Tooltip formatter={(value: any) => [`LKR ${value.toLocaleString()}`, 'Intake']} />
                 <Area type="monotone" dataKey="revenue" stroke="#4F46E5" strokeWidth={3} fillOpacity={1} fill="url(#colorRevReport)" />
               </AreaChart>
             </ResponsiveContainer>

@@ -1,21 +1,121 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.replyTicketSchema = exports.createTicketSchema = exports.addTaskCommentSchema = exports.updateTaskStatusSchema = exports.createTaskSchema = exports.createGRNSchema = exports.updatePOSchema = exports.createPOSchema = exports.updateSupplierSchema = exports.createSupplierSchema = exports.updateTransferStatusSchema = exports.receiveTransferSchema = exports.createTransferRequestSchema = exports.stockTransferSchema = exports.stockAdjustmentSchema = exports.updateOrderStatusSchema = exports.updateOrderSchema = exports.createOrderSchema = exports.updateCustomerSchema = exports.createCustomerSchema = exports.updateServiceSchema = exports.createServiceSchema = exports.updateServiceCategorySchema = exports.createServiceCategorySchema = exports.updateProductBatchSchema = exports.createProductBatchSchema = exports.updateProductSchema = exports.createProductSchema = exports.updateCategorySchema = exports.createCategorySchema = exports.reviewChangeRequestSchema = exports.createChangeRequestSchema = exports.createPaymentRequestSchema = exports.createPackageSchema = exports.createStaffUserSchema = exports.updateBranchSchema = exports.createBranchSchema = exports.updateShopSchema = exports.createShopSchema = exports.registerShopOwnerSchema = exports.restrictShopPaymentSchema = exports.reviewPaymentSchema = exports.resetPasswordSchema = exports.forgotPasswordSchema = exports.changePasswordSchema = exports.loginSchema = void 0;
+exports.createTicketSchema = exports.addTaskCommentSchema = exports.updateTaskStatusSchema = exports.createTaskSchema = exports.createGRNSchema = exports.updatePOSchema = exports.createPOSchema = exports.updateSupplierSchema = exports.createSupplierSchema = exports.updateTransferStatusSchema = exports.receiveTransferSchema = exports.createTransferRequestSchema = exports.stockTransferSchema = exports.stockAdjustmentSchema = exports.updateOrderStatusSchema = exports.updateOrderSchema = exports.createOrderSchema = exports.updateCustomerSchema = exports.createCustomerSchema = exports.updateServiceSchema = exports.createServiceSchema = exports.updateServiceCategorySchema = exports.createServiceCategorySchema = exports.updateProductBatchSchema = exports.createProductBatchSchema = exports.updateProductSchema = exports.createProductSchema = exports.updateCategorySchema = exports.createCategorySchema = exports.reviewChangeRequestSchema = exports.createChangeRequestSchema = exports.createPaymentRequestSchema = exports.createPackageSchema = exports.createStaffUserSchema = exports.updateBranchSchema = exports.createBranchSchema = exports.updateShopSchema = exports.createShopSchema = exports.registerShopOwnerSchema = exports.restrictShopPaymentSchema = exports.reviewPaymentSchema = exports.checkEmailSchema = exports.resendVerificationSchema = exports.verifyEmailSchema = exports.resetPasswordSchema = exports.forgotPasswordSchema = exports.changePasswordSchema = exports.loginSchema = exports.passwordSchema = exports.sriLankanPhoneSchema = void 0;
+exports.replyTicketSchema = void 0;
+exports.checkPasswordStrength = checkPasswordStrength;
+exports.validateSriLankanPhone = validateSriLankanPhone;
 const zod_1 = require("zod");
+function checkPasswordStrength(password) {
+    const pwd = password || '';
+    const minLength = pwd.length >= 8;
+    const hasUpper = /[A-Z]/.test(pwd);
+    const hasLower = /[a-z]/.test(pwd);
+    const hasNumber = /[0-9]/.test(pwd);
+    const hasSpecial = /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?~`]/.test(pwd);
+    const errors = [];
+    if (!minLength)
+        errors.push('Password must be at least 8 characters long');
+    if (!hasUpper)
+        errors.push('Password must contain at least one uppercase letter (A-Z)');
+    if (!hasLower)
+        errors.push('Password must contain at least one lowercase letter (a-z)');
+    if (!hasNumber)
+        errors.push('Password must contain at least one number (0-9)');
+    if (!hasSpecial)
+        errors.push('Password must contain at least one special character (!@#$%^&* etc.)');
+    return {
+        minLength,
+        hasUpper,
+        hasLower,
+        hasNumber,
+        hasSpecial,
+        isValid: minLength && hasUpper && hasLower && hasNumber && hasSpecial,
+        errors,
+    };
+}
+/**
+ * Validates Sri Lankan mobile & landline phone numbers.
+ * Supported formats:
+ * - +94 7X XXX XXXX (or +947XXXXXXXX)
+ * - 07X XXX XXXX (or 07XXXXXXXX)
+ * - 7X XXX XXXX (or 7XXXXXXXX)
+ * - Landlines: +94 11 XXX XXXX, 011 XXX XXXX, etc.
+ */
+function validateSriLankanPhone(phone) {
+    if (!phone || typeof phone !== 'string') {
+        return { isValid: false, error: 'Mobile number is required' };
+    }
+    // Remove spaces, hyphens, brackets, dots
+    const clean = phone.replace(/[\s\-\(\)\.]/g, '');
+    // Sri Lankan phone regex
+    // Matches +94, 0094, 0 or without prefix, followed by 9 digits
+    const slPhoneRegex = /^(?:(?:\+94|0094)|0)?([1-9][0-9]{8})$/;
+    const match = clean.match(slPhoneRegex);
+    if (!match) {
+        return {
+            isValid: false,
+            error: 'Please enter a valid Sri Lankan mobile number (e.g. +94 77 123 4567 or 077 123 4567)',
+        };
+    }
+    const nationalNumber = match[1]; // 9 digits, e.g. 771234567
+    const operatorOrArea = nationalNumber.substring(0, 2);
+    // Check valid mobile prefixes (70, 71, 72, 74, 75, 76, 77, 78) and landline area codes
+    const validMobilePrefixes = ['70', '71', '72', '74', '75', '76', '77', '78'];
+    const validLandlinePrefixes = [
+        '11', '21', '23', '24', '25', '26', '27',
+        '31', '32', '33', '34', '35', '36', '37', '38',
+        '41', '45', '47', '51', '52', '54', '55', '57',
+        '63', '65', '66', '67', '81', '91',
+    ];
+    if (!validMobilePrefixes.includes(operatorOrArea) && !validLandlinePrefixes.includes(operatorOrArea)) {
+        return {
+            isValid: false,
+            error: 'Please enter a valid Sri Lankan mobile operator prefix (e.g. 070, 071, 072, 074, 075, 076, 077, 078)',
+        };
+    }
+    // Format nicely: +94 XX XXX XXXX
+    const formatted = `+94 ${nationalNumber.substring(0, 2)} ${nationalNumber.substring(2, 5)} ${nationalNumber.substring(5)}`;
+    return {
+        isValid: true,
+        normalized: formatted,
+    };
+}
+exports.sriLankanPhoneSchema = zod_1.z.string().refine(val => validateSriLankanPhone(val).isValid, {
+    message: 'Please enter a valid Sri Lankan mobile number (e.g. +94 77 123 4567 or 077 123 4567)',
+});
+exports.passwordSchema = zod_1.z.string()
+    .min(8, 'Password must be at least 8 characters long')
+    .regex(/[A-Z]/, 'Password must contain at least one uppercase letter (A-Z)')
+    .regex(/[a-z]/, 'Password must contain at least one lowercase letter (a-z)')
+    .regex(/[0-9]/, 'Password must contain at least one number (0-9)')
+    .regex(/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?~`]/, 'Password must contain at least one special character (!@#$%^&* etc.)');
 exports.loginSchema = zod_1.z.object({
-    email: zod_1.z.string().email(),
-    password: zod_1.z.string().min(6),
+    email: zod_1.z.string().email('Please provide a valid email address'),
+    password: zod_1.z.string().min(1, 'Password is required'),
 });
 exports.changePasswordSchema = zod_1.z.object({
     oldPassword: zod_1.z.string().min(1, 'Old password is required'),
-    newPassword: zod_1.z.string().min(6, 'New password must be at least 6 characters'),
+    newPassword: exports.passwordSchema,
 });
 exports.forgotPasswordSchema = zod_1.z.object({
     email: zod_1.z.string().email('Please provide a valid email address'),
 });
 exports.resetPasswordSchema = zod_1.z.object({
     token: zod_1.z.string().min(1, 'Reset token is required'),
-    newPassword: zod_1.z.string().min(6, 'New password must be at least 6 characters'),
+    newPassword: exports.passwordSchema,
+});
+exports.verifyEmailSchema = zod_1.z.object({
+    email: zod_1.z.string().email('Invalid email format').optional(),
+    token: zod_1.z.string().optional(),
+    code: zod_1.z.string().optional(),
+}).refine(data => !!(data.token || (data.email && data.code)), {
+    message: 'Either verification token or email with verification code must be provided',
+});
+exports.resendVerificationSchema = zod_1.z.object({
+    email: zod_1.z.string().email('Invalid email format'),
+});
+exports.checkEmailSchema = zod_1.z.object({
+    email: zod_1.z.string().email('Please provide a valid email address'),
 });
 exports.reviewPaymentSchema = zod_1.z.object({
     status: zod_1.z.enum(['pending', 'processing', 'successful', 'failed', 'cancelled', 'refunded', 'approved']),
@@ -26,13 +126,13 @@ exports.restrictShopPaymentSchema = zod_1.z.object({
     reason: zod_1.z.string().optional(),
 });
 exports.registerShopOwnerSchema = zod_1.z.object({
-    name: zod_1.z.string().min(2),
-    email: zod_1.z.string().email('Invalid email format'),
-    password: zod_1.z.string().min(6),
-    phone: zod_1.z.string().min(8),
-    businessName: zod_1.z.string().min(2),
-    businessAddress: zod_1.z.string().min(3),
-    businessCategory: zod_1.z.string().min(2),
+    name: zod_1.z.string().min(2, 'Name must be at least 2 characters'),
+    email: zod_1.z.string().email('Please enter a valid email address'),
+    password: exports.passwordSchema,
+    phone: exports.sriLankanPhoneSchema,
+    businessName: zod_1.z.string().min(2, 'Business name must be at least 2 characters'),
+    businessAddress: zod_1.z.string().min(3, 'Business address must be at least 3 characters'),
+    businessCategory: zod_1.z.string().min(2, 'Business category must be at least 2 characters'),
     packageId: zod_1.z.string().optional(),
 });
 exports.createShopSchema = zod_1.z.object({
@@ -67,8 +167,8 @@ exports.updateBranchSchema = zod_1.z.object({
 });
 exports.createStaffUserSchema = zod_1.z.object({
     name: zod_1.z.string().min(2),
-    email: zod_1.z.string().email(),
-    password: zod_1.z.string().min(6),
+    email: zod_1.z.string().email('Invalid email format'),
+    password: exports.passwordSchema,
     phone: zod_1.z.string().optional(),
     role: zod_1.z.enum(['manager', 'sales_staff', 'inventory_staff', 'purchasing_staff', 'worker']),
     branchIds: zod_1.z.array(zod_1.z.string()).optional(),

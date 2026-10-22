@@ -11,6 +11,7 @@ import { AuditLogService } from '../../services/auditLog.service';
 import { NotificationService } from '../../services/notification.service';
 import { EmailService } from '../../services/email.service';
 import { seedDatabase } from '../../scripts/seed';
+import { checkPasswordStrength, validateSriLankanPhone } from '@saas/validation';
 
 export class AuthController {
   static async login(req: Request, res: Response) {
@@ -48,6 +49,33 @@ export class AuthController {
       return sendError(res, 'INVALID_CREDENTIALS', 'Invalid email or password', 401);
     }
 
+    const MAX_FAILED_ATTEMPTS = 5;
+    const LOCKOUT_MINUTES = 15;
+
+    // Check if account is currently locked out
+    if (user.lockoutUntil) {
+      const lockoutTime = new Date(user.lockoutUntil).getTime();
+      const now = Date.now();
+      if (now < lockoutTime) {
+        const remainingMinutes = Math.max(1, Math.ceil((lockoutTime - now) / (60 * 1000)));
+        return sendError(
+          res,
+          'ACCOUNT_LOCKED',
+          `Your account is temporarily locked due to multiple consecutive failed login attempts. Please try again in ${remainingMinutes} minute${remainingMinutes > 1 ? 's' : ''} or reset your password.`,
+          423
+        );
+      } else {
+        // Lockout expired - automatically clear lockout
+        await dbStore.collection<User>('users').update(user.id, {
+          failedLoginAttempts: 0,
+          lockoutUntil: undefined,
+          updatedAt: new Date().toISOString(),
+        });
+        user.failedLoginAttempts = 0;
+        user.lockoutUntil = undefined;
+      }
+    }
+
     // Check password hash
     let isMatch = false;
     if (user.passwordHash) {
@@ -66,18 +94,100 @@ export class AuthController {
     }
 
     if (!isMatch) {
-      return sendError(res, 'INVALID_CREDENTIALS', 'Invalid email or password', 401);
+      const currentAttempts = (user.failedLoginAttempts || 0) + 1;
+      const isNowLocked = currentAttempts >= MAX_FAILED_ATTEMPTS;
+      const lockoutUntil = isNowLocked
+        ? new Date(Date.now() + LOCKOUT_MINUTES * 60 * 1000).toISOString()
+        : undefined;
+
+      await dbStore.collection<User>('users').update(user.id, {
+        failedLoginAttempts: currentAttempts,
+        lockoutUntil,
+        updatedAt: new Date().toISOString(),
+      });
+
+      if (isNowLocked) {
+        await AuditLogService.log({
+          actor: user,
+          action: 'ACCOUNT_LOCKOUT',
+          entity: 'users',
+          entityId: user.id,
+          shopId: user.shopId,
+        });
+
+        return sendError(
+          res,
+          'ACCOUNT_LOCKED',
+          `Your account has been locked due to ${MAX_FAILED_ATTEMPTS} consecutive failed login attempts. Please try again in ${LOCKOUT_MINUTES} minutes or reset your password.`,
+          423
+        );
+      }
+
+      const remainingAttempts = MAX_FAILED_ATTEMPTS - currentAttempts;
+      return sendError(
+        res,
+        'INVALID_CREDENTIALS',
+        `Invalid email or password. You have ${remainingAttempts} attempt${remainingAttempts > 1 ? 's' : ''} remaining before account lockout.`,
+        401
+      );
     }
+
+    // Password matches - reset failed attempts and lockout if any
+    if (user.failedLoginAttempts || user.lockoutUntil) {
+      await dbStore.collection<User>('users').update(user.id, {
+        failedLoginAttempts: 0,
+        lockoutUntil: undefined,
+        updatedAt: new Date().toISOString(),
+      });
+      user.failedLoginAttempts = 0;
+      user.lockoutUntil = undefined;
+    }
+
+    if (user.emailVerified === false) {
+      return sendError(
+        res,
+        'EMAIL_NOT_VERIFIED',
+        'Your email address has not been verified yet. Please check your inbox and verify your email before logging in.',
+        403,
+        {
+          email: user.email,
+          requiresEmailVerification: true,
+        }
+      );
+    }
+
+    const getPlatformSupportEmail = async (): Promise<string> => {
+      try {
+        const settings = await dbStore.collection<any>('settings').get('platform');
+        return (settings?.supportEmail || config.brevo.senderEmail || config.email.user || 'savinda.codezela@gmail.com').trim();
+      } catch {
+        return (config.brevo.senderEmail || config.email.user || 'savinda.codezela@gmail.com').trim();
+      }
+    };
 
     if (user.status !== 'active') {
-      return sendError(res, 'ACCOUNT_INACTIVE', 'Your account is deactivated or suspended. Please contact support.', 403);
+      const supportEmail = await getPlatformSupportEmail();
+      return sendError(
+        res,
+        'ACCOUNT_INACTIVE',
+        'Your account is inactive and access is restricted. Please contact platform support.',
+        403,
+        { supportEmail }
+      );
     }
 
-    // If user belongs to a shop, verify the shop itself is not suspended
+    // If user belongs to a shop, verify the shop itself is active
     if (user.shopId && user.role !== 'super_admin') {
       const shop = await dbStore.collection<Shop>('shops').get(user.shopId);
-      if (shop && (shop.status === 'suspended' || shop.status === 'inactive')) {
-        return sendError(res, 'SHOP_SUSPENDED', 'The shop associated with your account is suspended or inactive.', 403);
+      if (!shop || shop.status === 'inactive' || shop.status === 'suspended') {
+        const supportEmail = await getPlatformSupportEmail();
+        return sendError(
+          res,
+          shop?.status === 'suspended' ? 'SHOP_SUSPENDED' : 'SHOP_INACTIVE',
+          'Your account is inactive and access is restricted. Please contact platform support.',
+          403,
+          { supportEmail }
+        );
       }
     }
 
@@ -135,8 +245,9 @@ export class AuthController {
       return sendError(res, 'BAD_REQUEST', 'Both old password and new password are required', 400);
     }
 
-    if (newPassword.length < 6) {
-      return sendError(res, 'BAD_REQUEST', 'New password must be at least 6 characters', 400);
+    const strength = checkPasswordStrength(newPassword);
+    if (!strength.isValid) {
+      return sendError(res, 'WEAK_PASSWORD', `Password requirements not met: ${strength.errors.join(', ')}`, 400);
     }
 
     const userWithHash = await dbStore.collection<User & { passwordHash?: string }>('users').get(req.user.id);
@@ -229,8 +340,9 @@ export class AuthController {
       return sendError(res, 'BAD_REQUEST', 'Reset token and new password are required', 400);
     }
 
-    if (newPassword.length < 6) {
-      return sendError(res, 'BAD_REQUEST', 'Password must be at least 6 characters', 400);
+    const strength = checkPasswordStrength(newPassword);
+    if (!strength.isValid) {
+      return sendError(res, 'WEAK_PASSWORD', `Password requirements not met: ${strength.errors.join(', ')}`, 400);
     }
 
     const usersRes = await dbStore.collection<User & { passwordHash?: string; passwordResetToken?: string; passwordResetExpires?: string }>('users').query({
@@ -248,10 +360,12 @@ export class AuthController {
 
     const newHash = await bcrypt.hash(newPassword.trim(), 10);
 
-    await dbStore.collection<User & { passwordHash?: string; passwordResetToken?: string; passwordResetExpires?: string }>('users').update(user.id, {
+    await dbStore.collection<User & { passwordHash?: string; passwordResetToken?: string; passwordResetExpires?: string; failedLoginAttempts?: number; lockoutUntil?: string }>('users').update(user.id, {
       passwordHash: newHash,
       passwordResetToken: undefined,
       passwordResetExpires: undefined,
+      failedLoginAttempts: 0,
+      lockoutUntil: undefined,
       status: 'active', // Unlock/reactivate if locked
       updatedAt: new Date().toISOString(),
     });
@@ -279,26 +393,45 @@ export class AuthController {
 
     const normalizedEmail = (email || '').trim().toLowerCase();
 
+    const strength = checkPasswordStrength(password);
+    if (!strength.isValid) {
+      return sendError(res, 'WEAK_PASSWORD', `Password requirements not met: ${strength.errors.join(', ')}`, 400);
+    }
+
     const existingUsers = await dbStore.collection<User>('users').query({
       where: [{ field: 'email', op: '==', value: normalizedEmail }],
     });
+    const existingShops = await dbStore.collection<Shop>('shops').query({
+      where: [{ field: 'email', op: '==', value: normalizedEmail }],
+    });
 
-    if (existingUsers.data.length > 0) {
-      return sendError(res, 'EMAIL_EXISTS', 'Email is already registered', 400);
+    if (existingUsers.data.length > 0 || existingShops.data.length > 0) {
+      return sendError(
+        res,
+        'EMAIL_EXISTS',
+        'This email address is already registered. Please log in or use a different email address.',
+        400
+      );
     }
 
+    // Validate Sri Lankan phone number format
+    const phoneValidation = validateSriLankanPhone(phone);
+    if (!phoneValidation.isValid) {
+      return sendError(
+        res,
+        'INVALID_PHONE',
+        phoneValidation.error || 'Please enter a valid Sri Lankan mobile number (e.g. +94 77 123 4567 or 077 123 4567)',
+        400
+      );
+    }
+    const formattedPhone = phoneValidation.normalized || phone;
+
+    // 1. Automatically assign the Free Subscription Plan by default for all new shop registrations
     let targetPkg: SubscriptionPackage | null = null;
-    if (packageId) {
-      targetPkg = await dbStore.collection<SubscriptionPackage>('packages').get(packageId);
-    }
-
-    if (!targetPkg) {
-      // Default to Free Plan
-      const freeQuery = await dbStore.collection<SubscriptionPackage>('packages').query({
-        where: [{ field: 'price', op: '==', value: 0 }],
-      });
-      targetPkg = freeQuery.data[0] || (await dbStore.collection<SubscriptionPackage>('packages').get('pkg_free'));
-    }
+    const freeQuery = await dbStore.collection<SubscriptionPackage>('packages').query({
+      where: [{ field: 'price', op: '==', value: 0 }],
+    });
+    targetPkg = freeQuery.data[0] || (await dbStore.collection<SubscriptionPackage>('packages').get('pkg_free'));
 
     if (!targetPkg) {
       const allPkgs = await dbStore.collection<SubscriptionPackage>('packages').query();
@@ -322,7 +455,7 @@ export class AuthController {
       name: `${businessName} - Main Branch`,
       code: 'MAIN-01',
       address: businessAddress,
-      phone,
+      phone: formattedPhone,
       isDefault: true,
       status: 'active',
       createdAt: new Date().toISOString(),
@@ -352,7 +485,7 @@ export class AuthController {
       ownerId: userId,
       ownerName: name,
       ownerEmail: normalizedEmail,
-      contactNumber: phone,
+      contactNumber: formattedPhone,
       email: normalizedEmail,
       address: businessAddress,
       category: businessCategory,
@@ -365,7 +498,11 @@ export class AuthController {
       updatedAt: new Date().toISOString(),
     });
 
-    // 4. Create User
+    // 4. Create User with mandatory email verification pending
+    const verificationToken = crypto.randomBytes(24).toString('hex');
+    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const verificationExpires = new Date(Date.now() + 60 * 60 * 1000).toISOString(); // 60 minutes
+
     const user = await dbStore.collection<User & { passwordHash: string }>('users').create({
       id: userId,
       email: normalizedEmail,
@@ -374,44 +511,56 @@ export class AuthController {
       status: 'active',
       shopId: shop.id,
       branchIds: [branch.id],
-      phone,
+      phone: formattedPhone,
+      emailVerified: false,
+      emailVerificationToken: verificationToken,
+      emailVerificationCode: verificationCode,
+      emailVerificationExpires: verificationExpires,
       passwordHash,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     });
 
-    const token = jwt.sign(
-      { id: user.id, email: user.email, role: user.role, shopId: user.shopId },
-      config.jwtSecret,
-      { expiresIn: '7d' }
-    );
-
-    // Send Registration / Welcome Email
-    await EmailService.sendRegistrationWelcomeEmail({
+    // Send Mandatory Email Verification (Code & Clickable Link)
+    await EmailService.sendEmailVerification({
       email: normalizedEmail,
       name,
       shopName: businessName,
-      packageName: targetPkg.name,
-      shopId: shop.id,
+      verificationToken,
+      verificationCode,
       userId: user.id,
-      limits: targetPkg.limits,
-      branchName: branch.name,
+      shopId: shop.id,
+      expiresMinutes: 60,
     });
 
     // Notify Super Admins
     await NotificationService.notifySuperAdmins({
-      title: 'New Shop Registered',
-      message: `Shop "${businessName}" has registered with ${targetPkg.name}.`,
+      title: 'New Shop Registered (Verification Pending)',
+      message: `Shop "${businessName}" has registered with ${targetPkg.name} (email verification pending).`,
       link: `/super-admin/shops`,
     });
 
-    const { passwordHash: _, ...safeUser } = user;
-    return sendSuccess(res, {
-      token,
-      user: safeUser,
-      shop,
-      defaultBranch: branch,
-    }, undefined, 201);
+    const {
+      passwordHash: _,
+      emailVerificationToken: __,
+      emailVerificationCode: ___,
+      ...safeUser
+    } = user;
+
+    return sendSuccess(
+      res,
+      {
+        email: normalizedEmail,
+        emailVerified: false,
+        requiresVerification: true,
+        user: safeUser,
+        shop,
+        defaultBranch: branch,
+        message: 'Account created successfully! Please verify your email address to activate your account.',
+      },
+      undefined,
+      201
+    );
   }
 
   static async getMe(req: AuthenticatedRequest, res: Response) {
@@ -507,6 +656,200 @@ export class AuthController {
     return sendSuccess(res, {
       verified: true,
       message: 'Verification code verified successfully',
+    });
+  }
+
+  static async verifyEmail(req: Request, res: Response) {
+    const email = (req.body.email || '').trim().toLowerCase();
+    const token = (req.body.token || '').trim();
+    const code = (req.body.code || req.body.verificationCode || '').trim();
+
+    if (!token && (!email || !code)) {
+      return sendError(
+        res,
+        'INVALID_REQUEST',
+        'Please provide a verification token or your registered email with the 6-digit verification code.',
+        400
+      );
+    }
+
+    let user: (User & { passwordHash?: string }) | undefined;
+
+    if (token) {
+      const usersRes = await dbStore.collection<User & { passwordHash?: string }>('users').query({
+        where: [{ field: 'emailVerificationToken', op: '==', value: token }],
+      });
+      user = usersRes.data[0];
+    } else if (email) {
+      const usersRes = await dbStore.collection<User & { passwordHash?: string }>('users').query({
+        where: [{ field: 'email', op: '==', value: email }],
+      });
+      user = usersRes.data[0];
+    }
+
+    if (!user) {
+      return sendError(
+        res,
+        'INVALID_TOKEN',
+        'Invalid or expired verification link/code. Please check your email or request a new one.',
+        400
+      );
+    }
+
+    if (user.emailVerified === true && !user.emailVerificationToken && !user.emailVerificationCode) {
+      return sendSuccess(res, {
+        verified: true,
+        alreadyVerified: true,
+        message: 'Your email address is already verified. You can log in directly.',
+      });
+    }
+
+    // Verify code if verifying by code
+    if (!token && code) {
+      if (user.emailVerificationCode !== code) {
+        return sendError(
+          res,
+          'INVALID_CODE',
+          'Invalid verification code. Please check the 6-digit code sent to your email.',
+          400
+        );
+      }
+    }
+
+    // Check expiration
+    if (user.emailVerificationExpires && new Date() > new Date(user.emailVerificationExpires)) {
+      return sendError(
+        res,
+        'VERIFICATION_EXPIRED',
+        'Verification link or code has expired. Please request a new verification email.',
+        400,
+        { email: user.email, expired: true }
+      );
+    }
+
+    // Update user to verified
+    await dbStore.collection<User>('users').update(user.id, {
+      emailVerified: true,
+      emailVerificationToken: undefined,
+      emailVerificationCode: undefined,
+      emailVerificationExpires: undefined,
+      updatedAt: new Date().toISOString(),
+    });
+
+    // Send Welcome Email now that they are verified
+    if (user.shopId) {
+      const shop = await dbStore.collection<Shop>('shops').get(user.shopId);
+      if (shop) {
+        await EmailService.sendRegistrationWelcomeEmail({
+          email: user.email,
+          name: user.name,
+          shopName: shop.name,
+          packageName: shop.packageName || 'Free Starter Plan',
+          shopId: shop.id,
+          userId: user.id,
+        }).catch(err => console.error('Failed to send welcome email post verification:', err));
+      }
+    }
+
+    await AuditLogService.log({
+      actor: user,
+      action: 'EMAIL_VERIFIED',
+      entity: 'users',
+      entityId: user.id,
+      shopId: user.shopId,
+    });
+
+    return sendSuccess(res, {
+      verified: true,
+      email: user.email,
+      message: 'Email verified successfully! You can now log in using your registered credentials.',
+    });
+  }
+
+  static async resendVerification(req: Request, res: Response) {
+    const email = (req.body.email || '').trim().toLowerCase();
+
+    if (!email) {
+      return sendError(res, 'BAD_REQUEST', 'Email address is required to resend verification.', 400);
+    }
+
+    const usersRes = await dbStore.collection<User>('users').query({
+      where: [{ field: 'email', op: '==', value: email }],
+    });
+
+    const user = usersRes.data[0];
+
+    // If user does not exist, return success to prevent email enumeration
+    if (!user) {
+      return sendSuccess(res, {
+        message: 'If an unverified account exists with this email address, a verification email has been sent.',
+      });
+    }
+
+    if (user.emailVerified === true && !user.emailVerificationToken) {
+      return sendError(
+        res,
+        'ALREADY_VERIFIED',
+        'This email address has already been verified. You can log in directly.',
+        400
+      );
+    }
+
+    // Generate new token & code
+    const verificationToken = crypto.randomBytes(24).toString('hex');
+    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const verificationExpires = new Date(Date.now() + 60 * 60 * 1000).toISOString(); // 60 minutes
+
+    await dbStore.collection<User>('users').update(user.id, {
+      emailVerificationToken: verificationToken,
+      emailVerificationCode: verificationCode,
+      emailVerificationExpires: verificationExpires,
+      updatedAt: new Date().toISOString(),
+    });
+
+    let shopName = 'Your Print Shop';
+    if (user.shopId) {
+      const shop = await dbStore.collection<Shop>('shops').get(user.shopId);
+      if (shop?.name) shopName = shop.name;
+    }
+
+    await EmailService.sendEmailVerification({
+      email: user.email,
+      name: user.name,
+      shopName,
+      verificationToken,
+      verificationCode,
+      userId: user.id,
+      shopId: user.shopId,
+      expiresMinutes: 60,
+    });
+
+    return sendSuccess(res, {
+      message: `A fresh verification email has been dispatched to ${user.email}. Please check your inbox.`,
+    });
+  }
+
+  static async checkEmail(req: Request, res: Response) {
+    const email = (req.body.email || req.query.email || '').toString().trim().toLowerCase();
+    if (!email) {
+      return sendError(res, 'INVALID_INPUT', 'Email address is required', 400);
+    }
+
+    const existingUsers = await dbStore.collection<User>('users').query({
+      where: [{ field: 'email', op: '==', value: email }],
+    });
+    const existingShops = await dbStore.collection<Shop>('shops').query({
+      where: [{ field: 'email', op: '==', value: email }],
+    });
+
+    const isRegistered = existingUsers.data.length > 0 || existingShops.data.length > 0;
+
+    return sendSuccess(res, {
+      available: !isRegistered,
+      registered: isRegistered,
+      message: isRegistered
+        ? 'This email address is already registered. Please log in or use a different email address.'
+        : 'Email address is available for registration.',
     });
   }
 }

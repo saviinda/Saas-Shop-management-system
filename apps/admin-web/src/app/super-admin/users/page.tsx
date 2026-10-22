@@ -33,6 +33,8 @@ import {
   Lock,
   Check,
 } from 'lucide-react';
+import { PasswordStrengthIndicator } from '@/components/PasswordStrengthIndicator';
+import { checkPasswordStrength } from '@saas/validation';
 
 interface ShopGroup {
   shop: Shop;
@@ -314,9 +316,12 @@ export default function UsersManagementPage() {
     e.preventDefault();
     if (!resetModalUser) return;
 
-    if (customPassword.trim() && customPassword.trim().length < 6) {
-      showError('Password Too Short', 'Custom temporary password must be at least 6 characters.');
-      return;
+    if (customPassword.trim()) {
+      const strength = checkPasswordStrength(customPassword.trim());
+      if (!strength.isValid) {
+        showError('Weak Password', strength.errors[0] || 'Password does not meet security requirements.');
+        return;
+      }
     }
 
     setIsResetting(true);
@@ -402,6 +407,13 @@ export default function UsersManagementPage() {
       showError('Role Required', 'Please select at least one role for this new user.');
       return;
     }
+
+    const strength = checkPasswordStrength(createForm.password);
+    if (!strength.isValid) {
+      showError('Weak Password', strength.errors[0] || 'Password does not meet security requirements.');
+      return;
+    }
+
     setIsCreating(true);
     try {
       await api.post('/users', {
@@ -1228,15 +1240,18 @@ export default function UsersManagementPage() {
             <form onSubmit={handleExecuteResetAccess} className="space-y-3">
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Custom Temporary Password (leave blank to auto-generate, min 6 characters)
+                  Custom Temporary Password (leave blank to auto-generate secure password)
                 </label>
                 <input
                   type="text"
-                  placeholder="e.g. TempSecure@2026"
+                  placeholder="Min 8 chars with upper, lower, number, symbol"
                   value={customPassword}
                   onChange={e => setCustomPassword(e.target.value)}
                   className="w-full p-2.5 text-xs bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500"
                 />
+                {customPassword && (
+                  <PasswordStrengthIndicator password={customPassword} className="mt-2" />
+                )}
               </div>
 
               <div>
@@ -1464,12 +1479,13 @@ export default function UsersManagementPage() {
                   <input
                     type="password"
                     required
-                    minLength={6}
-                    placeholder="Min 6 characters"
+                    minLength={8}
+                    placeholder="Min 8 chars with upper, lower, number, symbol"
                     value={createForm.password}
                     onChange={e => setCreateForm(prev => ({ ...prev, password: e.target.value }))}
                     className="w-full p-2.5 text-xs bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500"
                   />
+                  <PasswordStrengthIndicator password={createForm.password} className="mt-2" />
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1">Phone Number</label>

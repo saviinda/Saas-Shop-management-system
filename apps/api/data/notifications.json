@@ -623,5 +623,154 @@
     "isRead": false,
     "createdAt": "2026-10-15T10:46:41.374Z",
     "id": "f6bac8c1-2253-4879-a57e-fff1fbd67290"
+  },
+  {
+    "recipientId": "usr_1792564605085",
+    "shopId": "shp_1792564605085",
+    "title": "Welcome to SaaS Print Shop Platform, Dilshaan!",
+    "message": "Welcome! Your print shop \"New Rich\" has been registered with the Basic Tier plan.",
+    "type": "success",
+    "link": "/shop-owner/dashboard",
+    "isRead": false,
+    "createdAt": "2026-10-21T06:36:45.139Z",
+    "id": "c167dcfa-2bf3-4081-9544-ae2566b579f0"
+  },
+  {
+    "recipientId": "usr_super_admin",
+    "title": "New Shop Registered",
+    "message": "Shop \"New Rich\" has registered with Basic Tier.",
+    "type": "alert",
+    "link": "/super-admin/shops",
+    "isRead": false,
+    "createdAt": "2026-10-21T06:36:46.708Z",
+    "id": "897c9b3e-b157-4a56-a582-4c792fbdcaec"
+  },
+  {
+    "recipientId": "usr_1792648629442",
+    "shopId": "shp_1792648629442",
+    "title": "Welcome to SaaS Print Shop Platform, Silva!",
+    "message": "Welcome! Your print shop \"ABC\" has been registered with the Free Starter plan.",
+    "type": "success",
+    "link": "/shop-owner/dashboard",
+    "isRead": false,
+    "createdAt": "2026-10-22T05:57:10.787Z",
+    "id": "4aa4da76-fbc5-44f7-bde6-5facdab12cde"
+  },
+  {
+    "recipientId": "usr_super_admin",
+    "title": "New Shop Registered",
+    "message": "Shop \"ABC\" has registered with Free Starter.",
+    "type": "alert",
+    "link": "/super-admin/shops",
+    "isRead": false,
+    "createdAt": "2026-10-22T05:57:11.944Z",
+    "id": "50cb481c-10bd-42ca-b382-bb7293a57eca"
+  },
+  {
+    "recipientId": "usr_1792653050913",
+    "shopId": "shp_1792653050913",
+    "title": "Verify Your Email Address - Verification Test Shop",
+    "message": "Please verify your email address (verify_owner_1792653050670@example.com) using verification code: 733478",
+    "type": "alert",
+    "link": "http://localhost:3000/verify-email?token=8c5b48c6c95be600f4783410ebcb5ed7a8f883adeffa36c0&email=verify_owner_1792653050670%40example.com",
+    "isRead": false,
+    "createdAt": "2026-10-22T07:10:51.014Z",
+    "id": "7028f347-0cf4-442b-922e-26f9322cc46d"
+  },
+  {
+    "recipientId": "usr_super_admin",
+    "title": "New Shop Registered (Verification Pending)",
+    "message": "Shop \"Verification Test Shop\" has registered with Free Starter (email verification pending).",
+    "type": "alert",
+    "link": "/super-admin/shops",
+    "isRead": false,
+    "createdAt": "2026-10-22T07:10:52.354Z",
+    "id": "b03165f7-9e90-484b-a338-c4dcf861faf3"
+  },
+  {
+    "recipientId": "usr_1792653050913",
+    "shopId": "shp_1792653050913",
+    "title": "Verify Your Email Address - Verification Test Shop",
+    "message": "Please verify your email address (verify_owner_1792653050670@example.com) using verification code: 609194",
+    "type": "alert",
+    "link": "http://localhost:3000/verify-email?token=f7c0a55882f6935fa7da5ce6a213387e255e9e417b4de3fb&email=verify_owner_1792653050670%40example.com",
+    "isRead": false,
+    "createdAt": "2026-10-22T07:10:52.472Z",
+    "id": "7e150f31-a1f8-40ac-9168-4ab825c3b07c"
+  },
+  {
+    "recipientId": "usr_1792653050913",
+    "shopId": "shp_1792653050913",
+    "title": "Welcome to SaaS Print Shop Platform, Verification Test Owner!",
+    "message": "Welcome! Your print shop \"Verification Test Shop\" has been registered with the Free Starter plan.",
+    "type": "success",
+    "link": "/shop-owner/dashboard",
+    "isRead": false,
+    "createdAt": "2026-10-22T07:10:53.150Z",
+    "id": "5396ad00-1e92-4491-89f0-26bdf9c1f16f"
+  },
+  {
+    "recipientId": "usr_1792654300766",
+    "shopId": "shp_1792654300766",
+    "title": "Verify Your Email Address - Lanka Print Solutions",
+    "message": "Please verify your email address (sri_lanka_shop_1792654300577@example.com) using verification code: 978196",
+    "type": "alert",
+    "link": "http://localhost:3000/verify-email?token=b50ede871fbc6ff910b53c887874a8b10e6bb11dc3541f91&email=sri_lanka_shop_1792654300577%40example.com",
+    "isRead": false,
+    "createdAt": "2026-10-22T07:31:40.791Z",
+    "id": "2a2bbbaa-4ce0-4e12-aaed-fa80aeb9b9b4"
+  },
+  {
+    "recipientId": "usr_super_admin",
+    "title": "New Shop Registered (Verification Pending)",
+    "message": "Shop \"Lanka Print Solutions\" has registered with Free Starter (email verification pending).",
+    "type": "alert",
+    "link": "/super-admin/shops",
+    "isRead": false,
+    "createdAt": "2026-10-22T07:31:42.087Z",
+    "id": "800c1e78-1cf5-41ce-8aa5-a376a48c1138"
+  },
+  {
+    "recipientId": "usr_1792654300766",
+    "shopId": "shp_1792654300766",
+    "title": "Welcome to SaaS Print Shop Platform, Sunil Perera!",
+    "message": "Welcome! Your print shop \"Lanka Print Solutions\" has been registered with the Free Starter plan.",
+    "type": "success",
+    "link": "/shop-owner/dashboard",
+    "isRead": false,
+    "createdAt": "2026-10-22T07:31:42.101Z",
+    "id": "cc88449c-fe14-4795-9ecb-15c5a3776a3a"
+  },
+  {
+    "recipientId": "usr_1792654645372",
+    "shopId": "shp_1792654645372",
+    "title": "Verify Your Email Address - sdsdssdsds",
+    "message": "Please verify your email address (savindadil01@gmail.com) using verification code: 606978",
+    "type": "alert",
+    "link": "http://localhost:3000/verify-email?token=56a8eed8779f6333ed79f0692ae003a58a38057ff81278a2&email=savindadil01%40gmail.com",
+    "isRead": false,
+    "createdAt": "2026-10-22T07:37:25.457Z",
+    "id": "2ed08893-8682-41eb-9530-37d4768afd01"
+  },
+  {
+    "recipientId": "usr_super_admin",
+    "title": "New Shop Registered (Verification Pending)",
+    "message": "Shop \"sdsdssdsds\" has registered with Free Starter (email verification pending).",
+    "type": "alert",
+    "link": "/super-admin/shops",
+    "isRead": false,
+    "createdAt": "2026-10-22T07:37:26.724Z",
+    "id": "f0468a22-e12f-4ddb-bd8a-ad3c0b91e137"
+  },
+  {
+    "recipientId": "usr_1792654645372",
+    "shopId": "shp_1792654645372",
+    "title": "Welcome to SaaS Print Shop Platform, venus!",
+    "message": "Welcome! Your print shop \"sdsdssdsds\" has been registered with the Free Starter plan.",
+    "type": "success",
+    "link": "/shop-owner/dashboard",
+    "isRead": false,
+    "createdAt": "2026-10-22T07:37:44.122Z",
+    "id": "d5221e6f-5f3d-405e-a779-5b7573f2eab6"
   }
 ]

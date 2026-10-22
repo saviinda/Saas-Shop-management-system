@@ -34,10 +34,13 @@ import {
   Check,
   AlertTriangle,
   AlertCircle,
+  Power,
 } from 'lucide-react';
 import { CategorizedFilterBar, FilterCategory } from '@/components/CategorizedFilterBar';
 import { TablePagination } from '@/components/TablePagination';
 import { EmailServiceModal } from '@/components/EmailServiceModal';
+import { PasswordStrengthIndicator } from '@/components/PasswordStrengthIndicator';
+import { checkPasswordStrength } from '@saas/validation';
 
 const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
 
@@ -282,9 +285,12 @@ export default function ShopsManagementPage() {
     e.preventDefault();
     if (!resetModalUser) return;
 
-    if (customPassword.trim() && customPassword.trim().length < 6) {
-      showError('Password Too Short', 'Custom temporary password must be at least 6 characters.');
-      return;
+    if (customPassword.trim()) {
+      const strength = checkPasswordStrength(customPassword.trim());
+      if (!strength.isValid) {
+        showError('Weak Password', strength.errors[0] || 'Password does not meet strong security requirements.');
+        return;
+      }
     }
 
     setIsResetting(true);
@@ -551,6 +557,23 @@ export default function ShopsManagementPage() {
                               className="px-2.5 py-1 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors shadow-2xs"
                             >
                               Approve
+                            </button>
+                          )}
+                          {shop.status === 'active' ? (
+                            <button
+                              onClick={() => handleStatusChange(shop, 'inactive')}
+                              title="Deactivate Shop (Restrict access and revoke sessions)"
+                              className="p-1.5 text-slate-600 hover:text-rose-600 hover:bg-rose-50 rounded-lg border border-slate-200 transition-colors"
+                            >
+                              <Ban className="h-3.5 w-3.5" />
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => handleStatusChange(shop, 'active')}
+                              title="Activate Shop (Restore portal access)"
+                              className="p-1.5 text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg border border-slate-200 transition-colors"
+                            >
+                              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
                             </button>
                           )}
                           <button
@@ -853,7 +876,7 @@ export default function ShopsManagementPage() {
                       {selectedShopDetails.subscription?.packageName || selectedShopDetails.package?.name || selectedShopDetails.shop?.packageName || selectedShopDetails.usage?.package?.name || 'Standard Tier'}
                     </h3>
                     <p className="text-xs text-slate-500">
-                      Pricing: <b>${selectedShopDetails.subscription?.price ?? selectedShopDetails.package?.price ?? selectedShopDetails.usage?.package?.price ?? 129}/month</b> | Status: <b className="uppercase text-indigo-700">{selectedShopDetails.subscription?.status || 'Active'}</b>
+                      Pricing: <b>LKR {selectedShopDetails.subscription?.price ?? selectedShopDetails.package?.price ?? selectedShopDetails.usage?.package?.price ?? 129}/month</b> | Status: <b className="uppercase text-indigo-700">{selectedShopDetails.subscription?.status || 'Active'}</b>
                     </p>
                   </div>
                   <span className="px-3 py-1 bg-indigo-600 text-white rounded-full text-xs font-bold">
@@ -893,7 +916,7 @@ export default function ShopsManagementPage() {
                         </span>
                       </div>
                       <p className="text-xs text-slate-500 mt-1">
-                        Pricing: <b className="text-slate-800">${pkgInfo?.price ?? subInfo?.price ?? 129}/month</b> | Active Quota Tracking
+                        Pricing: <b className="text-slate-800">LKR {pkgInfo?.price ?? subInfo?.price ?? 129}/month</b> | Active Quota Tracking
                       </p>
                     </div>
                     <div className="text-right sm:text-right">
@@ -1177,7 +1200,7 @@ export default function ShopsManagementPage() {
                   >
                     {packages.map(pkg => (
                       <option key={pkg.id} value={pkg.id}>
-                        {pkg.name} (${pkg.price}/mo)
+                        {pkg.name} (LKR {pkg.price}/mo)
                       </option>
                     ))}
                   </select>
@@ -1335,7 +1358,7 @@ export default function ShopsManagementPage() {
                   >
                     {packages.map(pkg => (
                       <option key={pkg.id} value={pkg.id}>
-                        {pkg.name} (${pkg.price}/mo)
+                        {pkg.name} (LKR {pkg.price}/mo)
                       </option>
                     ))}
                   </select>
@@ -1408,11 +1431,14 @@ export default function ShopsManagementPage() {
                 </label>
                 <input
                   type="text"
-                  placeholder="e.g. OwnerSecure@2026"
+                  placeholder="Min 8 chars with upper, lower, number, symbol"
                   value={customPassword}
                   onChange={e => setCustomPassword(e.target.value)}
                   className="w-full p-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500"
                 />
+                {customPassword && (
+                  <PasswordStrengthIndicator password={customPassword} className="mt-2" />
+                )}
               </div>
 
               <div className="flex items-center justify-end gap-2 pt-2">

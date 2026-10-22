@@ -1,4 +1,29 @@
 import { z } from 'zod';
+export interface PasswordStrengthResult {
+    minLength: boolean;
+    hasUpper: boolean;
+    hasLower: boolean;
+    hasNumber: boolean;
+    hasSpecial: boolean;
+    isValid: boolean;
+    errors: string[];
+}
+export declare function checkPasswordStrength(password: string): PasswordStrengthResult;
+/**
+ * Validates Sri Lankan mobile & landline phone numbers.
+ * Supported formats:
+ * - +94 7X XXX XXXX (or +947XXXXXXXX)
+ * - 07X XXX XXXX (or 07XXXXXXXX)
+ * - 7X XXX XXXX (or 7XXXXXXXX)
+ * - Landlines: +94 11 XXX XXXX, 011 XXX XXXX, etc.
+ */
+export declare function validateSriLankanPhone(phone: string): {
+    isValid: boolean;
+    normalized?: string;
+    error?: string;
+};
+export declare const sriLankanPhoneSchema: z.ZodEffects<z.ZodString, string, string>;
+export declare const passwordSchema: z.ZodString;
 export declare const loginSchema: z.ZodObject<{
     email: z.ZodString;
     password: z.ZodString;
@@ -36,6 +61,41 @@ export declare const resetPasswordSchema: z.ZodObject<{
     newPassword: string;
     token: string;
 }>;
+export declare const verifyEmailSchema: z.ZodEffects<z.ZodObject<{
+    email: z.ZodOptional<z.ZodString>;
+    token: z.ZodOptional<z.ZodString>;
+    code: z.ZodOptional<z.ZodString>;
+}, "strip", z.ZodTypeAny, {
+    code?: string | undefined;
+    email?: string | undefined;
+    token?: string | undefined;
+}, {
+    code?: string | undefined;
+    email?: string | undefined;
+    token?: string | undefined;
+}>, {
+    code?: string | undefined;
+    email?: string | undefined;
+    token?: string | undefined;
+}, {
+    code?: string | undefined;
+    email?: string | undefined;
+    token?: string | undefined;
+}>;
+export declare const resendVerificationSchema: z.ZodObject<{
+    email: z.ZodString;
+}, "strip", z.ZodTypeAny, {
+    email: string;
+}, {
+    email: string;
+}>;
+export declare const checkEmailSchema: z.ZodObject<{
+    email: z.ZodString;
+}, "strip", z.ZodTypeAny, {
+    email: string;
+}, {
+    email: string;
+}>;
 export declare const reviewPaymentSchema: z.ZodObject<{
     status: z.ZodEnum<["pending", "processing", "successful", "failed", "cancelled", "refunded", "approved"]>;
     notes: z.ZodOptional<z.ZodString>;
@@ -60,7 +120,7 @@ export declare const registerShopOwnerSchema: z.ZodObject<{
     name: z.ZodString;
     email: z.ZodString;
     password: z.ZodString;
-    phone: z.ZodString;
+    phone: z.ZodEffects<z.ZodString, string, string>;
     businessName: z.ZodString;
     businessAddress: z.ZodString;
     businessCategory: z.ZodString;

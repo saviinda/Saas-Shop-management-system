@@ -7,6 +7,7 @@ import { sendSuccess, sendError } from '../../utils/response';
 import { AuditLogService } from '../../services/auditLog.service';
 import { PackageLimitService } from '../../services/packageLimit.service';
 import { EmailService } from '../../services/email.service';
+import { checkPasswordStrength } from '@saas/validation';
 
 export class ShopController {
   static async listShops(req: AuthenticatedRequest, res: Response) {
@@ -131,6 +132,13 @@ export class ShopController {
     const pkg = await dbStore.collection<SubscriptionPackage>('packages').get(packageId);
     if (!pkg) {
       return sendError(res, 'PACKAGE_NOT_FOUND', 'Selected subscription package does not exist', 400);
+    }
+
+    if (password && password.trim()) {
+      const strength = checkPasswordStrength(password.trim());
+      if (!strength.isValid) {
+        return sendError(res, 'WEAK_PASSWORD', `Password requirements not met: ${strength.errors.join(', ')}`, 400);
+      }
     }
 
     const passwordHash = await bcrypt.hash(password || 'Shop@123456', 10);
@@ -280,6 +288,16 @@ export class ShopController {
       }
     }
 
+    const isDeactivating = status === 'inactive' || status === 'suspended';
+    const nowIso = new Date().toISOString();
+
+    if (password && password.trim()) {
+      const strength = checkPasswordStrength(password.trim());
+      if (!strength.isValid) {
+        return sendError(res, 'WEAK_PASSWORD', `Password requirements not met: ${strength.errors.join(', ')}`, 400);
+      }
+    }
+
     const updatedShop = await dbStore.collection<Shop>('shops').update(id, {
       ...(name && { name }),
       ...(category && { category }),
@@ -290,17 +308,33 @@ export class ShopController {
       ...(ownerEmail && { ownerEmail: ownerEmail.trim().toLowerCase() }),
       ...(packageId && { packageId }),
       ...(packageName && { packageName }),
-      ...(status && { status }),
+      ...(status && { status, sessionsInvalidatedAt: isDeactivating ? nowIso : undefined }),
       ...(description !== undefined && { description }),
-      updatedAt: new Date().toISOString(),
+      updatedAt: nowIso,
     });
+
+    // Synchronize users belonging to this shop if status changed
+    if (status) {
+      const shopUsers = await dbStore.collection<User>('users').query({
+        where: [{ field: 'shopId', op: '==', value: id }],
+      });
+      for (const u of shopUsers.data) {
+        if (u.role === 'super_admin') continue;
+        const targetUserStatus = status === 'active' ? 'active' : status === 'suspended' ? 'suspended' : 'inactive';
+        await dbStore.collection<User>('users').update(u.id, {
+          status: targetUserStatus,
+          sessionsInvalidatedAt: isDeactivating ? nowIso : undefined,
+          updatedAt: nowIso,
+        });
+      }
+    }
 
     // Update associated Owner User if exists
     if (shop.ownerId) {
       const ownerUser = await dbStore.collection<User & { passwordHash?: string }>('users').get(shop.ownerId);
       if (ownerUser) {
         let newPasswordHash: string | undefined = undefined;
-        if (password && password.trim().length >= 6) {
+        if (password && password.trim()) {
           newPasswordHash = await bcrypt.hash(password.trim(), 10);
         }
 
@@ -308,9 +342,9 @@ export class ShopController {
           ...(ownerName && { name: ownerName }),
           ...(ownerEmail && { email: ownerEmail.trim().toLowerCase() }),
           ...(contactNumber && { phone: contactNumber }),
-          ...(status && { status: status === 'active' ? 'active' : 'inactive' }),
+          ...(status && { status: status === 'active' ? 'active' : 'inactive', sessionsInvalidatedAt: isDeactivating ? nowIso : undefined }),
           ...(newPasswordHash && { passwordHash: newPasswordHash }),
-          updatedAt: new Date().toISOString(),
+          updatedAt: nowIso,
         });
       }
     }
@@ -337,19 +371,32 @@ export class ShopController {
       return sendError(res, 'SHOP_NOT_FOUND', 'Shop not found', 404);
     }
 
+    const isDeactivating = status === 'inactive' || status === 'suspended';
+    const nowIso = new Date().toISOString();
+
     const updated = await dbStore.collection<Shop>('shops').update(id, {
       status,
-      updatedAt: new Date().toISOString(),
+      sessionsInvalidatedAt: isDeactivating ? nowIso : undefined,
+      updatedAt: nowIso,
     });
 
-    // Sync owner user status
-    if (shop.ownerId) {
-      await dbStore.collection<User>('users').update(shop.ownerId, {
-        status: status === 'active' ? 'active' : status === 'suspended' ? 'suspended' : 'inactive',
-        updatedAt: new Date().toISOString(),
-      });
+    // Synchronize all users belonging to this shop
+    const shopUsers = await dbStore.collection<User>('users').query({
+      where: [{ field: 'shopId', op: '==', value: id }],
+    });
 
-      // Send status notice email
+    for (const u of shopUsers.data) {
+      if (u.role === 'super_admin') continue;
+      const targetUserStatus = status === 'active' ? 'active' : status === 'suspended' ? 'suspended' : 'inactive';
+      await dbStore.collection<User>('users').update(u.id, {
+        status: targetUserStatus,
+        sessionsInvalidatedAt: isDeactivating ? nowIso : undefined,
+        updatedAt: nowIso,
+      });
+    }
+
+    // Send status notice email
+    if (shop.ownerId) {
       const ownerEmail = shop.ownerEmail || shop.email;
       if (ownerEmail) {
         await EmailService.sendAccountStatusEmail({
@@ -367,7 +414,7 @@ export class ShopController {
     if (status === 'active' && shop.subscriptionId) {
       await dbStore.collection<Subscription>('subscriptions').update(shop.subscriptionId, {
         status: 'active',
-        updatedAt: new Date().toISOString(),
+        updatedAt: nowIso,
       });
     }
 

@@ -61,5 +61,47 @@
     "autoRenew": true,
     "createdAt": "2026-09-30T14:50:25.545Z",
     "updatedAt": "2026-10-15T10:33:03.669Z"
+  },
+  {
+    "id": "sub_1792564605085",
+    "shopId": "shp_1792564605085",
+    "packageId": "pkg_basic",
+    "packageName": "Basic Tier",
+    "limits": {
+      "shops": 1,
+      "branches": 1,
+      "users": 5,
+      "products": 100,
+      "services": 20,
+      "storageMb": 500
+    },
+    "price": 49,
+    "startAt": "2026-10-21T06:36:45.096Z",
+    "expiryAt": "2026-11-20T06:36:45.096Z",
+    "status": "active",
+    "autoRenew": true,
+    "createdAt": "2026-10-21T06:36:45.096Z",
+    "updatedAt": "2026-10-21T06:36:45.096Z"
+  },
+  {
+    "id": "sub_1792654300766",
+    "shopId": "shp_1792654300766",
+    "packageId": "pkg_free",
+    "packageName": "Free Starter",
+    "limits": {
+      "shops": 1,
+      "branches": 1,
+      "users": 2,
+      "products": 50,
+      "services": 15,
+      "storageMb": 200
+    },
+    "price": 0,
+    "startAt": "2026-10-22T07:31:40.773Z",
+    "expiryAt": "2027-10-22T07:31:40.773Z",
+    "status": "active",
+    "autoRenew": true,
+    "createdAt": "2026-10-22T07:31:40.773Z",
+    "updatedAt": "2026-10-22T07:31:40.773Z"
   }
 ]

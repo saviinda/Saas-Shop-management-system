@@ -31,6 +31,8 @@ import {
   Eye,
   Edit3,
 } from 'lucide-react';
+import { PasswordStrengthIndicator } from '@/components/PasswordStrengthIndicator';
+import { checkPasswordStrength } from '@saas/validation';
 
 const MODULE_PERMISSIONS = [
   { id: 'dashboard', label: 'Dashboard & Overview', category: 'General' },
@@ -287,8 +289,9 @@ export default function StaffManagementPage() {
         setModalError('Email address is required');
         return;
       }
-      if (formData.password.length < 6) {
-        setModalError('Password must be at least 6 characters');
+      const strength = checkPasswordStrength(formData.password);
+      if (!strength.isValid) {
+        setModalError(strength.errors[0] || 'Password does not meet strong security requirements');
         return;
       }
     }
@@ -357,6 +360,14 @@ export default function StaffManagementPage() {
   const handleResetAccessSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!resetModalUser) return;
+
+    if (tempPassword.trim()) {
+      const strength = checkPasswordStrength(tempPassword.trim());
+      if (!strength.isValid) {
+        showError('Weak Password', strength.errors[0] || 'Password does not meet strong security requirements');
+        return;
+      }
+    }
 
     setIsResetting(true);
     try {
@@ -760,11 +771,12 @@ export default function StaffManagementPage() {
                     <input
                       type="password"
                       required
-                      placeholder="At least 6 characters"
+                      placeholder="Min 8 chars with upper, lower, number, symbol"
                       value={formData.password}
                       onChange={e => setFormData({ ...formData, password: e.target.value })}
                       className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-indigo-500 shadow-2xs"
                     />
+                    <PasswordStrengthIndicator password={formData.password} className="mt-2" />
                   </div>
                 )}
 
@@ -1023,11 +1035,14 @@ export default function StaffManagementPage() {
                 <label className="block font-bold text-slate-700 mb-1">New Temporary Password (Optional)</label>
                 <input
                   type="text"
-                  placeholder="Leave blank to auto-generate a secure random password"
+                  placeholder="Leave blank to auto-generate, or min 8 chars with upper, lower, number, symbol"
                   value={tempPassword}
                   onChange={e => setTempPassword(e.target.value)}
                   className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-indigo-500"
                 />
+                {tempPassword && (
+                  <PasswordStrengthIndicator password={tempPassword} className="mt-2" />
+                )}
               </div>
 
               <div>

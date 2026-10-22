@@ -371,7 +371,7 @@ export default function SubscriptionsListPage() {
                         {s.packageName || 'Standard Plan'}
                       </span>
                     </td>
-                    <td className="py-4 px-6 font-bold text-slate-900">${s.price}/mo</td>
+                    <td className="py-4 px-6 font-bold text-slate-900">LKR {s.price}/mo</td>
                     <td className="py-4 px-6 text-slate-500">{formatDate(s.startAt)}</td>
                     <td className="py-4 px-6">
                       <div className="flex items-center gap-1.5 text-slate-700">
@@ -548,7 +548,7 @@ export default function SubscriptionsListPage() {
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
                   <div className="p-2.5 bg-white rounded-lg border border-indigo-100">
                     <p className="text-[10px] text-slate-400">Monthly Price</p>
-                    <p className="font-bold text-slate-900 text-sm mt-0.5">${selectedShopModal.subscription.price}/mo</p>
+                    <p className="font-bold text-slate-900 text-sm mt-0.5">LKR {selectedShopModal.subscription.price}/mo</p>
                   </div>
                   <div className="p-2.5 bg-white rounded-lg border border-indigo-100">
                     <p className="text-[10px] text-slate-400">Status</p>
@@ -650,14 +650,14 @@ export default function SubscriptionsListPage() {
                     >
                       {packages.map(p => (
                         <option key={p.id} value={p.id}>
-                          {p.name} (${p.price}/mo)
+                          {p.name} (LKR {p.price}/mo)
                         </option>
                       ))}
                     </select>
                   </div>
 
                   <div>
-                    <label className="block font-medium text-slate-700 mb-1">Monthly Billing Price ($)</label>
+                    <label className="block font-medium text-slate-700 mb-1">Monthly Billing Price (LKR)</label>
                     <input
                       type="number"
                       value={formData.price}

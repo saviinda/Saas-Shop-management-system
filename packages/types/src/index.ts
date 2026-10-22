@@ -38,8 +38,15 @@ export interface User {
   branchIds?: string[];
   permissions?: string[];
   phone?: string;
+  emailVerified?: boolean;
+  emailVerificationToken?: string;
+  emailVerificationCode?: string;
+  emailVerificationExpires?: string;
   passwordResetToken?: string;
   passwordResetExpires?: string;
+  failedLoginAttempts?: number;
+  lockoutUntil?: string;
+  sessionsInvalidatedAt?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -67,6 +74,7 @@ export interface Shop {
   defaultBranchId?: string;
   isPaymentRestricted?: boolean;
   paymentRestrictionReason?: string;
+  sessionsInvalidatedAt?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -550,6 +558,16 @@ export interface AuditLog {
   after?: any;
   ipAddress?: string;
   createdAt: string;
+}
+
+export interface PlatformSettings {
+  id: string;
+  supportEmail: string;
+  platformName?: string;
+  supportPhone?: string;
+  supportHours?: string;
+  updatedAt?: string;
+  updatedBy?: string;
 }
 
 export interface ApiResponse<T = any> {

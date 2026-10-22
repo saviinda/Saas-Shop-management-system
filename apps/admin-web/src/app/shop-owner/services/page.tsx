@@ -734,7 +734,7 @@ export default function ServicesPage() {
                 </div>
 
                 <div>
-                  <label className="block font-bold text-slate-800 mb-1">Standard Service Fee ($) *</label>
+                  <label className="block font-bold text-slate-800 mb-1">Standard Service Fee (LKR) *</label>
                   <input
                     type="number"
                     step="0.01"

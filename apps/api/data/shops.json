@@ -18,7 +18,7 @@
     "subscriptionId": "sub_urban_cafe",
     "defaultBranchId": "br_urban_downtown",
     "createdAt": "2026-09-11T10:16:53.178Z",
-    "updatedAt": "2026-10-15T10:44:18.251Z",
+    "updatedAt": "2026-10-22T05:56:09.779Z",
     "socialMedia": {
       "facebook": "",
       "instagram": "",
@@ -71,7 +71,43 @@
     "subscriptionId": "sub_1790779823800",
     "defaultBranchId": "br_1790779823800",
     "createdAt": "2026-09-30T14:50:25.548Z",
-    "updatedAt": "2026-10-15T10:33:03.672Z",
+    "updatedAt": "2026-10-21T05:35:30.928Z",
     "description": ""
+  },
+  {
+    "id": "shp_1792564605085",
+    "name": "New Rich",
+    "ownerId": "usr_1792564605085",
+    "ownerName": "Dilshaan",
+    "ownerEmail": "saviindadil@gmail.com",
+    "contactNumber": "+94 72 9775411",
+    "email": "saviindadil@gmail.com",
+    "address": "105 old road, Kandana",
+    "category": "Communication and print shop",
+    "status": "active",
+    "packageId": "pkg_basic",
+    "packageName": "Basic Tier",
+    "subscriptionId": "sub_1792564605085",
+    "defaultBranchId": "br_1792564605085",
+    "createdAt": "2026-10-21T06:36:45.099Z",
+    "updatedAt": "2026-10-21T06:36:45.099Z"
+  },
+  {
+    "id": "shp_1792654300766",
+    "address": "No. 200 Galle Road, Colombo 03",
+    "packageId": "pkg_free",
+    "defaultBranchId": "br_1792654300766",
+    "ownerId": "usr_1792654300766",
+    "ownerEmail": "sri_lanka_shop_1792654300577@example.com",
+    "createdAt": "2026-10-22T07:31:40.776Z",
+    "ownerName": "Sunil Perera",
+    "contactNumber": "+94 77 123 4567",
+    "name": "Lanka Print Solutions",
+    "packageName": "Free Starter",
+    "category": "Print Shop",
+    "subscriptionId": "sub_1792654300766",
+    "email": "sri_lanka_shop_1792654300577@example.com",
+    "status": "active",
+    "updatedAt": "2026-10-22T07:31:40.776Z"
   }
 ]

@@ -329,17 +329,23 @@
         ]
       },
       {
-        "module": "branches",
-        "actions": [
-          "view",
-          "edit"
-        ]
-      },
-      {
         "module": "users",
         "actions": [
           "view",
           "create",
+          "edit"
+        ]
+      },
+      {
+        "module": "change_requests",
+        "actions": [
+          "view"
+        ]
+      },
+      {
+        "module": "branches",
+        "actions": [
+          "view",
           "edit"
         ]
       },
@@ -402,12 +408,6 @@
         ]
       },
       {
-        "module": "reports",
-        "actions": [
-          "view"
-        ]
-      },
-      {
         "module": "communication",
         "actions": [
           "view",
@@ -416,7 +416,7 @@
       }
     ],
     "createdAt": "2026-08-01T00:00:00.000Z",
-    "updatedAt": "2026-08-01T00:00:00.000Z"
+    "updatedAt": "2026-10-21T05:32:01.480Z"
   },
   {
     "id": "role_sales_staff",

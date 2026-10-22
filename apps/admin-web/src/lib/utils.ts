@@ -5,11 +5,10 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function formatCurrency(amount: number, currency = 'USD'): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency,
-  }).format(amount);
+export function formatCurrency(amount: number | string | undefined | null, _currency = 'LKR'): string {
+  const num = typeof amount === 'string' ? parseFloat(amount) : Number(amount || 0);
+  const cleanNum = isNaN(num) ? 0 : num;
+  return `LKR ${cleanNum.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
 export function formatDate(dateString: string): string {

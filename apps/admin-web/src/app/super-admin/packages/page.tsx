@@ -327,7 +327,7 @@ export default function PackagesManagementPage() {
                 </div>
 
                 <p className="text-3xl font-extrabold text-slate-900 mt-4 tracking-tight">
-                  ${pkg.price}
+                  LKR {pkg.price}
                   <span className="text-sm text-slate-400 font-normal">/month</span>
                 </p>
                 <p className="text-xs text-slate-500 mt-2 min-h-[32px] font-medium leading-relaxed">
@@ -446,7 +446,7 @@ export default function PackagesManagementPage() {
                   />
                 </div>
                 <div>
-                  <label className="block font-medium text-slate-700 mb-1">Monthly Price ($ USD)</label>
+                  <label className="block font-medium text-slate-700 mb-1">Monthly Price (LKR)</label>
                   <input
                     type="number"
                     step="0.01"
@@ -686,7 +686,7 @@ export default function PackagesManagementPage() {
                   />
                 </div>
                 <div>
-                  <label className="block font-medium text-slate-700 mb-1">Monthly Price ($ USD)</label>
+                  <label className="block font-medium text-slate-700 mb-1">Monthly Price (LKR)</label>
                   <input
                     type="number"
                     step="0.01"
